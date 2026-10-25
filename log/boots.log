@@ -40,3 +40,14 @@
 13:23:44 pmgr14-B1a1-nub3: handoff ok, proxy back after 268s (offset 11, net 257s) -> unmapped
 13:28:57 pmgr15-smcfw-full-wdt150: handoff ok, proxy back after 157s (offset 11, net 146s) -> unmapped
 13:32:20 pmgr16-full-poweroff-unused: handoff ok, proxy back after 157s (offset 11, net 146s) -> unmapped
+14:08:27 nvme1: handoff ok, proxy back after 157s (offset 11, net 146s) -> unmapped
+14:11:42 nvme2-earlyap: handoff ok, proxy back after 157s (offset 11, net 146s) -> unmapped
+14:21:31 nvme3-loader-init: proxy back after 156 s
+14:26:15 nvme4-adopt: proxy back after 155 s
+14:29:09 nvme5-sartv4: proxy back after 1 s
+14:31:44 nvme5-sartv4: resident proxy back after 128 s from 14:29:27
+18:43:13 nvme7-adopt-keepcc: resident proxy back after 154 s
+18:55:28 nvme8-adopt-disabled: resident proxy back after 20 s
+18:58:56 nvme9-adopt-disabled-cold: resident proxy back after 122 s
+19:02:40 nvme10-aq64-order: resident proxy back after 156 s
+19:08:27 nvme11-cold-notracekit: resident proxy back after 119 s
