@@ -86,3 +86,8 @@
 23:04:48 check1-clean: handoff ok, proxy back after 156s (offset 11, net 145s) -> unmapped
 23:08:58 write7-verify: handoff ok, proxy back after 45s (offset 11, net 34s) -> kernel never reached the end of the simplefb probe
 23:10:35 write7-verify: PASS, md5 4636d427f846850713b3e644818bb375 read back after a reboot through the shutdown path equals the write-time md5 (write4); clean kernel 612e77ebae67, loader f1afac56
+23:21:39 gpt2-apply: handoff ok, proxy back after 46s (offset 11, net 35s) -> kernel never reached the end of the simplefb probe
+23:23:04 parts2: handoff ok, proxy back after 45s (offset 11, net 34s) -> kernel never reached the end of the simplefb probe
+23:25:53 gpt3-apply: handoff ok, proxy back after 47s (offset 11, net 36s) -> kernel never reached the end of the simplefb probe
+23:27:18 parts3: handoff ok, proxy back after 45s (offset 11, net 34s) -> kernel never reached the end of the simplefb probe
+23:29:09 gpt3-apply + parts3: the new GPT persisted after a full reset (p3 EFI 500 MiB, p5 2 GiB, p6 179.3 GiB; p1, p2, p4 untouched). gpt2 was lost: raw block writes need an explicit flush (fsync on the device), the post-M4 shutdown path sends no shutdown notification.

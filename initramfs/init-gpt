@@ -1,0 +1,38 @@
+#!/bin/sh
+# Initramfs init: apply the new GPT computed on the host (tools/gpt/gpt_plan.py): partition 3 (LINUX)
+# split into EFI 500 MiB (p3), boot 2 GiB (p5), root (p6). Writes the primary header and entries
+# (LBA 1-5) and the backup entries and header (last five LBAs) only after both regions match the
+# md5 of the table the plan was computed from. Then reboot -f.
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev 2>/dev/null
+dmesg -n 1
+sleep 8
+clear; echo; echo; echo; echo
+echo "=== GPT $(uname -r) ==="
+D=/dev/nvme0n1; BAK=488552529; BAKSTART=$((BAK-4))
+SZ=$(cat /sys/block/nvme0n1/size); LBS=$(cat /sys/block/nvme0n1/queue/logical_block_size)
+echo "disk: $SZ sectors (expect 3908420240), logical block $LBS (expect 4096)"
+if [ "$SZ" != "3908420240" ] || [ "$LBS" != "4096" ]; then echo "DISK MISMATCH, stopping"; setsid cttyhack /bin/sh; fi
+P0=$(dd if=$D bs=4096 skip=1 count=5 2>/dev/null | md5sum | cut -d' ' -f1)
+B0=$(dd if=$D bs=4096 skip=$BAKSTART count=5 2>/dev/null | md5sum | cut -d' ' -f1)
+echo "current primary $P0 (expect 23f7c384bd5be60b80429d8a79589de6)"
+echo "current backup  $B0 (expect 46ee7810936b4308cc095e892e475801)"
+if [ "$P0" != "23f7c384bd5be60b80429d8a79589de6" ] || [ "$B0" != "46ee7810936b4308cc095e892e475801" ]; then echo "TABLE DIFFERS FROM THE PLAN, stopping"; setsid cttyhack /bin/sh; fi
+echo "images: primary $(md5sum < /gpt-new-primary.bin | cut -d' ' -f1) backup $(md5sum < /gpt-new-backup.bin | cut -d' ' -f1)"
+echo "--- writing primary (LBA 1-5) and backup (LBA $BAKSTART-$BAK)"
+dd if=/gpt-new-primary.bin of=$D bs=4096 seek=1 count=5 2>&1 | tail -n 1
+dd if=/gpt-new-backup.bin of=$D bs=4096 seek=$BAKSTART count=5 2>&1 | tail -n 1
+sync; fsync $D; echo "flush command sent, fsync exit $?"; blockdev --flushbufs $D
+P1=$(dd if=$D bs=4096 skip=1 count=5 2>/dev/null | md5sum | cut -d' ' -f1)
+B1=$(dd if=$D bs=4096 skip=$BAKSTART count=5 2>/dev/null | md5sum | cut -d' ' -f1)
+echo "readback primary $P1 (expect 6488e6dab505f66c25c9017a217d3e5c)"
+echo "readback backup  $B1 (expect 8d69fd7c0e404f6f1b901d1414949b78)"
+blockdev --rereadpt $D 2>&1; sleep 2
+grep nvme /proc/partitions
+dmesg | grep -i "nvme0n1\|gpt\|error" | grep -iv "rx ep\|tx ep" | tail -n 3
+echo "=== GPT END; reboot in 30 s ==="
+dmesg -n 8
+sleep 30
+reboot -f
+setsid cttyhack /bin/sh

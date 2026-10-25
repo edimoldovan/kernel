@@ -1,0 +1,16 @@
+#!/bin/sh
+# Initramfs init: list the NVMe partitions and the first bytes of each new one. Reads only.
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev 2>/dev/null
+dmesg -n 1
+sleep 8
+clear; echo; echo; echo; echo
+echo "=== PARTS $(uname -r) ==="
+grep nvme /proc/partitions
+for p in 3 5 6; do echo "p$p: start $(cat /sys/class/block/nvme0n1p$p/start 2>&1) size $(cat /sys/class/block/nvme0n1p$p/size 2>&1)  bytes $(dd if=/dev/nvme0n1p$p bs=512 count=1 2>/dev/null | od -A n -t x1 -N 8 | head -n 1)"; done
+dmesg | grep -i "nvme0n1\|gpt" | tail -n 3
+echo "=== PARTS END; reboot in 30 s ==="
+sleep 30
+reboot -f
+setsid cttyhack /bin/sh

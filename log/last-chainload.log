@@ -9,13 +9,13 @@ TTY> CPU init (MIDR: 0x611f0681 smp_id:0x0)...
 TTY>   CPU part: 0x68 rev: 0x11
 TTY>   CPU: M5 Max Sotra C (M core)
 TTY> 
-TTY> boot_args at 0x10004e3c000
+TTY> boot_args at 0x10004ec0000
 TTY>   revision:     3
 TTY>   version:      2
-TTY>   virt_base:    0x11df0000
+TTY>   virt_base:    0x19df0000
 TTY>   phys_base:    0x10003df0000
 TTY>   mem_size:     0x1fc6610000
-TTY>   top_of_kdata: 0x10004e4c000
+TTY>   top_of_kdata: 0x10004ed0000
 TTY>   video:
 TTY>     base:       0x11fd310c000
 TTY>     display:    0x1
@@ -25,7 +25,7 @@ TTY>     height:     1964
 TTY>     depth:      30bpp
 TTY>     density:    1
 TTY>   machine_type: 0
-TTY>   devtree:      0x12128000
+TTY>   devtree:      0x1a1ac000
 TTY>   devtree_size: 0xbc000
 TTY>   cmdline:      
 TTY>   boot_flags:   0x0
@@ -41,7 +41,7 @@ TTY> Running in EL2
 TTY> 
 TTY> OS FW version: unknown (mBoot-20457.41.3)
 TTY> System FW version: unknown (mBoot-20457.41.3)
-TTY> Heap base: 0x10004e4c000
+TTY> Heap base: 0x10004ed0000
 TTY> Boot policy: sip0 = 0
 TTY> MCC: Unsupported version:mcc,t6050
 TTY> MMU: Initializing...
@@ -85,17 +85,17 @@ TTY> cpufreq: Chip 0x6050 is unsupported
 TTY> Initialization complete.
 TTY> Checking for payloads...
 TTY> Devicetree compatible value: apple,j714c
-TTY> Unknown payload at 0x10004728000 (magic: 5b41464b)
+TTY> Unknown payload at 0x100047ac000 (magic: 5b41464b)
 TTY> No valid payload found
 TTY> dart: dart /arm-io/dart-usb0 at 0x2a2f80000 is a t8110
-TTY> USB0: initialized at 0x10004e50090
+TTY> USB0: initialized at 0x10004ed4090
 TTY> dart: dart /arm-io/dart-usb1 at 0x2aaf80000 is a t8110
-TTY> USB1: initialized at 0x10004e50560
+TTY> USB1: initialized at 0x10004ed4560
 TTY> dart: dart /arm-io/dart-usb2 at 0x382f80000 is a t8110
-TTY> USB2: initialized at 0x10004e50a60
+TTY> USB2: initialized at 0x10004ed4a60
 TTY> Running proxy...
-TTY> Heap limit: 0x1000f48c000 (128 MiB)
-m1n1 base: 0x10004258000
+TTY> Heap limit: 0x1000f510000 (128 MiB)
+m1n1 base: 0x100042dc000
 Fetching ADT (0x000BC000 bytes)...
 LOAD: _HDR 65536 bytes from 0 to 0
 LOAD: TEXT 655360 bytes from 10000 to 10000
@@ -104,13 +104,13 @@ LOAD: DATA 196608 bytes from f0000 to f0000
 ZERO: 3145728 bytes from 0x120000 to 0x420000
 LOAD: PYLD 0 bytes from 120000 to 420000
 SKIP: 67108864 bytes from 0x420000 to 0x4420000
-Copy span: 0xbb0000 bytes; firmware block: 0x1000467c000
-Copying SEPFW                         : 0x10004830000..0x10004dec000 -> 0x100078b0000 (0x5bc000 bytes)
-Copying SEPPatches                    : 0x10004dec000..0x10004df8000 -> 0x10007e6c000 (0xc000 bytes)
-Copying uStuff                        : 0x10004df8000..0x10004dfc000 -> 0x10007e78000 (0x4000 bytes)
-Copying preoslog                      : 0x10004dfc000..0x10004e3c000 -> 0x10007e7c000 (0x40000 bytes)
-Copying RTBuddySeg                    : 0x10004728000..0x10004830000 -> 0x10007ebc000 (0x108000 bytes)
-Copying TrustCache                    : 0x100041e4000..0x10004258000 -> 0x10007fc4000 (0x74000 bytes)
+Copy span: 0xbb0000 bytes; firmware block: 0x10004700000
+Copying SEPFW                         : 0x100048b4000..0x10004e70000 -> 0x10007934000 (0x5bc000 bytes)
+Copying SEPPatches                    : 0x10004e70000..0x10004e7c000 -> 0x10007ef0000 (0xc000 bytes)
+Copying uStuff                        : 0x10004e7c000..0x10004e80000 -> 0x10007efc000 (0x4000 bytes)
+Copying preoslog                      : 0x10004e80000..0x10004ec0000 -> 0x10007f00000 (0x40000 bytes)
+Copying RTBuddySeg                    : 0x100047ac000..0x100048b4000 -> 0x10007f40000 (0x108000 bytes)
+Copying TrustCache                    : 0x10004268000..0x100042dc000 -> 0x10008048000 (0x74000 bytes)
 Loading kernel image (0x420008 bytes)...
 ...................................................
 Adjusting addresses in ADT...
@@ -135,9 +135,9 @@ Setting secondary CPU RVBARs...
 Pushing ADT (769208 bytes)...
 Setting up bootargs...
 Copying stub...
-Entry point: 0x10004268800
-Reloading into stub at 0x1000803c000
-TTY> Preparing to run next stage at 0x1000803c000...
+Entry point: 0x100042ec800
+Reloading into stub at 0x100080c0000
+TTY> Preparing to run next stage at 0x100080c0000...
 Waiting for reconnection... ........................................................................................................................................................................................................Traceback (most recent call last):
   File "/home/ed/dev/omarchy/forks/omacom-m1n1/proxyclient/m1n1/proxy.py", line 351, in wait_boot
     return self.reply(self.REQ_BOOT)
