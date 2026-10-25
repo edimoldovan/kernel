@@ -9,13 +9,13 @@ TTY> CPU init (MIDR: 0x611f0681 smp_id:0x0)...
 TTY>   CPU part: 0x68 rev: 0x11
 TTY>   CPU: M5 Max Sotra C (M core)
 TTY> 
-TTY> boot_args at 0x1000698c000
+TTY> boot_args at 0x10006cdc000
 TTY>   revision:     3
 TTY>   version:      2
-TTY>   virt_base:    0x15df0000
+TTY>   virt_base:    0x1ddf0000
 TTY>   phys_base:    0x10003df0000
 TTY>   mem_size:     0x1fc6610000
-TTY>   top_of_kdata: 0x1000901c000
+TTY>   top_of_kdata: 0x1000936c000
 TTY>   video:
 TTY>     base:       0x11fd310c000
 TTY>     display:    0x1
@@ -25,7 +25,7 @@ TTY>     height:     1964
 TTY>     depth:      30bpp
 TTY>     density:    1
 TTY>   machine_type: 0
-TTY>   devtree:      0x17cb0000
+TTY>   devtree:      0x20000000
 TTY>   devtree_size: 0xbc000
 TTY>   cmdline:      
 TTY>   boot_flags:   0x0
@@ -41,7 +41,7 @@ TTY> Running in EL2
 TTY> 
 TTY> OS FW version: unknown (mBoot-20457.41.3)
 TTY> System FW version: unknown (mBoot-20457.41.3)
-TTY> Heap base: 0x1000901c000
+TTY> Heap base: 0x1000936c000
 TTY> MCC: Unsupported version:mcc,t6050
 TTY> MMU: Initializing...
 TTY> MMU: RAM base: 0x10000000000
@@ -84,36 +84,36 @@ TTY> cpufreq: Chip 0x6050 is unsupported
 TTY> Initialization complete.
 TTY> Checking for payloads...
 TTY> Devicetree compatible value: apple,j714c
-TTY> No more payloads at 0x10006200000
+TTY> No more payloads at 0x10006550000
 TTY> No valid payload found
 TTY> dart: dart /arm-io/dart-usb0 at 0x2a2f80000 is a t8110
-TTY> USB0: initialized at 0x10009020080
+TTY> USB0: initialized at 0x10009370080
 TTY> dart: dart /arm-io/dart-usb1 at 0x2aaf80000 is a t8110
-TTY> USB1: initialized at 0x10009020630
+TTY> USB1: initialized at 0x10009370630
 TTY> dart: dart /arm-io/dart-usb2 at 0x382f80000 is a t8110
-TTY> USB2: initialized at 0x10009020bb0
+TTY> USB2: initialized at 0x10009370bb0
 TTY> Running proxy...
-TTY> Heap limit: 0x10013664000 (128 MiB)
-m1n1 base: 0x10005de0000
+TTY> Heap limit: 0x100139b4000 (128 MiB)
+m1n1 base: 0x10006130000
 Fetching ADT (0x000BC000 bytes)...
-Setting boot args: "maxcpus=1 console=tty0 fbcon=font:TER16x32 t6050_wdt=200"
-Loading 3028319 bytes to 0x10013774240..0x10013a5779f...
-..................................................................................................................................................................................................................................................................................................................................................................................
-Loading DTB to 0x10013a577c0...
-Kernel_base: 0x10013c00000
-Loading 2302090 initramfs bytes to 0x10033c00000...
-..........................................................................................................................................................................................................................................................................................
+Setting boot args: "maxcpus=1 console=tty0 fbcon=font:TER16x32 t6050_wdt=90"
+Loading 3033191 bytes to 0x10013ac4240..0x10013da8aa7...
+...................................................................................................................................................................................................................................................................................................................................................................................
+Loading DTB to 0x10013da8ac0...
+Kernel_base: 0x10013e00000
+Loading 2301927 initramfs bytes to 0x10033e00000...
+.........................................................................................................................................................................................................................................................................................
 TTY> cpufreq: Initializing clusters
 TTY> cpufreq: Chip 0x6050 is unsupported
 TTY> cpufreq: Chip 0x6050 is unsupported
 TTY> Starting secondary CPUs...
-TTY> SMP: RVBAR 0x10005de0000 differs from vector 0x10005df0000; refusing start
+TTY> SMP: RVBAR 0x10006130000 differs from vector 0x10006140000; refusing start
 TTY> SMP: boot CPU RVBAR check failed
 smp_start_secondaries failed (ProxyRemoteError); continuing with the boot CPU only
 TTY> isp: disabled: revision 0x0 firmware unknown aligned end 0x0: unsupported SoC
-TTY> FDT: retained heap [0x10006200000, 0x1000b690000)
+TTY> FDT: retained heap [0x10006550000, 0x1000b9e0000)
 TTY> FDT: set chosen.bootargs
-TTY> FDT: initrd at 0x10033c00000 size 0x23208a
+TTY> FDT: initrd at 0x10033e00000 size 0x231fe7
 TTY> display: Hiding notch, 3024x1964 -> 3024x1890 (+74, 16:10)
 TTY> FDT: framebuffer@11fd31e6880 base 0x11fd31e6880 size 0x15cd680
 TTY> FDT: apfs-preboot-uuid = '3A31C7DB-DE69-4370-9CEA-23DEAAE16158'
@@ -198,9 +198,9 @@ TTY> FDT: 'isp' not found
 TTY> FDT: DRAM at 0x10000000000 size 0x2000000000
 TTY> FDT: Usable memory is 0x10003df0000..0x11fca3f8000 (0x1fc6608000)
 TTY> FDT: Adding reserved-memory node flash@11fca3fc000 (11fca3fc000..11fca400000) to RAM map
-TTY> FDT prepared at 0x1000b664000
+TTY> FDT prepared at 0x1000b9b4000
 Uncompressing gz ...
-10758152
+10760200
 Decompress OK...
 Ready to boot
 DAIF: c0
@@ -213,7 +213,7 @@ TTY> dapf: /arm-io/dart-mtp uses dapf-instance-0
 TTY> dapf: Initialized /arm-io/dart-mtp
 TTY> kboot: MTP DAPF programmed on T6050
 TTY> Setting SMP mode to WFE...
-TTY> Preparing to boot kernel at 0x10013c00000 with fdt at 0x1000b664000
+TTY> Preparing to boot kernel at 0x10013e00000 with fdt at 0x1000b9b4000
 Traceback (most recent call last):
   File "/home/ed/dev/omarchy/forks/omacom-m1n1/proxyclient/tools/linux.py", line 171, in <module>
     iface.ttymode(tty_dev)

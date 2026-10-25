@@ -73,3 +73,7 @@
 22:34:47 read7-ack: handoff ok, proxy back after 27s (offset 11, net 16s) -> unmapped
 22:39:33 read8-ack: handoff ok, proxy back after 27s (offset 11, net 16s) -> unmapped
 22:40:xx read8-ack: correction: the 27 s reset is t6050_wdt=200 wrapping the 32-bit count (21 s); the read test passed: ExFAT signature, 4k..2GiB reads ok, 2 GiB in 0.52 s, irq 17->2078, md5 first MiB 79562de67b6a4c289e2bc06c40625ae6
+22:43:09 shut1: handoff ok, proxy back after 96s (offset 11, net 85s) -> simplefb registered, fbcon has the panel (80 s)
+22:48:55 shut2-wdtdrv: resident proxy absent
+22:52:29 shut2-wdtdrv: resident proxy absent
+22:55:00 shut2-wdtdrv: direct boot over the dev proxy, resident proxy back after 44 s

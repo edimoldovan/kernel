@@ -1,0 +1,23 @@
+#!/bin/sh
+# Initramfs init: clean-shutdown test. One read of the LINUX partition (nvme0n1p3), then reboot -f,
+# which runs every driver's shutdown callback (the NVMe shutdown notification) before the kernel
+# tries to restart; with no restart handler the armed AP watchdog finishes the reset.
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev 2>/dev/null
+dmesg -n 1
+sleep 8
+clear; echo; echo; echo; echo
+echo "=== SHUT $(uname -r) ==="
+P=/dev/nvme0n1p3
+SZ=$(cat /sys/class/block/nvme0n1p3/size 2>/dev/null)
+echo "p3 size: $SZ sectors (expect 381181952)"
+if [ "$SZ" != "381181952" ]; then echo "SIZE MISMATCH, stopping"; setsid cttyhack /bin/sh; fi
+irq() { grep -i nvme /proc/interrupts | awk '{print $2}' | head -n 1; }
+echo "read: $(dd if=$P of=/dev/null bs=1M count=4 2>&1 | tail -n 1)   irq=$(irq) state=$(cat /sys/class/nvme/nvme0/state)"
+dmesg -n 8
+echo "--- reboot -f at uptime $(cut -d' ' -f1 /proc/uptime); kernel messages follow"
+sync
+reboot -f
+echo "reboot returned $?"
+setsid cttyhack /bin/sh

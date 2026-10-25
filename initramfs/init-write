@@ -1,0 +1,37 @@
+#!/bin/sh
+# Initramfs init: write test on the LINUX partition (nvme0n1p3), ExFAT as created in macOS.
+# First run: write 64 MiB of random data to /linux-write-test.bin and print its md5.
+# Later runs: verify the file's md5. Writes nothing outside that partition. Then reboot -f.
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev 2>/dev/null
+dmesg -n 1
+sleep 8
+clear; echo; echo; echo; echo
+echo "=== WRITE $(uname -r) ==="
+P=/dev/nvme0n1p3
+SZ=$(cat /sys/class/block/nvme0n1p3/size 2>/dev/null)
+SIG=$(dd if=$P bs=512 count=1 2>/dev/null | od -A n -t x1 -N 16 | head -n 1 | tr -d ' ')
+echo "p3 size: $SZ sectors (expect 381181952)  signature: $SIG"
+if [ "$SZ" != "381181952" ] || [ "$SIG" != "eb769045584641542020200000000000" ]; then
+	echo "NOT THE LINUX EXFAT PARTITION, stopping"; setsid cttyhack /bin/sh
+fi
+mkdir -p /mnt
+if ! mount -t exfat $P /mnt; then echo "mount failed"; dmesg | tail -n 3; setsid cttyhack /bin/sh; fi
+echo "mounted: $(grep /mnt /proc/mounts | cut -d' ' -f1-4)  free: $(df -m /mnt | tail -n 1 | awk '{print $4}') MiB"
+F=/mnt/linux-write-test.bin
+if [ -f $F ]; then
+	echo "--- verify: $(ls -l $F | awk '{print $5}') bytes, md5 $(md5sum < $F | cut -d' ' -f1)"
+else
+	T0=$(cut -d' ' -f1 /proc/uptime)
+	echo "--- write: md5 $(dd if=/dev/urandom bs=1M count=64 2>/dev/null | tee $F | md5sum | cut -d' ' -f1)"
+	sync
+	T1=$(cut -d' ' -f1 /proc/uptime)
+	echo "--- written and synced in $(awk -v a=$T0 -v b=$T1 'BEGIN{printf "%.2f", b-a}') s; readback md5 $(md5sum < $F | cut -d' ' -f1)"
+fi
+umount /mnt && echo "--- unmounted" || echo "--- umount FAILED"
+dmesg | grep -i "nvme\|exfat\|error" | grep -iv "rx ep\|tx ep" | tail -n 3
+echo "--- reboot -f at uptime $(cut -d' ' -f1 /proc/uptime)"
+dmesg -n 8
+reboot -f
+setsid cttyhack /bin/sh
