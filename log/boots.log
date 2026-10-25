@@ -103,3 +103,8 @@
 23:56:29 root1: ALARM root install via linux_big.py (initramfs at 0x11000000000), resident proxy back after 325 s
 23:58:18 rootcheck1: handoff ok, proxy back after 45s (offset 11, net 34s) -> kernel never reached the end of the simplefb probe
 00:00:13 rootcheck1: root installed on p6: subvolumes @ @home @log @pkg, Arch Linux ARM, systemd init, 32977 files under /usr, 1937 MiB, fstab with the three PARTUUIDs
+00:00:16 esp3: handoff ok, proxy back after 45s (offset 11, net 34s) -> kernel never reached the end of the simplefb probe
+00:03:46 disk1: stage 1 RAM-vectored, stage2-root (root=PARTUUID p6, no initramfs), systemd kernel; frames disk1-a..d
+00:05:35 esp4: handoff ok, proxy back after 1s (offset 11, net -10s) -> unmapped
+00:09:15 disk2: stage 1 RAM-vectored, systemd kernel with sysctl and file locking; frames disk2-a..d
+00:09:54 disk2: LOGIN FROM DISK. stage 1 -> stage 2 -> systemd kernel (sysctl, file locking) -> btrfs root -> systemd -> 'omarchy-m5 login:' on tty1. Frames disk2-a..d.
