@@ -1,0 +1,42 @@
+02:40:28 run1-baseline: handoff ok, proxy back after 131s (offset 11, net 120s) -> M5 setup_arch done
+02:46:16 run2-10s-steps: handoff ok, proxy back after 141s (offset 11, net 130s) -> K5 init_IRQ start (130 s)
+02:51:37 run3-aic-steps: handoff ok, proxy back after 105s (offset 11, net 94s) -> init_IRQ start (90 s)
+02:55:17 run4-fixmap-crumbs: handoff ok, proxy back after 106s (offset 11, net 95s) -> aic: regs mapped, before INFO reads (100 s)
+03:00:30 run5-ram-word: handoff ok, proxy back after 105s, ram word 0000000000000000 mark 0000000000000000 -> no crumb magic (RAM not retained or never written); handoff marker missing
+03:04:05 run6-aic-20s: handoff ok, proxy back after 86s (offset 11, net 75s) -> aic: regs mapped (80 s)
+03:08:03 run7-aic-address-fix: handoff ok, proxy back after 86s (offset 11, net 75s) -> aic: regs mapped (80 s)
+03:10:42 run8-aic-address-fix: handoff ok, proxy back after 165s (offset 11, net 154s) -> time_init end, beyond is unmapped (160 s)
+03:14:46 run9-initcalls: handoff ok, proxy back after 165s (offset 11, net 154s) -> unmapped
+03:19:09 run11-initcalls: handoff ok, proxy back after 126s (offset 11, net 115s) -> late_initcall, all drivers probed (120 s)
+03:24:05 run12-simplefb: handoff ok, proxy back after 65s (offset 11, net 54s) -> late_initcall; no simple-framebuffer device created (60 s)
+03:27:33 run13-fb-status-okay: handoff ok, proxy back after 66s (offset 11, net 55s) -> late_initcall reached; of_platform_default_populate_init never entered (60 s)
+03:29:44 run14-fb-path-ordered: handoff ok, proxy back after 166s (offset 11, net 155s) -> genpds ok; only cmap and register_framebuffer left (160 s)
+03:33:47 run15-register-and-init: handoff ok, proxy back after 106s (offset 11, net 95s) -> late_initcall; died before kernel_init runs /init (100 s)
+03:36:52 run16-registered-last: handoff ok, proxy back after 86s (offset 11, net 75s) -> simplefb registered, fbcon has the panel (80 s)
+03:39:20 run17-no-watchdog-leave-up: handoff ok, no watchdog reset in 280 s
+08:05:20 run18-real-busybox: handoff ok, no watchdog reset in 280 s
+08:22:08 run19-mtp-keyboard: handoff ok, proxy back after 138s (offset 11, net 127s) -> unmapped
+08:33:15 run21-mtp-t8142-layout: handoff ok, no watchdog reset in 280 s
+09:07:50 run22-mtp-early-ap-wake: handoff ok, no watchdog reset in 280 s
+09:20:38 run23-mtp-adopt-locked-dart: handoff ok, proxy back after 248s (offset 11, net 237s) -> unmapped
+09:27:40 run24-iommu-passthrough: handoff ok, proxy back after 82s (offset 11, net 71s) -> simplefb registered, fbcon has the panel (80 s)
+09:30:58 run25-mtp-dapf-passthrough: handoff ok, proxy back after 96s (offset 11, net 85s) -> simplefb registered, fbcon has the panel (80 s)
+09:33:05 run26-mtp-dapf-translate: handoff ok, no watchdog reset in 280 s
+09:48:48 run27-aurora-m1n1-fork: no handoff, see last-linux.log
+10:06:17 run28-pr-branches: handoff ok, no watchdog reset in 280 s
+10:24:39 run29-j714c-config-seed: handoff ok, no watchdog reset in 280 s
+12:37:40 pmgr1: handoff ok, proxy back after 226s (offset 11, net 215s) -> unmapped
+12:51:41 pmgr2: handoff ok, proxy back after 110s (offset 11, net 99s) -> unmapped
+12:54:26 pmgr3-nofbpd: handoff ok, proxy back after 160s (offset 11, net 149s) -> unmapped
+12:57:53 pmgr4-noaon-nofbpd: handoff ok, proxy back after 221s (offset 11, net 210s) -> unmapped
+13:02:30 pmgr5-probeprint: handoff ok, proxy back after 145s (offset 11, net 134s) -> unmapped
+13:06:52 pmgr6-fwowned-full: handoff ok, proxy back after 14s (offset 11, net 3s) -> unmapped
+13:10:02 pmgr7-allfw-nowrite: handoff ok, proxy back after 152s (offset 11, net 141s) -> unmapped
+13:13:37 pmgr8-fabfw: handoff ok, proxy back after 14s (offset 11, net 3s) -> unmapped
+13:14:48 pmgr9-only12writable: handoff ok, proxy back after 125s (offset 11, net 114s) -> unmapped
+13:20:44 pmgr11-halfB: handoff ok, proxy back after 14s (offset 11, net 3s) -> unmapped
+13:21:41 pmgr12-B1-nub-smc-gfx: handoff ok, proxy back after 17s (offset 11, net 6s) -> unmapped
+13:22:42 pmgr13-B1a-nub-smc: handoff ok, proxy back after 17s (offset 11, net 6s) -> unmapped
+13:23:44 pmgr14-B1a1-nub3: handoff ok, proxy back after 268s (offset 11, net 257s) -> unmapped
+13:28:57 pmgr15-smcfw-full-wdt150: handoff ok, proxy back after 157s (offset 11, net 146s) -> unmapped
+13:32:20 pmgr16-full-poweroff-unused: handoff ok, proxy back after 157s (offset 11, net 146s) -> unmapped

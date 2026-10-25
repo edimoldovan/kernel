@@ -1,0 +1,172 @@
+TTY> Heap limit: 0x1000f67c000 (128 MiB)
+m1n1 base: 0x10004450000
+Fetching ADT (0x000BC000 bytes)...
+bootargs before patch:
+    GKTS = bytearray(b'\xea\xbb\xd9\xf5~\x00\x06\x86')
+    DIVD = bytearray(b'\x00\x00\x00\x00')
+    PACD = bytearray(b'\x00\x00\x00\x00')
+    STSD = bytearray(b'\x00\x00\x00\x00')
+    STSB = bytearray(b'\x00\x00\x00\x00')
+    STSU = bytearray(b'\x00\x00\x00\x00')
+    STSP = bytearray(b'\x00\x00\x00\x00')
+    SXGA = bytearray(b'\x00\x00\x00\x00')
+    TSET = bytearray(b'\x00\x00\x00\x00')
+    DIDB = bytearray(b'\x00\x00\x00\x00')
+    ECRT = bytearray(b'\x01\x00\x00\x00')
+    VETR = bytearray(b'\x01\x00\x00\x00')
+    DRVO = bytearray(b'\x01\x00\x00\x00')
+    DHCD = bytearray(b'\x00\x00\x00\x00')
+    _CMP = bytearray(b'\x00\x00\x00\x00')
+    VCMP = bytearray(b'\x00\x00\x00\x00')
+    BCMP = bytearray(b'\x00\x00\x00\x00')
+    MCMP = bytearray(b'\x00\x00\x00\x00')
+    XCMP = bytearray(b'\x00\x00\x00\x00')
+    RAVC = bytearray(b'\x00\x00\x00\x00')
+    DWWB = bytearray(b'\x00\x00\x00\x00')
+    EPMP = bytearray(b'\x00\x00\x00\x00\x00\x01\x00\x00')
+    LLTR = bytearray(b'\x01')
+    ARcM = bytearray(b'\x00@\x00\x00')
+    DILS = bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00')
+    SRSA = bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00')
+    GFCM = bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00')
+    SSSC = bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00')
+    qF8v = bytearray(b'\x00\x00\x00\x00')
+    LRSD = bytearray(b'\x00')
+    SVSD = bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00')
+    LCSD = bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00')
+    ZSTR = bytearray(b'\x000\x0f\x00')
+    BPTP = bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00')
+    TNGI = bytearray(b'\x00')
+    oeNS = bytearray(b'\x00')
+    SEBC = bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00')
+    ECAP = bytearray(b'\xc3\xd6\xe9d\x0f\xba3U')
+    BVTP = bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00')
+    sP1T = bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00')
+    BtpG = bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00')
+    StpG = bytearray(b'\x00@\x00\x00\x00\x00\x00\x00')
+    BlpP = bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00')
+    SPTP = bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00')
+    SZSD = bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00')
+    LZSD = bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00')
+    S2xG = bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00')
+    SNUT = bytearray(b'\x08\xbd\x07\x01\x00\x00\x00\x00')
+    ZNUT = bytearray(b'\xa0\x06\x00\x00')
+    OTTR = bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00')
+    _COS = bytearray(b'P`\x00\x00')
+    RCOS = bytearray(b'\x11\x00\x00\x00')
+    dApC = bytearray(b'\x00\x00\x80\x84\x02\x00\x00\x00')
+    dArW = bytearray(b'\x00\x00\xe0\x84\x02\x00\x00\x00')
+    fVED = bytearray(b'\x00')
+    GLFp = bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00')
+    ABOI = bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00')
+    ZSOI = bytearray(b'\x00\x00\x00\x00')
+	DIVD = b'\x00\x00\x00\x00' -> b'\xff\x00\x00\x00'
+	DIDB = b'\x00\x00\x00\x00' -> b'\n\x00\x00\x00'
+	_CMP = b'\x00\x00\x00\x00' -> b'\x01\x00\x00\x00'
+	VCMP = b'\x00\x00\x00\x00' -> b'\x01\x00\x00\x00'
+	BCMP = b'\x00\x00\x00\x00' -> b'\x01\x00\x00\x00'
+	RAVC = b'\x00\x00\x00\x00' -> b'\x01\x00\x00\x00'
+TTY> dapf: Initialized /arm-io/dart-pmp0
+dapf_init(dart-pmp0, 1) -> 0
+[mgmt] Starting via message
+> 00:0x60000000000220 (TYPE=0x6, STATE=0x220)
+< 00:0x100000000c000c
+[mgmt] Supported versions 12 .. 12
+> 00:0x200000000c000c (TYPE=0x2, MAX_VER=0xc, MIN_VER=0xc)
+< 00:0x8000000000009f
+[mgmt] Adding endpoint 0x0
+[mgmt] Adding endpoint 0x1
+[mgmt] Adding endpoint 0x2
+[mgmt] Adding endpoint 0x3
+[mgmt] Adding endpoint 0x4
+[mgmt] Adding endpoint 0x7
+> 00:0x80000000000001 (TYPE=0x8, LAST=0, BASE=0, MORE=1)
+< 00:0x88000100000001
+[mgmt] Adding endpoint 0x20
+> 00:0x88000100000000 (TYPE=0x8, LAST=1, BASE=1, MORE=0)
+Starting endpoint #0x1 (crash)
+> 00:0x50000100000002 (TYPE=0x5, EP=0x1, FLAG=2)
+Starting endpoint #0x2 (syslog)
+> 00:0x50000200000002 (TYPE=0x5, EP=0x2, FLAG=2)
+Starting endpoint #0x3 (kdebug)
+> 00:0x50000300000002 (TYPE=0x5, EP=0x3, FLAG=2)
+> 03:0x8000000000000 (TYPE=0x8)
+Starting endpoint #0x4 (iorep)
+> 00:0x50000400000002 (TYPE=0x5, EP=0x4, FLAG=2)
+Starting endpoint #0x7 (ep7)
+> 00:0x50000700000002 (TYPE=0x5, EP=0x7, FLAG=2)
+Starting endpoint #0x20 (pmp)
+> 00:0x50002000000002 (TYPE=0x5, EP=0x20, FLAG=2)
+< 01:0x10400000000000
+[crash] buf 0x1000f790000 / 0x80000000
+> 01:0x10400080000000 (TYPE=0x1, SIZE=0x4, DVA=0x80000000)
+< 03:0x1000000008001
+> 03:0x1000080004000 (TYPE=0x1, DVA=0x80004000)
+> 03:0x2000080108000 (TYPE=0x2, DVA=0x80108000)
+< 04:0x16000000000000
+[iorep] buf 0x1000f8a0000 / 0x8010c000
+> 04:0x1600008010c000 (TYPE=0x1, SIZE=0x60, DVA=0x8010c000)
+< 04:0xc0000000000000
+[iorep] start
+< 04:0x80000000000000
+[iorep] report!
+> 04:0x80000000000000 (TYPE=0x8)
+< 04:0x80000000000000
+[iorep] report!
+> 04:0x80000000000000 (TYPE=0x8)
+< 04:0x80000000000000
+[iorep] report!
+> 04:0x80000000000000 (TYPE=0x8)
+< 04:0x80000000000000
+[iorep] report!
+> 04:0x80000000000000 (TYPE=0x8)
+< 04:0x80000000000000
+[iorep] report!
+> 04:0x80000000000000 (TYPE=0x8)
+< 04:0x80000000000000
+[iorep] report!
+> 04:0x80000000000000 (TYPE=0x8)
+< 04:0x80000000000000
+[iorep] report!
+> 04:0x80000000000000 (TYPE=0x8)
+< 04:0x80000000000000
+[iorep] report!
+> 04:0x80000000000000 (TYPE=0x8)
+< 04:0x80000000000000
+[iorep] report!
+> 04:0x80000000000000 (TYPE=0x8)
+< 04:0x80000000000000
+[iorep] report!
+> 04:0x80000000000000 (TYPE=0x8)
+< 07:0x10200000000000
+[ep7] buffer request 0x8000 -> 0x1000f900000 / 0x8016c000
+> 07:0x1020008016c000 (TYPE=0x1, SIZE=0x2, DVA=0x8016c000)
+IOP power state after INIT: 0x0 (30.0s)
+no IOP acknowledgement; continuing anyway
+after ep 0x20: iop 0x0 ap 0x0
+PHASE A done: PMP booted and served; status/ack words:
+  REQ@0x284250f00 = 0x0  ACK@0x284250f40 = 0x0
+PHASE B: requesting power for ['MCPM0', 'MCPM1', 'PCPM'] -> bits 0x7000
+  REQ = 0x0  ACK = 0x0
+PHASE C: smp_start_secondaries on the resident loader
+TTY> Starting secondary CPUs...
+TTY> Starting CPU 1 (0:0:1)... Failed!
+TTY> Starting CPU 2 (0:0:2)... Failed!
+TTY> Starting CPU 3 (0:0:3)... Failed!
+TTY> Starting CPU 4 (0:0:4)... Failed!
+TTY> Starting CPU 5 (0:0:5)... Failed!
+TTY> Starting CPU 6 (0:1:0)... Failed!
+TTY> Starting CPU 7 (0:1:1)... Failed!
+TTY> Starting CPU 8 (0:1:2)... Failed!
+TTY> Starting CPU 9 (0:1:3)... Failed!
+TTY> Starting CPU 10 (0:1:4)... Failed!
+TTY> Starting CPU 11 (0:1:5)... Failed!
+TTY> Starting CPU 12 (0:2:0)... Failed!
+TTY> Starting CPU 13 (0:2:1)... Failed!
+TTY> Starting CPU 14 (0:2:2)... Failed!
+TTY> Starting CPU 15 (0:2:3)... Failed!
+TTY> Starting CPU 16 (0:2:4)... Failed!
+TTY> Starting CPU 17 (0:2:5)... Failed!
+ALIVE: []
+start block +0/+4: 0x3c000 0x3c000
+DONE

@@ -1,0 +1,52 @@
+TTY> Heap limit: 0x1000f618000 (128 MiB)
+m1n1 base: 0x100043ec000
+Fetching ADT (0x000BC000 bytes)...
+	DIVD = b'\x00\x00\x00\x00' -> b'\xff\x00\x00\x00'
+	DIDB = b'\x00\x00\x00\x00' -> b'\n\x00\x00\x00'
+TTY> dapf: Initialized /arm-io/dart-pmp0
+dapf_init(dart-pmp0, 1) -> 0
+[mgmt] Starting via message
+> 00:0x60000000000220 (TYPE=0x6, STATE=0x220)
+< 00:0x100000000c000c
+[mgmt] Supported versions 12 .. 12
+> 00:0x200000000c000c (TYPE=0x2, MAX_VER=0xc, MIN_VER=0xc)
+< 00:0x8000000000009f
+[mgmt] Adding endpoint 0x0
+[mgmt] Adding endpoint 0x1
+[mgmt] Adding endpoint 0x2
+[mgmt] Adding endpoint 0x3
+[mgmt] Adding endpoint 0x4
+[mgmt] Adding endpoint 0x7
+> 00:0x80000000000001 (TYPE=0x8, LAST=0, BASE=0, MORE=1)
+< 00:0x88000100000001
+[mgmt] Adding endpoint 0x20
+> 00:0x88000100000000 (TYPE=0x8, LAST=1, BASE=1, MORE=0)
+Starting endpoint #0x1 (crash)
+> 00:0x50000100000002 (TYPE=0x5, EP=0x1, FLAG=2)
+Starting endpoint #0x2 (syslog)
+> 00:0x50000200000002 (TYPE=0x5, EP=0x2, FLAG=2)
+Starting endpoint #0x3 (kdebug)
+> 00:0x50000300000002 (TYPE=0x5, EP=0x3, FLAG=2)
+> 03:0x8000000000000 (TYPE=0x8)
+Starting endpoint #0x4 (iorep)
+> 00:0x50000400000002 (TYPE=0x5, EP=0x4, FLAG=2)
+Traceback (most recent call last):
+  File "/home/ed/dev/omarchy/kernel/tools/j714c_pmp.py", line 306, in <module>
+    pmp.start()
+    ~~~~~~~~~^^
+  File "/home/ed/dev/omarchy/m1n1/proxyclient/m1n1/fw/asc/__init__.py", line 106, in start
+    self.mgmt.wait_boot(3)
+    ~~~~~~~~~~~~~~~~~~~^^^
+  File "/home/ed/dev/omarchy/m1n1/proxyclient/m1n1/fw/asc/mgmt.py", line 120, in wait_boot
+    self.asc.work()
+    ~~~~~~~~~~~~~^^
+  File "/home/ed/dev/omarchy/m1n1/proxyclient/m1n1/hw/asc.py", line 107, in work
+    handled = ep.handle_msg(msg0, msg1)
+  File "/home/ed/dev/omarchy/m1n1/proxyclient/m1n1/fw/asc/base.py", line 47, in handle_msg
+    return handler(regtype(msg0.value))
+  File "/home/ed/dev/omarchy/m1n1/proxyclient/m1n1/fw/asc/mgmt.py", line 89, in EPMap
+    self.asc.start_ep(ep)
+    ~~~~~~~~~~~~~~~~~^^^^
+  File "/home/ed/dev/omarchy/m1n1/proxyclient/m1n1/fw/asc/__init__.py", line 94, in start_ep
+    raise Exception(f"Unknown endpoint {epno:#x}")
+Exception: Unknown endpoint 0x7

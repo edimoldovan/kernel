@@ -1,0 +1,184 @@
+TTY> Initialized dockchannel UART at 0x288e28000
+TTY> Device info:
+TTY>   Model: Mac17,7
+TTY>   Target: J714c
+TTY>   Board-ID: 0xa
+TTY>   Chip-ID: 0x6050
+TTY> 
+TTY> CPU init (MIDR: 0x611f0681 smp_id:0x0)...
+TTY>   CPU part: 0x68 rev: 0x11
+TTY>   CPU: M5 Max Sotra C (M core)
+TTY> 
+TTY> boot_args at 0x10005368000
+TTY>   revision:     3
+TTY>   version:      2
+TTY>   virt_base:    0x15dc8000
+TTY>   phys_base:    0x10003dc8000
+TTY>   mem_size:     0x1fc6638000
+TTY>   top_of_kdata: 0x10005378000
+TTY>   video:
+TTY>     base:       0x11fd310c000
+TTY>     display:    0x1
+TTY>     stride:     0x2f40
+TTY>     width:      3024
+TTY>     height:     1964
+TTY>     depth:      30bpp
+TTY>     density:    1
+TTY>   machine_type: 0
+TTY>   devtree:      0x1665c000
+TTY>   devtree_size: 0xbc000
+TTY>   cmdline:      
+TTY>   boot_flags:   0x0
+TTY>   mem_size_act: 0x2000000000
+TTY> 
+TTY> 
+TTY> 
+TTY> m1n1 v2.0.0-53-g7cde7d1a
+TTY> Copyright The Asahi Linux Contributors
+TTY> Licensed under the GNU General Public License v2 or later
+TTY> 
+TTY> Running in EL2
+TTY> 
+TTY> OS FW version: 27.0 (mBoot-20457.1.29)
+TTY> System FW version: 27.0 (mBoot-20457.1.29)
+TTY> Heap base: 0x10005378000
+TTY> Boot policy: sip0 = 0
+TTY> MCC: Unsupported version:mcc,t6050
+TTY> MMU: Initializing...
+TTY> MMU: RAM base: 0x10000000000
+TTY> MMU: Top of normal RAM: 0x11fca400000
+TTY> MMU: Adding Device-nGnRE mapping at 0xbc0000000 (0x20000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0xb80000000 (0x40000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1cb0000000 (0x1c000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1800000000 (0x400000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1700000000 (0x100000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1c40000000 (0x4000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x800000000 (0x200000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0xa00000000 (0x80000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1c50000000 (0x4000)
+TTY> MMU: Adding Device-nGnRE mapping at 0xc00000000 (0x200000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0xe00000000 (0x80000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1c60000000 (0x4000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1000000000 (0x200000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1200000000 (0x80000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1c70000000 (0x4000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1400000000 (0x200000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1600000000 (0x80000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1c80000000 (0x4000)
+TTY> MMU: SCTLR_EL1: 30000180 -> 30901085
+TTY> MMU: running with MMU and caches enabled!
+TTY> AIC: Version 3 @ 0x280400000
+TTY> AIC: AIC3 with 1/4 dies, 3104/4096 IRQs, reg_size:40004, config:10000, extintrcfg_stride:04a00, intmaskset_stride:04a00, intmaskclear_stride:04a00
+TTY> AIC: Configuring 1 external interrupts
+TTY> Primary WDT register @ 0x28836c000
+TTY> Primary WDT disabled
+TTY> Secondary WDT register @ 0x288330008
+TTY> Secondary WDT disabled
+TTY> pmgr: Cleaning up device states...
+TTY> pmgr: initialized, 661 devices on 1 dies found.
+TTY> display: Display is internal
+TTY> display: Display is already initialized (3024x1964)
+TTY> fb init: 3024x1964 (30) [s=3024] @0x11fd310c000
+TTY> fb console: max rows 57, max cols 78
+TTY> fb: display logo
+TTY> cpufreq: Chip 0x6050 is unsupported
+TTY> Initialization complete.
+TTY> Checking for payloads...
+TTY> Devicetree compatible value: apple,j714c
+TTY> Unknown payload at 0x10004c5c000 (magic: 5b41464b)
+TTY> No valid payload found
+TTY> dart: dart /arm-io/dart-usb0 at 0x2a2f80000 is a t8110
+TTY> USB0: initialized at 0x1000537c090
+TTY> dart: dart /arm-io/dart-usb1 at 0x2aaf80000 is a t8110
+TTY> USB1: initialized at 0x1000537c560
+TTY> dart: dart /arm-io/dart-usb2 at 0x382f80000 is a t8110
+TTY> USB2: initialized at 0x1000537ca60
+TTY> Running proxy...
+TTY> Heap limit: 0x1000f9b8000 (128 MiB)
+m1n1 base: 0x1000478c000
+Fetching ADT (0x000BC000 bytes)...
+	DIVD = b'\x00\x00\x00\x00' -> b'\xff\x00\x00\x00'
+	DIDB = b'\x00\x00\x00\x00' -> b'\n\x00\x00\x00'
+TTY> dapf: Initialized /arm-io/dart-pmp0
+dapf_init(dart-pmp0, 1) -> 0
+Booting ASC...
+< 00:0x100000000c000c
+[mgmt] Supported versions 12 .. 12
+> 00:0x200000000c000c (TYPE=0x2, MAX_VER=0xc, MIN_VER=0xc)
+< 00:0x8000000000009f
+[mgmt] Adding endpoint 0x0
+[mgmt] Adding endpoint 0x1
+[mgmt] Adding endpoint 0x2
+[mgmt] Adding endpoint 0x3
+[mgmt] Adding endpoint 0x4
+[mgmt] Adding endpoint 0x7
+> 00:0x80000000000001 (TYPE=0x8, LAST=0, BASE=0, MORE=1)
+< 00:0x88000100000001
+[mgmt] Adding endpoint 0x20
+> 00:0x88000100000000 (TYPE=0x8, LAST=1, BASE=1, MORE=0)
+Starting endpoint #0x1 (crash)
+> 00:0x50000100000002 (TYPE=0x5, EP=0x1, FLAG=2)
+Starting endpoint #0x2 (syslog)
+> 00:0x50000200000002 (TYPE=0x5, EP=0x2, FLAG=2)
+Starting endpoint #0x3 (kdebug)
+> 00:0x50000300000002 (TYPE=0x5, EP=0x3, FLAG=2)
+> 03:0x8000000000000 (TYPE=0x8)
+Starting endpoint #0x4 (iorep)
+> 00:0x50000400000002 (TYPE=0x5, EP=0x4, FLAG=2)
+Starting endpoint #0x7 (ep7)
+> 00:0x50000700000002 (TYPE=0x5, EP=0x7, FLAG=2)
+> 00:0xb0000000000020 (TYPE=0xb, STATE=0x20)
+< 01:0x10400000000000
+[crash] buf 0x1000facc000 / 0x80000000
+> 01:0x10400080000000 (TYPE=0x1, SIZE=0x4, DVA=0x80000000)
+< 03:0x1000000008001
+> 03:0x1000080004000 (TYPE=0x1, DVA=0x80004000)
+> 03:0x2000080108000 (TYPE=0x2, DVA=0x80108000)
+< 04:0x16000000000000
+[iorep] buf 0x1000fbdc000 / 0x8010c000
+> 04:0x1600008010c000 (TYPE=0x1, SIZE=0x60, DVA=0x8010c000)
+< 04:0xc0000000000000
+[iorep] start
+< 04:0x80000000000000
+[iorep] report!
+> 04:0x80000000000000 (TYPE=0x8)
+< 04:0x80000000000000
+[iorep] report!
+> 04:0x80000000000000 (TYPE=0x8)
+< 04:0x80000000000000
+[iorep] report!
+> 04:0x80000000000000 (TYPE=0x8)
+< 04:0x80000000000000
+[iorep] report!
+> 04:0x80000000000000 (TYPE=0x8)
+< 04:0x80000000000000
+[iorep] report!
+> 04:0x80000000000000 (TYPE=0x8)
+< 04:0x80000000000000
+[iorep] report!
+> 04:0x80000000000000 (TYPE=0x8)
+< 04:0x80000000000000
+[iorep] report!
+> 04:0x80000000000000 (TYPE=0x8)
+< 04:0x80000000000000
+[iorep] report!
+> 04:0x80000000000000 (TYPE=0x8)
+< 04:0x80000000000000
+[iorep] report!
+> 04:0x80000000000000 (TYPE=0x8)
+< 04:0x80000000000000
+[iorep] report!
+> 04:0x80000000000000 (TYPE=0x8)
+< 07:0x10200000000000
+[ep7] buffer request 0x8000 -> 0x1000fc3c000 / 0x8016c000
+> 07:0x1020008016c000 (TYPE=0x1, SIZE=0x2, DVA=0x8016c000)
+Traceback (most recent call last):
+  File "/home/ed/dev/omarchy/kernel/tools/j714c_pmp.py", line 337, in <module>
+    pmp.boot()
+    ~~~~~~~~^^
+  File "/home/ed/dev/omarchy/m1n1/proxyclient/m1n1/fw/asc/__init__.py", line 122, in boot
+    self.mgmt.wait_boot(1)
+    ~~~~~~~~~~~~~~~~~~~^^^
+  File "/home/ed/dev/omarchy/m1n1/proxyclient/m1n1/fw/asc/mgmt.py", line 122, in wait_boot
+    raise ASCTimeout("Boot timed out")
+m1n1.fw.asc.base.ASCTimeout: Boot timed out

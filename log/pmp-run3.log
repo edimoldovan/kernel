@@ -1,0 +1,19 @@
+TTY> Heap limit: 0x1000f618000 (128 MiB)
+m1n1 base: 0x100043ec000
+Fetching ADT (0x000BC000 bytes)...
+PMP already running (from an earlier attempt): halting it so it boots fresh
+  CPU_STATUS now ?
+TTY> dapf: Initialized /arm-io/dart-pmp0
+dapf_init(dart-pmp0, 1) -> 0
+[mgmt] Starting via message
+> 00:0x60000000000220 (TYPE=0x6, STATE=0x220)
+Traceback (most recent call last):
+  File "/home/ed/dev/omarchy/kernel/tools/j714c_pmp.py", line 311, in <module>
+    pmp.start()
+    ~~~~~~~~~^^
+  File "/home/ed/dev/omarchy/m1n1/proxyclient/m1n1/fw/asc/__init__.py", line 106, in start
+    self.mgmt.wait_boot(3)
+    ~~~~~~~~~~~~~~~~~~~^^^
+  File "/home/ed/dev/omarchy/m1n1/proxyclient/m1n1/fw/asc/mgmt.py", line 122, in wait_boot
+    raise ASCTimeout("Boot timed out")
+m1n1.fw.asc.base.ASCTimeout: Boot timed out

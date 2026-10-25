@@ -1,0 +1,21 @@
+#!/bin/sh
+# Minimal initramfs init: mount the basics and drop to a shell.
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev 2>/dev/null
+mkdir -p /dev/pts /run /tmp
+mount -t devpts devpts /dev/pts 2>/dev/null
+
+echo
+echo "=========================================="
+echo " T6050 (J714c) single-core Linux"
+echo " kernel: $(uname -a)"
+echo "=========================================="
+echo
+
+echo "--- ls -al / ---"
+ls -al /
+echo "--- shell check: init ran ls -al ---"
+
+# Drop to an interactive shell on the console
+setsid cttyhack /bin/sh
