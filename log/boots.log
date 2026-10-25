@@ -96,3 +96,7 @@
 23:33:57 format2: PASS, p3 vfat EFI 500 MiB, p5 ext4 OMARCHY-BOOT 1946 MiB, p6 btrfs OMARCHY-ROOT 183576 MiB, all mounted and unmounted
 23:34:32 esp1: handoff ok, proxy back after 45s (offset 11, net 34s) -> kernel never reached the end of the simplefb probe
 23:36:07 esp1: ESP populated: aurora/stage2.bin bc4832b492af0879174c63c5275e6209, linux/Image.gz ceb5ddc810016ee683f63900f496a816, t6050-j714c.dtb 67e11f452a9e1f3070321a8d8caf61f0, initramfs.cpio.gz 46eb40b7c5bb0536b91e65a77db69d42 (replaced by esp2)
+23:36:17 esp2: handoff ok, proxy back after 45s (offset 11, net 34s) -> kernel never reached the end of the simplefb probe
+23:39:21 s1-ramtest: filled stage 1 chainloaded raw, resident proxy back after 101 s
+23:43:25 s1-ramtest2: filled stage 1 chainloaded raw (entry 2048), resident proxy back after 216 s
+23:44:52 s1-ramtest2: BOOTED FROM DISK. Filled stage 1 (15 s window) chainloaded raw -> ESP by PARTUUID -> aurora/stage2.bin (f1afac56) -> Image.gz + dtb + initramfs from the ESP -> kernel, keyboard prompt, 180 s later reboot. Frames s1-b..e.
