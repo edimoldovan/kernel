@@ -100,3 +100,6 @@
 23:39:21 s1-ramtest: filled stage 1 chainloaded raw, resident proxy back after 101 s
 23:43:25 s1-ramtest2: filled stage 1 chainloaded raw (entry 2048), resident proxy back after 216 s
 23:44:52 s1-ramtest2: BOOTED FROM DISK. Filled stage 1 (15 s window) chainloaded raw -> ESP by PARTUUID -> aurora/stage2.bin (f1afac56) -> Image.gz + dtb + initramfs from the ESP -> kernel, keyboard prompt, 180 s later reboot. Frames s1-b..e.
+23:56:29 root1: ALARM root install via linux_big.py (initramfs at 0x11000000000), resident proxy back after 325 s
+23:58:18 rootcheck1: handoff ok, proxy back after 45s (offset 11, net 34s) -> kernel never reached the end of the simplefb probe
+00:00:13 rootcheck1: root installed on p6: subvolumes @ @home @log @pkg, Arch Linux ARM, systemd init, 32977 files under /usr, 1937 MiB, fstab with the three PARTUUIDs

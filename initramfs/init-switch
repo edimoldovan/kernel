@@ -1,0 +1,13 @@
+#!/bin/sh
+# Initramfs init, fallback for the disk boot: mount OMARCHY-ROOT (nvme0n1p6, btrfs subvolume @)
+# and hand over to its init with switch_root.
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev 2>/dev/null
+echo "=== SWITCH: mounting the root ==="
+mkdir -p /newroot
+n=0; while [ ! -b /dev/nvme0n1p6 ] && [ $n -lt 100 ]; do usleep 100000; n=$((n+1)); done
+mount -t btrfs -o subvol=@,rw /dev/nvme0n1p6 /newroot || { echo "ROOT MOUNT FAILED"; setsid cttyhack /bin/sh; }
+umount /dev /sys /proc 2>/dev/null
+exec switch_root /newroot /sbin/init
+echo "switch_root failed"; setsid cttyhack /bin/sh

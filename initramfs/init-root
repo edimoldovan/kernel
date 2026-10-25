@@ -1,0 +1,42 @@
+#!/bin/sh
+# Initramfs init: install the Arch Linux ARM base root on OMARCHY-ROOT (nvme0n1p6, btrfs) with the
+# subvolumes @, @home, @log, @pkg, write /etc/fstab, flush, list, reboot. Checks p6's exact start
+# and size first; writes nothing elsewhere.
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev 2>/dev/null
+dmesg -n 1
+sleep 8
+clear; echo; echo; echo; echo
+echo "=== ROOT $(uname -r) ==="
+s=$(cat /sys/class/block/nvme0n1p6/start); z=$(cat /sys/class/block/nvme0n1p6/size)
+echo "p6 start $s size $z (expect 3521970176 375963648)   tarball $(ls -l /root.tar.gz | awk '{print $5}') bytes"
+[ "$s" = "3521970176" ] && [ "$z" = "375963648" ] || { echo "LAYOUT MISMATCH, stopping"; setsid cttyhack /bin/sh; }
+mkdir -p /m && mount -t btrfs /dev/nvme0n1p6 /m || { echo "MOUNT FAILED"; setsid cttyhack /bin/sh; }
+for sv in @ @home @log @pkg; do [ -d /m/$sv ] || btrfs subvolume create /m/$sv >/dev/null; done
+echo "subvolumes: $(btrfs subvolume list /m | awk '{print $NF}' | tr '\n' ' ')"
+T0=$(cut -d' ' -f1 /proc/uptime)
+tar -xzf /root.tar.gz -C /m/@ 2>&1 | tail -n 3
+T1=$(cut -d' ' -f1 /proc/uptime)
+echo "--- extracted in $(awk -v a=$T0 -v b=$T1 'BEGIN{printf "%.0f", b-a}') s: $(ls /m/@ | tr '\n' ' ')"
+mkdir -p /m/@/home /m/@/var/log /m/@/var/cache/pacman/pkg /m/@/boot/efi
+cat > /m/@/etc/fstab <<'FSTAB'
+# OMARCHY M5 (J714c)
+PARTUUID=44527dff-05a1-4ad4-9199-e9287225e201  /                 btrfs  subvol=@,compress=zstd,noatime     0 0
+PARTUUID=44527dff-05a1-4ad4-9199-e9287225e201  /home             btrfs  subvol=@home,compress=zstd,noatime 0 0
+PARTUUID=44527dff-05a1-4ad4-9199-e9287225e201  /var/log          btrfs  subvol=@log,compress=zstd,noatime  0 0
+PARTUUID=44527dff-05a1-4ad4-9199-e9287225e201  /var/cache/pacman/pkg btrfs subvol=@pkg,compress=zstd,noatime 0 0
+PARTUUID=83512247-fca2-4c0f-9a26-6f9c39b71448  /boot             ext4   defaults,noatime                   0 2
+PARTUUID=6790ddc4-e993-42c2-8135-807df1548aaf  /boot/efi         vfat   defaults,noatime                   0 2
+FSTAB
+echo "omarchy-m5" > /m/@/etc/hostname
+rm -rf /m/@/boot/Image /m/@/boot/Image.gz /m/@/boot/initramfs-linux.img /m/@/boot/dtbs
+echo "--- fstab:"; cat /m/@/etc/fstab | cut -c1-110
+echo "--- init: $(ls -l /m/@/sbin/init /m/@/usr/lib/systemd/systemd 2>&1 | awk '{print $NF}' | tr '\n' ' ')  release: $(grep PRETTY /m/@/etc/os-release)"
+sync; fsync /dev/nvme0n1p6; echo "flushed"
+df -m /m | tail -n 1
+umount /m && sync && echo "unmounted"
+echo "=== ROOT END; reboot in 30 s ==="
+sleep 30
+reboot -f
+setsid cttyhack /bin/sh

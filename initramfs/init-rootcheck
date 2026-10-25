@@ -1,0 +1,21 @@
+#!/bin/sh
+# Initramfs init: inspect the installed root on OMARCHY-ROOT (nvme0n1p6) read-only, then reboot.
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev 2>/dev/null
+dmesg -n 1
+sleep 8
+clear; echo; echo; echo; echo
+echo "=== ROOTCHECK $(uname -r) ==="
+mkdir -p /m && mount -t btrfs -o ro /dev/nvme0n1p6 /m && echo "mounted p6 ro" || { echo "MOUNT FAILED"; dmesg | tail -n 3; setsid cttyhack /bin/sh; }
+echo "subvolumes: $(btrfs subvolume list /m 2>&1 | awk '{print $NF}' | tr '\n' ' ')"
+echo "top of @: $(ls /m/@ 2>&1 | tr '\n' ' ')"
+echo "release: $(cat /m/@/etc/os-release 2>&1 | grep PRETTY)   hostname: $(cat /m/@/etc/hostname 2>&1)"
+echo "init: $(ls -l /m/@/sbin/init 2>&1 | awk '{print $NF}')   systemd: $(ls -l /m/@/usr/lib/systemd/systemd 2>&1 | awk '{print $5}') bytes   bash: $(ls -l /m/@/usr/bin/bash 2>&1 | awk '{print $5}') bytes"
+echo "files under @/usr: $(find /m/@/usr -type f 2>/dev/null | wc -l)   usage: $(df -m /m | tail -n 1 | awk '{print $3}') MiB"
+echo "--- fstab:"; cut -c1-120 /m/@/etc/fstab 2>&1
+umount /m
+echo "=== ROOTCHECK END; reboot in 30 s ==="
+sleep 30
+reboot -f
+setsid cttyhack /bin/sh
