@@ -14,5 +14,10 @@ echo "stage 2: $(cat /proc/device-tree/chosen/asahi,m1n1-stage2-version 2>/dev/n
 echo "ESP: $(cat /proc/device-tree/chosen/asahi,efi-system-partition 2>/dev/null | tr -d '\0')"
 grep nvme /proc/partitions
 echo "input: $(ls /dev/input 2>/dev/null | tr '\n' ' ')"
-echo "shell on the console; the keyboard works."
+echo "press Enter within 180 s for a shell; otherwise the machine reboots to the loader."
+if read -t 180 _ 2>/dev/null; then
+	setsid cttyhack /bin/sh
+fi
+echo "rebooting"; sleep 2
+reboot -f
 setsid cttyhack /bin/sh
