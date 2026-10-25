@@ -33,5 +33,6 @@ umount /mnt && echo "--- unmounted" || echo "--- umount FAILED"
 dmesg | grep -i "nvme\|exfat\|error" | grep -iv "rx ep\|tx ep" | tail -n 3
 echo "--- reboot -f at uptime $(cut -d' ' -f1 /proc/uptime)"
 dmesg -n 8
+sleep 30
 reboot -f
 setsid cttyhack /bin/sh
