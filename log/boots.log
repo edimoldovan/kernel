@@ -51,3 +51,16 @@
 18:58:56 nvme9-adopt-disabled-cold: resident proxy back after 122 s
 19:02:40 nvme10-aq64-order: resident proxy back after 156 s
 19:08:27 nvme11-cold-notracekit: resident proxy back after 119 s
+21:23:28 pd1-allfw: handoff ok, proxy back after 155s (offset 11, net 144s) -> unmapped
+21:27:23 pd2-allfw: handoff ok, proxy back after 161s (offset 11, net 150s) -> unmapped
+21:31:38 pd3-normal: handoff ok, proxy back after 156s (offset 11, net 145s) -> unmapped
+21:36:43 pd4-all65: handoff ok, proxy back after 155s (offset 11, net 144s) -> unmapped
+21:40:35 pd5-pcie8: handoff ok, proxy back after 156s (offset 11, net 145s) -> unmapped
+21:43:55 pd6-apcie-st1: handoff ok, proxy back after 161s (offset 11, net 150s) -> unmapped
+21:47:26 pd7-aphy-st1: handoff ok, proxy back after 156s (offset 11, net 145s) -> unmapped
+21:51:13 pd8-st1-both: handoff ok, proxy back after 155s (offset 11, net 144s) -> unmapped
+21:54:43 pd9-phy-st0-gp: handoff ok, proxy back after 156s (offset 11, net 145s) -> unmapped
+21:59:05 pd10-phy-st0: handoff ok, proxy back after 156s (offset 11, net 145s) -> unmapped
+22:02:35 pd11-phy-gp: handoff ok, proxy back after 156s (offset 11, net 145s) -> unmapped
+22:05:46 fix1-aphy-st0: handoff ok, proxy back after 66s (offset 11, net 55s) -> genpds ok; fb_alloc_cmap or register_framebuffer failed (60 s)
+22:05:46 fix1-aphy-st0: correction to the line above: boot with t6050_wdt=60, the 60 s reset is the watchdog itself, not a failure; NVMe up with the source tree

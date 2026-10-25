@@ -1,0 +1,20 @@
+#!/bin/sh
+# Initramfs init: NVMe result, the domains the driver found off at handoff, the domains off now. Then a shell.
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev 2>/dev/null
+mount -t debugfs debugfs /sys/kernel/debug 2>/dev/null
+dmesg -n 1
+sleep 8
+clear; echo; echo; echo; echo
+echo "=== PD2 $(uname -r) ==="
+echo "nvme: $(grep -c nvme /proc/partitions) partition lines; $(ls /dev/nvme0n1 2>&1)"
+dmesg | grep -i "not ready\|IOP power\|Reset failure\|nvme0n1\|Device is crashed" | tail -n 3
+S=/sys/kernel/debug/pm_genpd/pm_genpd_summary
+echo "domains: $(awk '/^[a-z]/ && $1!="domain"{n++} END{print n}' $S) total, $(awk '/^[a-z]/ && $1!="domain" && $2!="on"{n++} END{print n}' $S) off now, $(dmesg | grep -c 'does not read as on') fw-owned off at handoff"
+echo "--- FW-OWNED OFF AT HANDOFF:"
+dmesg | grep 'does not read as on' | sed 's/.*domain \([a-z0-9_]*\) does.*/\1/' | tr '\n' ' ' | fold -s -w 180; echo
+echo "--- OFF NOW:"
+awk '/^[a-z]/ && $1!="domain" && $2!="on"{printf "%s ", $1} END{print ""}' $S | fold -s -w 180
+echo "=== PD2 END ==="
+setsid cttyhack /bin/sh

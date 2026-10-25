@@ -1,0 +1,20 @@
+#!/bin/sh
+# Initramfs init: print the NVMe result and every power domain's state from debugfs, then a shell.
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev 2>/dev/null
+mount -t debugfs debugfs /sys/kernel/debug 2>/dev/null
+dmesg -n 1
+sleep 8
+clear
+echo "=== PD $(uname -r) ==="
+echo "nvme: $(grep -c nvme /proc/partitions) partition lines; $(ls /dev/nvme0n1 2>&1)"
+dmesg | grep -i "not ready\|IOP power\|Reset failure\|nvme0n1\|RTKit: Device is crashed" | tail -n 3
+S=/sys/kernel/debug/pm_genpd/pm_genpd_summary
+echo "domains: $(awk '/^[a-z]/{n++} END{print n}' $S) total, $(awk '/^[a-z]/ && $2=="on"{n++} END{print n}' $S) on, $(awk '/^[a-z]/ && $2!="on"{n++} END{print n}' $S) off"
+echo "--- OFF:"
+awk '/^[a-z]/ && $2!="on"{printf "%s ", $1} END{print ""}' $S | fold -s -w 230
+echo "--- ON:"
+awk '/^[a-z]/ && $2=="on"{printf "%s ", $1} END{print ""}' $S | fold -s -w 230
+echo "=== PD END ==="
+setsid cttyhack /bin/sh
