@@ -1,0 +1,34 @@
+#!/bin/sh
+# Initramfs init: format the three partitions made from the LINUX space, after checking their exact
+# start and size: p3 EFI (vfat, busybox), p5 OMARCHY-BOOT (ext4, Alpine e2fsprogs), p6 OMARCHY-ROOT
+# (btrfs, Alpine btrfs-progs). Mounts each to print its size, unmounts, reboots.
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev 2>/dev/null
+dmesg -n 1
+sleep 8
+clear; echo; echo; echo; echo
+echo "=== FORMAT $(uname -r) ==="
+grep nvme /proc/partitions
+ok=1
+chk() { s=$(cat /sys/class/block/nvme0n1p$1/start 2>/dev/null); z=$(cat /sys/class/block/nvme0n1p$1/size 2>/dev/null); echo "p$1 start $s size $z (expect $2 $3)"; [ "$s" = "$2" ] && [ "$z" = "$3" ] || ok=0; }
+chk 3 3516751872 1024000
+chk 5 3517775872 4194304
+chk 6 3521970176 375963648
+[ $ok = 1 ] || { echo "LAYOUT MISMATCH, stopping"; setsid cttyhack /bin/sh; }
+echo "--- mkfs.vfat p3: $(mkfs.vfat -F 32 -n EFI /dev/nvme0n1p3 2>&1 | tail -n 1)"
+echo "--- mke2fs p5: $(mke2fs -q -t ext4 -L OMARCHY-BOOT /dev/nvme0n1p5 2>&1 | tail -n 2 | tr '\n' ' ')"
+echo "--- mkfs.btrfs p6: $(mkfs.btrfs -q -f -L OMARCHY-ROOT /dev/nvme0n1p6 2>&1 | tail -n 2 | tr '\n' ' ')"
+sync; fsync /dev/nvme0n1p3 /dev/nvme0n1p5 /dev/nvme0n1p6; echo "flush commands sent, fsync exit $?"
+mkdir -p /m/efi /m/boot /m/root
+mount -t vfat /dev/nvme0n1p3 /m/efi && echo "efi mounted" || echo "efi MOUNT FAILED"
+mount -t ext4 /dev/nvme0n1p5 /m/boot && echo "boot mounted" || echo "boot MOUNT FAILED"
+mount -t btrfs /dev/nvme0n1p6 /m/root && echo "root mounted" || echo "root MOUNT FAILED"
+df -m /m/efi /m/boot /m/root 2>&1
+umount /m/efi /m/boot /m/root 2>&1; sync
+dmesg | grep -i "ext4\|btrfs\|fat\|error" | grep -iv "rx ep\|tx ep" | tail -n 4
+echo "=== FORMAT END; reboot in 30 s ==="
+dmesg -n 8
+sleep 30
+reboot -f
+setsid cttyhack /bin/sh

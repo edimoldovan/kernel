@@ -1,0 +1,18 @@
+#!/bin/sh
+# Initramfs init for the first boot from disk through stage 1 and stage 2: prints how it got here,
+# the partitions and the input devices, then a shell on the console. No watchdog, no reboot.
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev 2>/dev/null
+mkdir -p /dev/pts; mount -t devpts devpts /dev/pts 2>/dev/null
+dmesg -n 1
+sleep 3
+clear; echo; echo; echo; echo
+echo "=== OMARCHY M5: BOOTED FROM DISK ==="
+echo "kernel: $(uname -r)   cmdline: $(cat /proc/cmdline)"
+echo "stage 2: $(cat /proc/device-tree/chosen/asahi,m1n1-stage2-version 2>/dev/null | tr -d '\0')"
+echo "ESP: $(cat /proc/device-tree/chosen/asahi,efi-system-partition 2>/dev/null | tr -d '\0')"
+grep nvme /proc/partitions
+echo "input: $(ls /dev/input 2>/dev/null | tr '\n' ' ')"
+echo "shell on the console; the keyboard works."
+setsid cttyhack /bin/sh
