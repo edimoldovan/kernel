@@ -77,3 +77,10 @@
 22:48:55 shut2-wdtdrv: resident proxy absent
 22:52:29 shut2-wdtdrv: resident proxy absent
 22:55:00 shut2-wdtdrv: direct boot over the dev proxy, resident proxy back after 44 s
+22:55:54 write1: handoff ok, proxy back after 23s (offset 11, net 12s) -> unmapped
+22:57:11 write2-verify: handoff ok, proxy back after 23s (offset 11, net 12s) -> unmapped
+22:59:02 write3: handoff ok, proxy back after 23s (offset 11, net 12s) -> unmapped
+23:00:50 write4-staged: handoff ok, proxy back after 49s (offset 11, net 38s) -> kernel never reached the end of the simplefb probe
+23:02:25 write5-verify: handoff ok, proxy back after 23s (offset 11, net 12s) -> unmapped
+23:03:52 write6-verify: handoff ok, proxy back after 23s (offset 11, net 12s) -> unmapped
+23:04:48 check1-clean: handoff ok, proxy back after 156s (offset 11, net 145s) -> unmapped

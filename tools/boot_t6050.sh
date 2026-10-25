@@ -15,7 +15,7 @@ M1N1DEVICE=$OLD PYTHONPATH=$F/proxyclient timeout 120 .venv/bin/python $F/proxyc
 NEW=; for i in $(seq 1 60); do NEW=$(ls /dev/serial/by-id/usb-Asahi_Linux_m1n1_uartproxy_*-if00 2>/dev/null | grep -v g7cde | head -1); [ -n "$NEW" ] && break; sleep 1; done
 [ -n "$NEW" ] || { echo "$stamp $TAG: chainloaded proxy never appeared" | tee -a $LOG; exit 3; }
 sleep 3
-M1N1DEVICE=$NEW PYTHONPATH=$F/proxyclient timeout 240 .venv/bin/python $F/proxyclient/tools/linux.py -b "maxcpus=1 console=tty0 ${EXTRA:-}" $IMG $DTB $IRD > $K/log/last-linux.log 2>&1
+M1N1DEVICE=$NEW PYTHONPATH=$F/proxyclient timeout 240 .venv/bin/python $F/proxyclient/tools/linux.py -b "maxcpus=1 console=tty0 t6050_wdt=${WDT:-150} ${EXTRA:-}" $IMG $DTB $IRD > $K/log/last-linux.log 2>&1
 t0=$(date +%s)
 grep -q 'Preparing to boot kernel' $K/log/last-linux.log || { echo "$stamp $TAG: no handoff, see last-linux.log" | tee -a $LOG; grep -E 'SError|Traceback|Error' $L/last-linux.log | head -3; exit 4; }
 back=; for i in $(seq 1 280); do ls /dev/serial/by-id/ 2>/dev/null | grep -q m1n1 && { back=$i; break; }; sleep 1; done

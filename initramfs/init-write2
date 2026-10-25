@@ -1,0 +1,40 @@
+#!/bin/sh
+# Initramfs init: staged write test on the LINUX partition (nvme0n1p3, ExFAT). Steps are printed and
+# spaced so a step that resets the machine leaves its name on the panel: mount read-only, unmount,
+# mount read-write (ExFAT writes its dirty flag), write 1 MiB, sync, 64 MiB, sync, unmount, reboot.
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev 2>/dev/null
+dmesg -n 1
+sleep 8
+clear; echo; echo; echo; echo
+echo "=== WRITE2 $(uname -r) ==="
+P=/dev/nvme0n1p3
+SZ=$(cat /sys/class/block/nvme0n1p3/size 2>/dev/null)
+SIG=$(dd if=$P bs=512 count=1 2>/dev/null | od -A n -t x1 -N 16 | head -n 1 | tr -d ' ')
+echo "p3 size: $SZ sectors (expect 381181952)  signature: $SIG"
+if [ "$SZ" != "381181952" ] || [ "$SIG" != "eb769045584641542020200000000000" ]; then
+	echo "NOT THE LINUX EXFAT PARTITION, stopping"; setsid cttyhack /bin/sh
+fi
+irq() { grep -i nvme /proc/interrupts | awk '{print $2}' | head -n 1; }
+step() { echo "--- $1   irq=$(irq) uptime=$(cut -d' ' -f1 /proc/uptime)"; sleep 2; }
+mkdir -p /mnt
+step "1 mount ro"
+mount -t exfat -o ro $P /mnt && step "1 ok: $(ls /mnt | tr '\n' ' ')" || step "1 FAILED"
+umount /mnt; step "2 unmounted"
+step "3 mount rw"
+mount -t exfat $P /mnt && step "3 ok" || step "3 FAILED"
+step "4 write 1 MiB"
+dd if=/dev/urandom of=/mnt/t1.bin bs=1M count=1 2>/dev/null && step "4 ok" || step "4 FAILED"
+step "5 sync"
+sync; step "5 ok"
+step "6 write 64 MiB"
+echo "md5 $(dd if=/dev/urandom bs=1M count=64 2>/dev/null | tee /mnt/linux-write-test.bin | md5sum | cut -d' ' -f1)"
+step "7 sync"
+sync; step "7 ok"
+umount /mnt && step "8 unmounted" || step "8 umount FAILED"
+dmesg | grep -i "nvme\|exfat\|error" | grep -iv "rx ep\|tx ep" | tail -n 3
+echo "--- reboot -f"
+sleep 8
+reboot -f
+setsid cttyhack /bin/sh
