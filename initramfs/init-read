@@ -1,0 +1,36 @@
+#!/bin/sh
+# Initramfs init: NVMe read test on the LINUX partition (nvme0n1p3), reads only. Then a shell.
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev 2>/dev/null
+dmesg -n 1
+D=/sys/bus/platform/devices/45dcc0000.nvme/power
+RS0="$(cat $D/runtime_status 2>&1) ctl=$(cat $D/control 2>&1)"
+echo on > $D/control 2>/dev/null
+sleep 8
+clear; echo; echo; echo; echo
+echo "=== READ $(uname -r) ==="
+echo "runtime pm at start: $RS0 | now: $(cat $D/runtime_status 2>&1) ctl=$(cat $D/control 2>&1) suspended_time=$(cat $D/runtime_suspended_time 2>&1)"
+P=/dev/nvme0n1p3
+SZ=$(cat /sys/class/block/nvme0n1p3/size 2>/dev/null)
+echo "p3 size: $SZ sectors (expect 381181952)"
+if [ "$SZ" != "381181952" ]; then echo "SIZE MISMATCH, stopping"; setsid cttyhack /bin/sh; fi
+irq() { grep -i nvme /proc/interrupts | awk '{print $2}' | head -n 1; }
+echo "--- first 16 bytes of p3: $(dd if=$P bs=512 count=1 2>/dev/null | od -A n -t x1 -N 16 | head -n 1)   irq=$(irq)"
+for bs in 4k 64k 512k 4M; do
+	T0=$(cut -d' ' -f1 /proc/uptime)
+	if timeout 15 dd if=$P of=/dev/null bs=$bs count=4 2>/dev/null; then R=ok; else R=TIMEOUT; fi
+	T1=$(cut -d' ' -f1 /proc/uptime)
+	echo "--- read 4 x $bs: $R in $(awk -v a=$T0 -v b=$T1 'BEGIN{printf "%.2f", b-a}') s   irq=$(irq)"
+	[ $R = ok ] || break
+done
+if [ $R = ok ]; then
+	T0=$(cut -d' ' -f1 /proc/uptime)
+	timeout 60 dd if=$P of=/dev/null bs=4M count=512 2>&1 | tail -n 1
+	T1=$(cut -d' ' -f1 /proc/uptime)
+	echo "--- 2 GiB read in $(awk -v a=$T0 -v b=$T1 'BEGIN{printf "%.1f", b-a}') s   irq=$(irq)"
+	echo "--- md5 of first 1 MiB: $(dd if=$P bs=1M count=1 2>/dev/null | md5sum)"
+fi
+dmesg | grep -i "nvme\|timeout\|rtkit" | grep -iv "pre-enable\|rx ep\|tx ep\|IOP power" | tail -n 4
+echo "=== READ END ==="
+setsid cttyhack /bin/sh

@@ -1,0 +1,37 @@
+#!/bin/sh
+# Initramfs init: NVMe read test on the LINUX partition (nvme0n1p3), reads only. Every read runs in
+# the background and is polled, so a read that never completes is reported instead of hanging the
+# script. Sizes first, then 2 GiB for throughput, then the md5 of the first MiB. Then a shell.
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev 2>/dev/null
+dmesg -n 1
+sleep 8
+clear; echo; echo; echo; echo
+echo "=== READ7 $(uname -r) ==="
+P=/dev/nvme0n1p3
+SZ=$(cat /sys/class/block/nvme0n1p3/size 2>/dev/null)
+echo "p3 size: $SZ sectors (expect 381181952)"
+if [ "$SZ" != "381181952" ]; then echo "SIZE MISMATCH, stopping"; setsid cttyhack /bin/sh; fi
+irq() { grep -i nvme /proc/interrupts | awk '{print $2}' | head -n 1; }
+st() { cat /sys/class/nvme/nvme0/state 2>&1; }
+# bgread <bs> <count> <max_s>: run dd in the background, poll; prints ok/HUNG, seconds, irq, state
+bgread() {
+	T0=$(cut -d' ' -f1 /proc/uptime)
+	( dd if=$P of=/dev/null bs=$1 count=$2 2>&1 | tail -n 1 > /tmp/dd.out ) &
+	PID=$!; n=0
+	while kill -0 $PID 2>/dev/null && [ $n -lt $(( $3 * 10 )) ]; do usleep 100000; n=$((n+1)); done
+	T1=$(cut -d' ' -f1 /proc/uptime)
+	if kill -0 $PID 2>/dev/null; then R=HUNG; else R=ok; fi
+	echo "--- read $2 x $1: $R in $(awk -v a=$T0 -v b=$T1 'BEGIN{printf "%.2f", b-a}') s   irq=$(irq) state=$(st)  $(cat /tmp/dd.out 2>/dev/null)"
+	[ $R = ok ]
+}
+echo "start: irq=$(irq) state=$(st) syslog acks in log: $(dmesg | grep -c 'tx ep=02')"
+N0=$(dmesg | grep -ic "nvme\|rtkit")
+echo "--- first 16 bytes of p3: $(dd if=$P bs=512 count=1 2>/dev/null | od -A n -t x1 -N 16 | head -n 1)"
+bgread 4k 1 15 && bgread 64k 4 15 && bgread 1M 4 15 && bgread 4M 512 90 && \
+echo "--- md5 of first 1 MiB: $(dd if=$P bs=1M count=1 2>/dev/null | md5sum)"
+echo "end: irq=$(irq) state=$(st) syslog acks in log: $(dmesg | grep -c 'tx ep=02')"
+dmesg | grep -i "nvme\|rtkit" | tail -n +$((N0+1)) | grep -iv "rx ep\|tx ep" | tail -n 3
+echo "=== READ7 END ==="
+setsid cttyhack /bin/sh

@@ -1,0 +1,32 @@
+#!/bin/sh
+# Initramfs init: reads of the LINUX partition (nvme0n1p3) by request size, read-ahead off, direct I/O
+# where dd supports it, smallest first, each under a 12 s timeout. Reads only. Then a shell.
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev 2>/dev/null
+dmesg -n 1
+sleep 8
+clear; echo; echo; echo; echo
+echo "=== READ6 $(uname -r) ==="
+P=/dev/nvme0n1p3
+SZ=$(cat /sys/class/block/nvme0n1p3/size 2>/dev/null)
+echo "p3 size: $SZ sectors (expect 381181952)"
+if [ "$SZ" != "381181952" ]; then echo "SIZE MISMATCH, stopping"; setsid cttyhack /bin/sh; fi
+Q=/sys/block/nvme0n1/queue
+echo 0 > $Q/read_ahead_kb
+echo "queue: ra=$(cat $Q/read_ahead_kb) max_sectors_kb=$(cat $Q/max_sectors_kb) max_segments=$(cat $Q/max_segments) max_segment_size=$(cat $Q/max_segment_size) page=$(getconf PAGESIZE 2>/dev/null)"
+irq() { grep -i nvme /proc/interrupts | awk '{print $2}' | head -n 1; }
+st() { cat /sys/class/nvme/nvme0/state 2>&1; }
+if dd if=/dev/zero of=/dev/null bs=4k count=1 iflag=direct >/dev/null 2>&1; then DF=iflag=direct; else DF=; fi
+echo "start: irq=$(irq) state=$(st) direct='$DF'"
+N0=$(dmesg | grep -ic "nvme\|rtkit")
+for bs in 512 4k 16k 32k 64k 256k 1M; do
+	T0=$(cut -d' ' -f1 /proc/uptime)
+	if timeout 12 dd if=$P of=/dev/null bs=$bs count=1 $DF 2>/dev/null; then R=ok; else R=FAIL; fi
+	T1=$(cut -d' ' -f1 /proc/uptime)
+	echo "--- read 1 x $bs: $R in $(awk -v a=$T0 -v b=$T1 'BEGIN{printf "%.2f", b-a}') s   irq=$(irq) state=$(st)"
+	[ $R = ok ] || break
+done
+dmesg | grep -i "nvme\|rtkit" | tail -n +$((N0+1)) | grep -iv "rx ep\|tx ep" | tail -n 3
+echo "=== READ6 END ==="
+setsid cttyhack /bin/sh

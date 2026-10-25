@@ -64,3 +64,12 @@
 22:02:35 pd11-phy-gp: handoff ok, proxy back after 156s (offset 11, net 145s) -> unmapped
 22:05:46 fix1-aphy-st0: handoff ok, proxy back after 66s (offset 11, net 55s) -> genpds ok; fb_alloc_cmap or register_framebuffer failed (60 s)
 22:05:46 fix1-aphy-st0: correction to the line above: boot with t6050_wdt=60, the 60 s reset is the watchdog itself, not a failure; NVMe up with the source tree
+22:12:45 read1: handoff ok, proxy back after 125s (offset 11, net 114s) -> unmapped
+22:16:27 read2: handoff ok, proxy back after 156s (offset 11, net 145s) -> unmapped
+22:20:22 read3: handoff ok, proxy back after 156s (offset 11, net 145s) -> unmapped
+22:23:32 read4: handoff ok, proxy back after 126s (offset 11, net 115s) -> unmapped
+22:26:12 read5-all65: handoff ok, proxy back after 126s (offset 11, net 115s) -> unmapped
+22:29:57 read6: handoff ok, proxy back after 126s (offset 11, net 115s) -> unmapped
+22:34:47 read7-ack: handoff ok, proxy back after 27s (offset 11, net 16s) -> unmapped
+22:39:33 read8-ack: handoff ok, proxy back after 27s (offset 11, net 16s) -> unmapped
+22:40:xx read8-ack: correction: the 27 s reset is t6050_wdt=200 wrapping the 32-bit count (21 s); the read test passed: ExFAT signature, 4k..2GiB reads ok, 2 GiB in 0.52 s, irq 17->2078, md5 first MiB 79562de67b6a4c289e2bc06c40625ae6

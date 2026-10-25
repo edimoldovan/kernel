@@ -1,0 +1,30 @@
+#!/bin/sh
+# Initramfs init: one 4 KiB read of the LINUX partition (nvme0n1p3) in the background, with the
+# interrupt count, controller state and new kernel messages printed every 5 s. Reads only. Then a shell.
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev 2>/dev/null
+dmesg -n 1
+sleep 8
+clear; echo; echo; echo; echo
+echo "=== READ4 $(uname -r) ==="
+P=/dev/nvme0n1p3
+SZ=$(cat /sys/class/block/nvme0n1p3/size 2>/dev/null)
+echo "p3 size: $SZ sectors (expect 381181952)"
+if [ "$SZ" != "381181952" ]; then echo "SIZE MISMATCH, stopping"; setsid cttyhack /bin/sh; fi
+irq() { grep -i nvme /proc/interrupts | awk '{print $2}' | head -n 1; }
+st() { cat /sys/class/nvme/nvme0/state 2>&1; }
+echo "start: irq=$(irq) state=$(st) irq line: $(grep -i nvme /proc/interrupts | head -n 1 | cut -c1-80)"
+N0=$(dmesg | grep -ic "nvme\|rtkit\|timeout")
+( dd if=$P of=/dev/null bs=4k count=1 2>&1; echo "dd exit $?" ) > /tmp/dd.out 2>&1 &
+DDPID=$!
+i=0
+while [ $i -lt 10 ]; do
+	i=$((i+1)); sleep 5
+	if kill -0 $DDPID 2>/dev/null; then A=running; else A=done; fi
+	echo "t+$((i*5))s dd=$A irq=$(irq) state=$(st) $(tr '\n' ' ' < /tmp/dd.out)"
+	dmesg | grep -i "nvme\|rtkit\|timeout" | tail -n +$((N0+1)) | grep -iv "rx ep\|tx ep" | tail -n 2
+	[ $A = done ] && break
+done
+echo "=== READ4 END ==="
+setsid cttyhack /bin/sh
