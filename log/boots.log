@@ -113,3 +113,7 @@
 00:39:48 wdtmon: dev loader, watchdog-monitor kernel, root on p6; frames wdtmon-01..13
 00:45:36 wdtping: dev loader, monitor kernel feeding WD1 every 15 s, root on p6; frames wdtping-01..13, 196 s
 00:53:20 rstwho: dev loader, kernel printing the reset requester, root on p6; frames rstwho-01..13
+10:19:07 pdign: dev loader, monitor kernel, pd_ignore_unused, root on p6; frames pdign-01..13
+10:40:51 idlepoll: dev loader, monitor kernel, idle=poll, root on p6; frames idlepoll-01..13
+10:45:00 sit: dev loader, monitor kernel, busybox initramfs that only sits (no disk root, no systemd); frames sit-01..13
+10:50:20 nonvme: dev loader, monitor kernel, sit initramfs, NVMe node disabled in the dtb; frames nonvme-01..13

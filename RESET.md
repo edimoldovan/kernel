@@ -15,8 +15,19 @@ Symptom: every boot from disk reaches `omarchy-m5 login:` and the machine resets
 - ADT `/arm-io/wdt`: wdt-version 3, five regs: 0x28836c000/0x4000, 0x288335260, 0x288330008, 0x28833002c, 0x288330020 (the last four are PMGR + 0x35260/0x30008/0x3002c/0x30020; the Linux pmgr2 node covers only 0x288300000+0xc000). `trigger-config` lists 18 per-core entries (3 clusters × 6). The loader zeroes only 0x288330008.
 - 179 s is 2^32 ticks at 24 MHz.
 
-## Next experiments (one boot each, same command as the `rstwho` run in log/boots.log)
+## Also ruled out (2026-10-26 morning, one boot each, 1 s serial poll: kernel at 7-9 s, proxy back at 192-193 s every time)
 
-1. `pd_ignore_unused` on the command line (genpd powers off unclaimed domains at late init).
-2. `idle=poll` (the loader never enters WFI; the kernel idles in WFI).
-3. Read 0x288335260, 0x28833002c, 0x288330020 from the proxy before and after a kernel run; add them to `t6050_wdtmon`.
+- `pd_ignore_unused`: no change.
+- `idle=poll`: no change.
+- The PMGR words 0x288335260, 0x288330008, 0x28833002c, 0x288330020: 0 in the resident proxy, 0 for the whole kernel run (`t6050_wdtmon` prints them now).
+- Userspace: a busybox initramfs that only sits (`initramfs/init-sit`, no disk root, no systemd) resets at the same time.
+- NVMe: the same sit boot with the nvme node `status = "disabled"` resets at the same time.
+- The loader's own recovery watchdog (`wdt_arm_seconds`, usb_cdc.c) is T8140-only and uses WD1.
+
+Observation: WD0/WD1/WD2 ctrl read 0 in the resident proxy and 0xc0 in the kernel (bits 6-7; RESET_EN is bit 2).
+
+## Next
+
+1. Chainload the dev loader and leave it alone for 5 minutes, no kernel (the chainloaded loader has never sat longer than 30 s).
+2. If it sits: send a fake Image (arm64 header + `b .`) through linux.py, to split the loader's handoff from the kernel.
+3. Only then bisect the device tree node by node from the sit initramfs.
