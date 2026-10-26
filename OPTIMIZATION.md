@@ -13,15 +13,22 @@ test is a file copy to the EFI partition instead of a cable upload.
    unsupported for frequency setup, so the core runs at its boot clock.
    Adding the T6050 tables to the loader and the kernel's cpufreq driver
    lifts that. Contained work.
-2. **USB host.** BLOCKED 2026-10-26: the port is described
-   (t6050-j714c-usb.dtsi, not included), SPMI and the PD controller bind, but
-   the T6050 Type-C PHY is a new generation (44 register windows, tunables
-   AUS40CMN/CIO4PLL/LN*_RX_CFG_TX_OF_RXCLK) that no loader table or kernel
-   PHY generation describes. Needs a T6050 generation in
-   drivers/phy/apple/atc.c plus a loader tunable table: reverse-engineering,
-   not a port. The Asahi USB stack exists; this chip needs its device-tree
-   nodes and PHY setup. With USB comes Ethernet adapters, and with network
-   comes pacman, Omarchy's own packages and updates from the Mac itself.
+2. **USB host.** USB 2.0 host works on port 2 (2026-10-26 19:17, four boots
+   in a row); port 0 is described the same way and under test. The loader
+   leaves the free ports in USB 2.0 host mode before the jump
+   (usb_t6050_host_prep: port bring-up, usb2phy host bits, gadget stopped,
+   core reset, port capability host, PIPE parked, connection verified with up
+   to three attempts; the result is recorded in /chosen/apple,t6050-usbprep).
+   The kernel binds the generic xHCI driver with the port's two DARTs
+   (t6050-j714c-usb2.dtsi); the ATC CIO domains are firmware-owned in
+   t6050-pmgr.dtsi because the kernel's power-on of them broke the xHCI
+   reset. A USB 2.0 stick enumerates at high speed (usb-storage).
+   USB 3 and USB4 need the T6050 Type-C PHY generation (44 register windows,
+   tunables AUS40CMN/CIO4PLL/LN*_RX_CFG_TX_OF_RXCLK) in
+   drivers/phy/apple/atc.c plus a loader tunable table; the full port
+   description for that is t6050-j714c-usb.dtsi (not included).
+   Open: the ESP stage 2 rebuilt with the prep; USB 2.0 Ethernet for pacman
+   and SSH.
 3. **Display driver.** Today the kernel draws into the framebuffer the loader
    left. The real display driver gives brightness, mode setting and later the
    compositor. Aurora has the M5 Air path to copy from.
