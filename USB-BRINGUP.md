@@ -206,3 +206,27 @@ the PHY out of the kernel:
 Not touched by this route: USB 3 and USB4 (the T6050 Type-C PHY generation,
 see USB4-SCOPE.md), hot-plug after boot (untested), the PD controllers
 (VBUS is sourced by their firmware).
+
+## The kernel sets up the ports itself (2026-10-27 00:55)
+
+linux-aurora `drivers/phy/apple/t6050-usb2.c` (`apple,t6050-usb2-phy`,
+`CONFIG_PHY_APPLE_T6050_USB2`) does the loader's host prep in `phy_init()`,
+which xhci-plat calls before its host controller reset. Windows per port:
+usb2phy = atc-phyN reg 0, pipe handler = usb-drdN reg 3, core = usb-drdN
+reg 0. Each `generic-xhci` node in `t6050-j714c-usb2.dtsi` has
+`phys = <&usb2phy_N>`. A port is flipped up to three times until PORTSC
+shows a connection; the driver logs "USB 2.0 host mode, PORTSC ... after N
+flip(s)".
+
+Checked on J714c (stick in port 1, proxy cable in port 2):
+
+| Loader | Record | Port 0 | Port 1 | Port 2 |
+|---|---|---|---|---|
+| prep skipped (`-DT6050_NO_HOST_PREP`), ports 0+1 | zeros | 0x2a0 | stick, sda | not described |
+| prep skipped, all ports | zeros | 0x2a0 after 3 flips | 0x206e1 after 1 flip, sda | 0x2a0 after 3 flips, binds |
+| prep done (EFI stage 2 behaviour) | port 1 CCS | 0x2a0 after 3 flips | 0x206e1 after 1 flip, sda | 0x2a0 after 3 flips |
+
+The kernel's first flip finds a device present at power-on; the loader's
+first flip never did. Port 2, the port that carried the proxy, binds without
+the earlier xHCI reset timeout. Not checked yet: hot-plug into the proxy
+port with this driver, and the EFI partition still carries the older kernel.

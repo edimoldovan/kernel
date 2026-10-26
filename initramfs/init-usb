@@ -10,6 +10,7 @@ sleep 3
 echo
 echo "=== USB $(uname -r) ==="
 dmesg | grep -i "peek-entry\|usbprep" | cut -c1-170
+dmesg | grep "USB 2.0 host mode\|host prep skipped" | cut -c1-170
 echo "--- chosen: $(ls /proc/device-tree/chosen | tr "\n" " ")"; [ -f /proc/device-tree/chosen/apple,t6050-usbprep ] && echo "--- usbprep: $(od -An -tx4 /proc/device-tree/chosen/apple,t6050-usbprep | tr -s " \n" " ")"
 dmesg | grep -i "hcrst\|xhci_reset\|xhci_halt\|spmi\|tps6598\|sn20120\|tipd\|atcphy\|phy-apple\|dwc3\|xhci\|typec\|usb-pd\|dart.*usb\|2a2f00000\|2a2f80000" | tail -n 24 | cut -c1-170
 echo "--- irq: $(grep -i 'xhci\|382280000' /proc/interrupts | tr -s ' ' | cut -c1-80)"
