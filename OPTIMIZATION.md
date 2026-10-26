@@ -6,7 +6,10 @@ test is a file copy to the EFI partition instead of a cable upload.
 
 ## In this order
 
-1. **Speed on the one core: cpufreq.** The loader prints that the chip is
+1. **Speed on the one core: cpufreq.** DONE 2026-10-26: cluster 0 runs
+   1.344 to 4.38 GHz under schedutil (loader cluster table, kernel OPP
+   table and cpufreq node, cpu ids fixed to the MPIDR affinity 0x40000+n;
+   busy loop 0.50 s -> 0.27 s). The loader prints that the chip is
    unsupported for frequency setup, so the core runs at its boot clock.
    Adding the T6050 tables to the loader and the kernel's cpufreq driver
    lifts that. Contained work.

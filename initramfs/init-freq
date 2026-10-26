@@ -1,0 +1,25 @@
+#!/bin/sh
+# Initramfs init: show cpufreq on cpu0 and time a busy loop under the default governor,
+# then under performance, then sit printing the current frequency every 15 s.
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev 2>/dev/null
+dmesg -n 1
+sleep 3
+echo
+C=/sys/devices/system/cpu/cpu0/cpufreq
+echo "=== FREQ $(uname -r) ==="
+echo "boot cpu: $(dmesg | grep -m1 'physical CPU')"
+echo "cpu0 of_node: $([ -e /sys/devices/system/cpu/cpu0/of_node ] && echo present || echo MISSING)  $(dmesg | grep -i 'mpidr\|boot CPU' | head -n 2 | tr '\n' '|')"
+[ -d $C ] || { echo "no cpufreq on cpu0"; ls /sys/devices/system/cpu/cpu0/; dmesg | grep -i "cpufreq\|opp" | tail -n 8; }
+echo "governor: $(cat $C/scaling_governor 2>/dev/null)  cur: $(cat $C/scaling_cur_freq 2>/dev/null) kHz  min/max: $(cat $C/scaling_min_freq 2>/dev/null)/$(cat $C/scaling_max_freq 2>/dev/null)"
+echo "available: $(cat $C/scaling_available_frequencies 2>/dev/null)"
+bench() { t0=$(cut -d' ' -f1 /proc/uptime); i=0; while [ $i -lt 300000 ]; do i=$((i+1)); done; t1=$(cut -d' ' -f1 /proc/uptime); echo "$1: loop $(awk -v a=$t0 -v b=$t1 'BEGIN{printf "%.2f", b-a}') s  cur $(cat $C/scaling_cur_freq 2>/dev/null) kHz"; }
+bench "default governor"
+echo performance > $C/scaling_governor 2>/dev/null && bench "performance"
+echo schedutil > $C/scaling_governor 2>/dev/null
+for i in $(seq 1 40); do
+	echo "freq: up $(cut -d' ' -f1 /proc/uptime) s  gov $(cat $C/scaling_governor 2>/dev/null)  cur $(cat $C/scaling_cur_freq 2>/dev/null) kHz"
+	sleep 15
+done
+setsid cttyhack /bin/sh
