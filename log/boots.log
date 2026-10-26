@@ -132,3 +132,6 @@
 12:21:04 nooff: sit2, full dtb, t6050_nooff (power-offs no-ops, power-ons real); frames nooff-01..24
 12:30:38 bis1: compact transition log, offs of atc*,nub_spmi*,venc*,msr*,afr,aic_gfx,b2b_ctrl_gfx,fppt_gfx skipped; frames bis1-01..24
 12:35:42 bis2: compact log, only atc* power-offs skipped; frames bis2-01..13
+12:42:30 bis3: compact log, only nub_spmi* power-offs skipped; frames bis3-01..24
+12:51:15 fix3: disk root (systemd), dtb with nub_spmi0/2/3/4 always-on; frames fix3-01..32
+13:09:22 s1fix: ESP dtb replaced (esp5), then stage 1 RAM test -> stage 2 -> disk root with the fixed dtb; frames s1fix-01..32

@@ -51,4 +51,6 @@ Switches added to pmgr-pwrstate.c (`t6050_noauto`, `t6050_nomin`, `t6050_nopower
 
 The kernel's unused-domain pass turns off nub_spmi0, nub_spmi2, nub_spmi3, nub_spmi4 (the SPMI buses to the power-management chips; `pd_ignore_unused` does not stop it in this tree); the machine resets about 179 s after that. nub_spmi1 was already `apple,always-on`.
 
-Fix: `apple,always-on` on ps_nub_spmi0/2/3/4 in t6050-pmgr.dtsi (linux-aurora). boot-esp/aurora/linux/t6050-j714c.dtb rebuilt; the copy on the Mac's ESP still has to be replaced.
+Fix: `apple,always-on` on ps_nub_spmi0/2/3/4 in t6050-pmgr.dtsi (linux-aurora). boot-esp/aurora/linux/t6050-j714c.dtb rebuilt and written to the Mac's ESP (init-esp5, 13:00).
+
+Verified 2026-10-26: disk root + systemd through the dev loader, 8 min at the login, no reset; then stage 1 (RAM) -> stage 2 -> kernel and dtb from the ESP -> disk root, 8 min at the login, no reset. Closed.
