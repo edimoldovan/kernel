@@ -163,6 +163,13 @@ unaffected. Revisit if SS devices misbehave.
 
 ## Result (2026-10-26 evening): USB 2.0 host works on ports 0 and 2
 
+Update 2026-10-27 00:31: port 1 works too (linux-aurora `t6050-j714c-usb2.dtsi`,
+usb-drd1 0x2aa280000, AIC 1451). Port map on J714c: left-back = port 0,
+left-front = port 1, right = port 2 (matches the ADT hpm port-location). A
+stick enumerates on every port at boot and when plugged in after login. One
+failure seen: hot-plug into the port that had carried the proxy during that
+boot (once, cause not isolated).
+
 The kernel PHY patch above resets the SoC early; the route that works keeps
 the PHY out of the kernel:
 

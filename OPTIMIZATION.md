@@ -13,8 +13,9 @@ test is a file copy to the EFI partition instead of a cable upload.
    unsupported for frequency setup, so the core runs at its boot clock.
    Adding the T6050 tables to the loader and the kernel's cpufreq driver
    lifts that. Contained work.
-2. **USB host.** USB 2.0 host works on port 2 (2026-10-26 19:17, four boots
-   in a row); port 0 is described the same way and under test. The loader
+2. **USB host.** USB 2.0 host works on all three ports (port 2 since
+   2026-10-26 19:17, ports 0 and 1 since 2026-10-27 00:31; left-back = 0,
+   left-front = 1, right = 2), at boot and when plugged in after login. The loader
    leaves the free ports in USB 2.0 host mode before the jump
    (usb_t6050_host_prep: port bring-up, usb2phy host bits, gadget stopped,
    core reset, port capability host, PIPE parked, connection verified with up
