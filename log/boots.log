@@ -139,3 +139,4 @@
 13:41:06 freq2: same as freq, init prints the boot CPU MPIDR line; frames freq2-01..08
 13:44:18 freq3: cpufreq kernel, dtb with MPIDR cpu regs (fix5), init-freq; frames freq3-01..08
 13:52:32 s1cpu: ESP kernel+dtb replaced (esp6), then stage 1 RAM test -> stage 2 -> disk root with cpufreq; frames s1cpu-01..18
+14:08:30 usb: dev loader, USB kernel (port 0 dwc3/atcphy/hpm0, cpufreq on) + fix6 dtb + init-usb; frames usb-01..40
