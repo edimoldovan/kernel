@@ -40,4 +40,15 @@ So the trigger is in the kernel's own code, before any userspace and independent
 - `apple_rtkit_helper_driver_init,apple_mbox_driver_init` (no coprocessor firmware started): no change.
 - `apple_pmgr_ps_driver_init`: see log/boots.log (nopmgr).
 
-Next: a minimal device tree (fix2-min.dtb: CPUs, memory, timer, AIC, clocks, framebuffer; every other SoC node disabled). If that still resets, the trigger is in the kernel core (CPU bring-up, MMU, timer, AIC), not in a driver.
+- `apple_pmgr_ps_driver_init`: NO RESET (6 min, console dark because the framebuffer needs a power domain).
+
+## Found (2026-10-26 12:00-12:45): a power-off of an SPMI bus domain
+
+Switches added to pmgr-pwrstate.c (`t6050_noauto`, `t6050_nomin`, `t6050_nopower[=names]`, `t6050_noalways`, `t6050_nooff`, `t6050_noon`, `t6050_pmlog`), one boot each from the sit initramfs:
+- probe-time auto-PM enable skipped: reset. Minimum-state write: no users. 
+- every power_on/power_off a no-op: NO RESET (529 s). Only power-offs no-ops: NO RESET (244 s+). So a power-off.
+- offs of `atc*,nub_spmi*,venc*,msr*,afr,aic_gfx,b2b_ctrl_gfx,fppt_gfx` skipped: NO RESET (349 s). Only `atc*`: reset. Only `nub_spmi*`: NO RESET (259 s+).
+
+The kernel's unused-domain pass turns off nub_spmi0, nub_spmi2, nub_spmi3, nub_spmi4 (the SPMI buses to the power-management chips; `pd_ignore_unused` does not stop it in this tree); the machine resets about 179 s after that. nub_spmi1 was already `apple,always-on`.
+
+Fix: `apple,always-on` on ps_nub_spmi0/2/3/4 in t6050-pmgr.dtsi (linux-aurora). boot-esp/aurora/linux/t6050-j714c.dtb rebuilt; the copy on the Mac's ESP still has to be replaced.

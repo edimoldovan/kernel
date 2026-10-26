@@ -122,3 +122,13 @@
 11:11:38 nowdtdrv: dev loader, monitor kernel, sit initramfs, initcall_blacklist=apple_wdt_driver_init; frames nowdtdrv-01..13
 11:15:59 nodock: dev loader, monitor kernel, sit initramfs, dockchannel drivers blacklisted; frames nodock-01..14
 11:20:04 nortk: dev loader, monitor kernel, sit initramfs, rtkit helper and mailbox drivers blacklisted; frames nortk-01..13
+11:26:54 nopmgr: dev loader, monitor kernel, sit initramfs, pmgr power-state driver blacklisted; frames nopmgr-01..24
+11:47:38 noauto: dev loader, monitor kernel, sit initramfs, full dtb, t6050_noauto (no probe-time auto-PM enable); frames noauto-01..14
+11:51:53 nomin: dev loader, monitor kernel, sit initramfs, full dtb, t6050_nomin (no probe-time min-state write); frames nomin-01..13
+11:58:43 nopower: dev loader, monitor kernel, sit initramfs, full dtb, t6050_nopower (power_on/off no-ops); frames nopower-01..24
+12:04:08 pmlog: dev loader, sit initramfs, full dtb, t6050_pmlog (every power transition printed); frames pmlog-01..13
+12:08:43 pmlog2: same as pmlog, sit init without clear so the transition list stays on screen; frames pmlog2-01..14
+12:13:09 pmlog3: transition log with pd_ignore_unused and loglevel=1 (ons only, no unused-domain offs); frames pmlog3-01..13
+12:21:04 nooff: sit2, full dtb, t6050_nooff (power-offs no-ops, power-ons real); frames nooff-01..24
+12:30:38 bis1: compact transition log, offs of atc*,nub_spmi*,venc*,msr*,afr,aic_gfx,b2b_ctrl_gfx,fppt_gfx skipped; frames bis1-01..24
+12:35:42 bis2: compact log, only atc* power-offs skipped; frames bis2-01..13
