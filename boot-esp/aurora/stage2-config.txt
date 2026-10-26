@@ -1,0 +1,2 @@
+boot=6790ddc4-e993-42c2-8135-807df1548aaf;aurora/linux/Image.gz;aurora/linux/t6050-j714c.dtb;-
+chosen.bootargs=maxcpus=1 console=tty0 fbcon=font:TER16x32 root=PARTUUID=44527dff-05a1-4ad4-9199-e9287225e201 rootflags=subvol=@ rootfstype=btrfs rw rootwait
