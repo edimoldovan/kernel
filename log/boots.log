@@ -140,3 +140,31 @@
 13:44:18 freq3: cpufreq kernel, dtb with MPIDR cpu regs (fix5), init-freq; frames freq3-01..08
 13:52:32 s1cpu: ESP kernel+dtb replaced (esp6), then stage 1 RAM test -> stage 2 -> disk root with cpufreq; frames s1cpu-01..18
 14:08:30 usb: dev loader, USB kernel (port 0 dwc3/atcphy/hpm0, cpufreq on) + fix6 dtb + init-usb; frames usb-01..40
+16:39:42 usb2: port survey, then the USB2-host kernel (atcphy_hw_t6050 patch) + fix7 dtb + init-usb; frames usb2-01..05
+16:47:49 usb2b: loader leaves ports 0/2 in USB2 host mode; port 2 as plain snps,dwc3 without PHY; init-usb; frames usb2b-01..13
+16:51:56 usb2c: loader redoes the port bring-up then sets host bits; port 2 plain dwc3; frames usb2c-01..13
+16:55:51 usb2d: host-only dwc3 skips the device soft reset; loader host prep; port 2 plain dwc3; frames usb2d-01..08
+16:59:15 xhci: loader runs the proxy-proven host flip on ports 0/2; port 2 as generic-xhci; init-usb self-reboots; frames xhci-01..05
+17:04:01 xhci2: same as xhci plus t6050_noauto (no auto power-gating); frames xhci2-01..11
+17:07:13 xhci3: xhci node without iommus (fix10), register peek every 15 s; frames xhci3-01..11
+17:11:56 xhci4: loader also clears SUSPHY on both PHY cfg regs; xhci node with iommus (fix9); peeks incl. GUSB2PHYCFG/GUSB3PIPECTL; frames xhci4-01..11
+17:17:25 xhci5: loader also forces link detection off via pipehandler overrides; peeks incl. pipehandler 0x00/0x04/0x20; frames xhci5-01..11
+17:22:58 xhci6: no DART nodes at all (fix11), otherwise as xhci5; frames xhci6-01..11
+17:26:13 hcrst: kernel-side timed xHCI reset before the host driver (t6050_hcrst), fix9 dtb; frames hcrst-01..11
+17:30:19 hcrst2: kernel-side timed xHCI reset (t6050_hcrst) with no DART nodes (fix11), report greps hcrst; frames hcrst2-01..11
+17:34:59 poll: xhci handshake polling 100 us instead of 1 us; no DART nodes (fix11); frames poll-01..10
+17:39:03 poll2: xhci halt/reset handshakes instrumented, polling 100 us, no DARTs; frames poll2-01..10
+17:42:02 nopd: xhci node without power-domains (fix12), t6050_nooff, instrumented xhci; frames nopd-01..10
+17:46:36 hcrst3: hand-made xHCI reset early and late, xhci-plat blacklisted, no DARTs; frames hcrst3-01..11
+17:50:37 hcrst4: early/late hand-made reset with t6050_noauto; frames hcrst4-01..11
+17:54:26 hcrst5: early/late reset with noauto+nopower+noalways (+pmlog); frames hcrst5-01..10
+17:58:51 nocio: real xhci driver, transitions of atc*_cio and atc3_common skipped, no DARTs; frames nocio-01..10
+18:03:15 fwcio: atc*_cio + atc3_common firmware-owned in the dtb, xhci with DARTs (fix13); frames fwcio-01..10
+18:07:24 ports: fix13, peeks of PORTSC0/1, USBCMD/STS, usb2phy SIG/USBCTL; frames ports-01..10
+18:15:06 entry: port status at kernel entry (hcrst early before-line), fix13, PD IRQs kept masked on P_VECTOR only; frames entry-01..13
+18:19:17 hub: fix13, report with xhci irq count, hub/dart messages; frames hub-01..10
+18:24:26 irq1484: fix13 with the xhci interrupt on line 1484; frames irq1484-01..10
+18:27:31 irq1485: fix13 with the xhci interrupt on line 1485; frames irq1485-01..10
+18:30:36 irq1486: fix13 with the xhci interrupt on line 1486; frames irq1486-01..10
+18:36:55 ptl: fix13, PORTSC0/1 + USBSTS + IMAN/ERDP sampled every 2 s; frames ptl-01..10
+18:44:26 hubdbg: fix13, hub.c/xhci-hub.c dynamic debug, DART error peeks; frames hubdbg-01..10

@@ -9,13 +9,13 @@ TTY> CPU init (MIDR: 0x611f0681 smp_id:0x0)...
 TTY>   CPU part: 0x68 rev: 0x11
 TTY>   CPU: M5 Max Sotra C (M core)
 TTY> 
-TTY> boot_args at 0x10005954000
+TTY> boot_args at 0x10006164000
 TTY>   revision:     3
 TTY>   version:      2
-TTY>   virt_base:    0x11df0000
+TTY>   virt_base:    0x15df0000
 TTY>   phys_base:    0x10003df0000
 TTY>   mem_size:     0x1fc6610000
-TTY>   top_of_kdata: 0x10007fdc000
+TTY>   top_of_kdata: 0x100087ec000
 TTY>   video:
 TTY>     base:       0x11fd310c000
 TTY>     display:    0x1
@@ -25,7 +25,7 @@ TTY>     height:     1964
 TTY>     depth:      30bpp
 TTY>     density:    1
 TTY>   machine_type: 0
-TTY>   devtree:      0x12c78000
+TTY>   devtree:      0x17488000
 TTY>   devtree_size: 0xbc000
 TTY>   cmdline:      
 TTY>   boot_flags:   0x0
@@ -33,7 +33,7 @@ TTY>   mem_size_act: 0x2000000000
 TTY> 
 TTY> 
 TTY> 
-TTY> m1n1 f1afac56-dirty
+TTY> m1n1 65bbd8b6-dirty
 TTY> Copyright The Asahi Linux Contributors
 TTY> Licensed under the MIT license
 TTY> 
@@ -41,7 +41,7 @@ TTY> Running in EL2
 TTY> 
 TTY> OS FW version: unknown (mBoot-20457.41.3)
 TTY> System FW version: unknown (mBoot-20457.41.3)
-TTY> Heap base: 0x10007fdc000
+TTY> Heap base: 0x100087ec000
 TTY> MCC: Unsupported version:mcc,t6050
 TTY> MMU: Initializing...
 TTY> MMU: RAM base: 0x10000000000
@@ -83,34 +83,34 @@ TTY> fb: display logo
 TTY> Initialization complete.
 TTY> Checking for payloads...
 TTY> Devicetree compatible value: apple,j714c
-TTY> No more payloads at 0x100051c8000
+TTY> No more payloads at 0x100059d8000
 TTY> No valid payload found
 TTY> dart: dart /arm-io/dart-usb0 at 0x2a2f80000 is a t8110
-TTY> USB0: initialized at 0x10007fe0080
+TTY> USB0: initialized at 0x100087f0080
 TTY> dart: dart /arm-io/dart-usb1 at 0x2aaf80000 is a t8110
-TTY> USB1: initialized at 0x10007fe0630
+TTY> USB1: initialized at 0x100087f0630
 TTY> dart: dart /arm-io/dart-usb2 at 0x382f80000 is a t8110
-TTY> USB2: initialized at 0x10007fe0bb0
+TTY> USB2: initialized at 0x100087f0bb0
 TTY> Running proxy...
-TTY> Heap limit: 0x1001261c000 (128 MiB)
-m1n1 base: 0x10004da8000
+TTY> Heap limit: 0x10012e2c000 (128 MiB)
+m1n1 base: 0x100055b8000
 Fetching ADT (0x000BC000 bytes)...
-Setting boot args: "maxcpus=1 console=tty0 fbcon=font:TER16x32"
-Loading 6336988 bytes to 0x1001272c240..0x10012d3741c...
-......................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
-Loading DTB to 0x10012d37440...
-Kernel_base: 0x10012e00000
-Loading 2302241 initramfs bytes to 0x10032e00000...
+Setting boot args: "maxcpus=1 console=tty0 fbcon=font:TER16x32 t6050_wdt=170 t6050_wdtmon=15 t6050_peek=0x382280420,0x382f80100,0x382f80170,0x382f00100,0x382280460 dyndbg="file drivers/usb/core/hub.c +p; file drivers/usb/host/xhci-hub.c +p""
+Loading 6478055 bytes to 0x10012f3c240..0x10013569b27...
+.......................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
+Loading DTB to 0x10013569b40...
+Kernel_base: 0x10013600000
+Loading 2302401 initramfs bytes to 0x10033600000...
 ..........................................................................................................................................................................................................................................................................................
 TTY> cpufreq: Initializing clusters
 TTY> Starting secondary CPUs...
-TTY> SMP: RVBAR 0x10004da8000 differs from vector 0x10004db8000; refusing start
+TTY> SMP: RVBAR 0x100055b8000 differs from vector 0x100055c8000; refusing start
 TTY> SMP: boot CPU RVBAR check failed
 smp_start_secondaries failed (ProxyRemoteError); continuing with the boot CPU only
 TTY> isp: disabled: revision 0x0 firmware unknown aligned end 0x0: unsupported SoC
-TTY> FDT: retained heap [0x100051c8000, 0x1000a648000)
+TTY> FDT: retained heap [0x100059d8000, 0x1000ae58000)
 TTY> FDT: set chosen.bootargs
-TTY> FDT: initrd at 0x10032e00000 size 0x232121
+TTY> FDT: initrd at 0x10033600000 size 0x2321c1
 TTY> display: Hiding notch, 3024x1964 -> 3024x1890 (+74, 16:10)
 TTY> FDT: framebuffer@11fd31e6880 base 0x11fd31e6880 size 0x15cd680
 TTY> FDT: apfs-preboot-uuid = '3A31C7DB-DE69-4370-9CEA-23DEAAE16158'
@@ -158,9 +158,7 @@ TTY> FDT: Pruning /cpus/cpu-map/cluster2/core4
 TTY> FDT: Pruning /cpus/cpu-map/cluster2/core5
 TTY> FDT: Pruning /cpus/cpu-map/cluster2
 TTY> ADT: /arm-io/wlan not found
-TTY> kboot: no fuses found for atcphy port 0
-TTY> kboot: ATC tunable has invalid offset 4008
-TTY> FDT: Unable to setup ATC tunables for /arm-io/atc-phy0 - USB3/Thunderbolt will not work
+TTY> FDT: Unable to find alias atcphy0
 TTY> FDT: Unable to find alias atcphy1
 TTY> FDT: Unable to find alias atcphy2
 TTY> FDT: Unable to find alias atcphy3
@@ -194,9 +192,9 @@ TTY> FDT: 'isp' not found
 TTY> FDT: DRAM at 0x10000000000 size 0x2000000000
 TTY> FDT: Usable memory is 0x10003df0000..0x11fca3f8000 (0x1fc6608000)
 TTY> FDT: Adding reserved-memory node flash@11fca3fc000 (11fca3fc000..11fca400000) to RAM map
-TTY> FDT prepared at 0x1000a61c000
+TTY> FDT prepared at 0x1000ae2c000
 Uncompressing gz ...
-17186824
+17545224
 Decompress OK...
 Ready to boot
 DAIF: c0
@@ -209,7 +207,7 @@ TTY> dapf: /arm-io/dart-mtp uses dapf-instance-0
 TTY> dapf: Initialized /arm-io/dart-mtp
 TTY> kboot: MTP DAPF programmed on T6050
 TTY> Setting SMP mode to WFE...
-TTY> Preparing to boot kernel at 0x10012e00000 with fdt at 0x1000a61c000
+TTY> Preparing to boot kernel at 0x10013600000 with fdt at 0x1000ae2c000
 Traceback (most recent call last):
   File "/home/ed/dev/omarchy/forks/omacom-m1n1/proxyclient/tools/linux.py", line 171, in <module>
     iface.ttymode(tty_dev)

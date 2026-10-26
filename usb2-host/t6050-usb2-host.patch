@@ -1,0 +1,66 @@
+T6050 (M5 Pro/Max, J714c): bring up the USB-C ports in USB 2.0 host mode.
+
+The Type-C PHY is a new generation whose SuperSpeed/CIO tunables (AUS40CMN,
+CIO4PLL, per-lane RX...) no loader table or kernel PHY generation ships. With
+the plain t8142 description the PHY probe demands them and the controller never
+binds. USB 2.0 needs none of them: it drives only the small usb2phy and
+pipehandler blocks. Proven on silicon over the m1n1 proxy - all three ports
+already run USB2, and a free port flipped to host mode enumerated a real device
+to High Speed (PORTSC: CCS=1, PED=1, U0, HS).
+
+Fix: a T6050 PHY generation that marks the missing tunables optional (the
+driver already falls back to "USB2 only" when the SuperSpeed tunables are
+absent), using the T8103 pipehandler mux field layout - live silicon parks the
+dummy PHY at MUX_CTRL=0x22, which decodes as DUMMY/DUMMY only in the T8103
+fields, not T8142's. Then include the existing port-0 device tree.
+
+The dwc3 controller needs no driver change: its node already lists
+"apple,t8103-dwc3" as a fallback, which drivers/usb/dwc3/dwc3-apple.c binds.
+Ports 1 and 2 follow the same pattern once port 0 is confirmed under Linux.
+
+Apply from the linux-aurora root:
+    git apply kernel/usb2-host/t6050-usb2-host.patch
+
+--- a/drivers/phy/apple/atc.c
++++ b/drivers/phy/apple/atc.c
+@@ -5474,11 +5474,30 @@
+ 	.has_usb4 = true,
+ };
+ 
++static const struct atcphy_hw atcphy_hw_t6050 = {
++	/*
++	 * M5 Pro/Max Type-C PHY. Same T8122-family core as the M5 Air (t8142),
++	 * but the pipehandler mux uses the T8103 field layout - live silicon
++	 * parks the dummy PHY at MUX_CTRL=0x22, which only decodes as
++	 * DUMMY/DUMMY in the T8103 fields. The SuperSpeed/CIO tunables this
++	 * generation does not ship are optional: USB2 comes up without them.
++	 */
++	.configure_post_tunable = atcphy_configure_post_tunable_all_modes,
++	.gen = ATCPHY_GENERATION_T8122,
++	.aciophy_lane_mode = ACIOPHY_LANE_MODE_T8122,
++	.aciophy_crossbar = ACIOPHY_CROSSBAR_T8122,
++	.pipe_mux_clk = PIPEHANDLER_MUX_CTRL_CLK_T8103,
++	.pipe_mux_data = PIPEHANDLER_MUX_CTRL_DATA_T8103,
++	.has_usb4 = true,
++	.optional_tunables = true,
++};
++
+ static const struct of_device_id atcphy_match[] = {
+ 	{ .compatible = "apple,t8103-atcphy", .data = &atcphy_hw_t8103 },
+ 	{ .compatible = "apple,t8122-atcphy", .data = &atcphy_hw_t8122 },
+ 	{ .compatible = "apple,t8142-atcphy", .data = &atcphy_hw_t8142 },
+ 	{ .compatible = "apple,t8140-atcphy", .data = &atcphy_hw_t8140 },
++	{ .compatible = "apple,t6050-atcphy", .data = &atcphy_hw_t6050 },
+ 	{},
+ };
+ MODULE_DEVICE_TABLE(of, atcphy_match);
+--- a/arch/arm64/boot/dts/apple/t6050-j714c.dts
++++ b/arch/arm64/boot/dts/apple/t6050-j714c.dts
+@@ -23,6 +23,7 @@
+ #include <dt-bindings/interrupt-controller/irq.h>
+ 
+ #include "t6050.dtsi"
++#include "t6050-j714c-usb.dtsi"
+ 
+ / {
+ 	compatible = "apple,j714c", "apple,t6050", "apple,arm-platform";

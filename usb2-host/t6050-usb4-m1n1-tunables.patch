@@ -1,0 +1,92 @@
+T6050 (M5 Pro/Max): propagate the SuperSpeed ATC PHY tunables into the DT.
+
+m1n1 selects its ATC tunable table by the PHY's ADT compatible. T6050's
+atc-phy,t6050 / atc-phy,t6040 matched none of the known branches, so it fell to
+the oldest (t8103) table, whose tunable names the T6050 ADT does not have -
+result: no SuperSpeed tunable reached Linux and the PHY could only do USB2.
+
+Add an atc_tunables_t6050[] table for this generation, a compat branch to select
+it, an empty-fuse entry (fuses are not required from t6020 on), and the cleanup
+delprop. Sub-block offsets are by analogy to t8122 and range-checked against the
+ADT triples; the three tunables whose sub-block base is still unknown are left
+out (documented inline) rather than guessed, since a wrong base corrupts
+registers. USB3 is the first target; USB4/Thunderbolt (CIO4PLL) follows.
+
+Pairs with the atc.c atcphy_hw_t6050 generation (t6050-usb2-host.patch): that
+config already drives the SuperSpeed engine once these tunables are present.
+
+Not tested on hardware (the proxy was down). Apply from the omacom-m1n1 root:
+    git apply kernel/usb2-host/t6050-usb4-m1n1-tunables.patch
+
+--- a/src/kboot_atc.c
++++ b/src/kboot_atc.c
+@@ -174,6 +174,40 @@
+ };
+ 
+ /*
++ * T6050 (M5 Pro/Max). A new PHY generation of the t8122 family: the AUSPLL sits
++ * at the same core offset, but the CIO PLL is "CIO4PLL" and the common/lane
++ * tunables are renamed and fewer. Sub-block offsets are by analogy to
++ * atc_tunables_t8122[] (fabric 0x44000, AUSPLL 0x2200, CIO PLL 0x2a00, lane0/1
++ * 0x9000/0x10000) and were range-checked against the ADT triples. T6050 has no
++ * USB/CIO split on its RX lane tunables, so each is fed to both the -usb (USB3)
++ * and -cio (USB4) lane properties.
++ *
++ * NOT YET MAPPED - sub-block base unknown; left out rather than guessed, since a
++ * wrong base corrupts registers. SuperSpeed may still link without them; add
++ * once confirmed (macOS AppleT6050TypeCPhy): tunable_ATC0AXI2AF_LIOA,
++ * tunable_LN0/1_RX_CFG_TX_OF_RXCLK, tunable_UC_REGS_CIO_DFLT,
++ * tunable_LN0/1_RX_EQ_CIO_DFLT (the last two are empty in the J714c ADT).
++ */
++static const struct adt_tunable_info atc_tunables_t6050[] = {
++    /* global tunables applied after power on or reset */
++    {"tunable_ATC0AXI2AF", "apple,tunable-axi2af", 0x0, 0x8000, true},
++    {"tunable_ATC_FABRIC", "apple,tunable-common-b", 0x44000, 0x4000, true},
++    {"tunable_ATC_COMMON_CFG", "apple,tunable-common-b", 0x0, 0x4000, false},
++    {"tunable_AUS40CMN_SHM", "apple,tunable-common-b", 0xa00, 0x200, false},
++    {"tunable_AUSPLL_CORE", "apple,tunable-common-b", 0x2200, 0x4000, true},
++    {"tunable_CIO4PLL_CORE", "apple,tunable-common-b", 0x2a00, 0x200, false},
++    /* lane tunables - fed to both the USB3 (-usb) and USB4 (-cio) properties */
++    {"tunable_LN0_RX_TOP_CIO_DFLT", "apple,tunable-lane0-usb", 0x9000, 0x1000, true},
++    {"tunable_LN0_RX_TOP_CIO_DFLT", "apple,tunable-lane0-cio", 0x9000, 0x1000, true},
++    {"tunable_LN1_RX_TOP_CIO_DFLT", "apple,tunable-lane1-usb", 0x10000, 0x1000, true},
++    {"tunable_LN1_RX_TOP_CIO_DFLT", "apple,tunable-lane1-cio", 0x10000, 0x1000, true},
++    {"tunable_LN0_RX_EQ_DFLT", "apple,tunable-lane0-usb", 0xa000, 0x1000, false},
++    {"tunable_LN0_RX_EQ_DFLT", "apple,tunable-lane0-cio", 0xa000, 0x1000, false},
++    {"tunable_LN1_RX_EQ_DFLT", "apple,tunable-lane1-usb", 0x11000, 0x1000, false},
++    {"tunable_LN1_RX_EQ_DFLT", "apple,tunable-lane1-cio", 0x11000, 0x1000, false},
++};
++
++/*
+  * A T6030 ATC PHY wired as a fixed DisplayPort transmitter (the J514S HDMI
+  * port's): the calibration its power-up applies, in this order, in one list.
+  */
+@@ -325,6 +359,8 @@
+     {"atc-phy,t8130", -1, NULL, 0},
+     {"atc-phy,t8122", -1, NULL, 0},
+     {"atc-phy,t6020", -1, NULL, 0},
++    {"atc-phy,t6050", -1, NULL, 0},
++    {"atc-phy,t6040", -1, NULL, 0},
+     {"atc-phy,t8112", 0, atc_fuses_t8112_port0, ARRAY_SIZE(atc_fuses_t8112_port0)},
+     {"atc-phy,t8112", 1, atc_fuses_t8112_port1, ARRAY_SIZE(atc_fuses_t8112_port1)},
+     /* t6002 uses the same fuses and the same atc-phy,t6000 compatible */
+@@ -816,6 +852,10 @@
+                adt_is_compatible_at(adt, adt_node, "atc-phy,t8132", 0)) {
+         tunables = &atc_tunables_t8122[0];
+         tunable_count = sizeof(atc_tunables_t8122) / sizeof(*atc_tunables_t8122);
++    } else if (adt_is_compatible_at(adt, adt_node, "atc-phy,t6050", 0) ||
++               adt_is_compatible_at(adt, adt_node, "atc-phy,t6040", 0)) {
++        tunables = &atc_tunables_t6050[0];
++        tunable_count = ARRAY_SIZE(atc_tunables_t6050);
+     } else {
+         tunables = &atc_tunables[0];
+         tunable_count = sizeof(atc_tunables) / sizeof(*atc_tunables);
+@@ -902,6 +942,8 @@
+         if (chip_id != T8140 || fdt_node_check_compatible(dt, 0, "apple,j700") ||
+             strcmp(atc_tunables_t8130[i].fdt_name, "apple,tunable-axi2af"))
+             fdt_delprop(dt, fdt_node, atc_tunables_t8130[i].fdt_name);
++    for (size_t i = 0; i < ARRAY_SIZE(atc_tunables_t6050); i++)
++        fdt_delprop(dt, fdt_node, atc_tunables_t6050[i].fdt_name);
+     fdt_delprop(dt, fdt_node, "apple,tunable-common-a");
+     fdt_delprop(dt, fdt_node, "apple,tunable-common");
+ 
