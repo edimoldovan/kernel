@@ -1,0 +1,22 @@
+#!/bin/sh
+# Initramfs init: replace aurora/linux/t6050-j714c.dtb on the EFI partition with the one carried in /esp
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev 2>/dev/null
+dmesg -n 1
+sleep 8
+clear; echo; echo; echo; echo
+echo "=== ESP5 $(uname -r) ==="
+s=$(cat /sys/class/block/nvme0n1p3/start); z=$(cat /sys/class/block/nvme0n1p3/size)
+echo "p3 start $s size $z (expect 3516751872 1024000)"
+[ "$s" = "3516751872" ] && [ "$z" = "1024000" ] || { echo "LAYOUT MISMATCH, stopping"; setsid cttyhack /bin/sh; }
+mkdir -p /m && mount -t vfat /dev/nvme0n1p3 /m && echo "mounted $(grep /m /proc/mounts | cut -d' ' -f1,3)" || { echo "MOUNT FAILED"; setsid cttyhack /bin/sh; }
+echo "old dtb: $(md5sum /m/aurora/linux/t6050-j714c.dtb | cut -c1-12)  new dtb: $(md5sum /esp/aurora/linux/t6050-j714c.dtb | cut -c1-12)"; cp /esp/aurora/linux/t6050-j714c.dtb /m/aurora/linux/t6050-j714c.dtb && sync && fsync /dev/nvme0n1p3 && echo "copied and flushed"
+echo "--- on the ESP:"; find /m -type f -exec ls -l {} \; | awk '{print $5, $9}'
+echo "--- md5:"; (cd /m && find . -type f -exec md5sum {} \;)
+df -m /m | tail -n 1
+umount /m && sync && echo "unmounted"
+echo "=== ESP5 END; reboot in 30 s ==="
+sleep 30
+reboot -f
+setsid cttyhack /bin/sh
