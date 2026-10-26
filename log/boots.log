@@ -117,3 +117,5 @@
 10:40:51 idlepoll: dev loader, monitor kernel, idle=poll, root on p6; frames idlepoll-01..13
 10:45:00 sit: dev loader, monitor kernel, busybox initramfs that only sits (no disk root, no systemd); frames sit-01..13
 10:50:20 nonvme: dev loader, monitor kernel, sit initramfs, NVMe node disabled in the dtb; frames nonvme-01..13
+11:00:40 devsit: dev loader chainloaded and left alone, no kernel; proxy timeline above
+11:07:01 fake: dev loader (up since 10:55) handoff to a fake Image (header + b .), no kernel code; proxy timeline above

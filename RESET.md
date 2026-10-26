@@ -26,8 +26,15 @@ Symptom: every boot from disk reaches `omarchy-m5 login:` and the machine resets
 
 Observation: WD0/WD1/WD2 ctrl read 0 in the resident proxy and 0xc0 in the kernel (bits 6-7; RESET_EN is bit 2).
 
-## Next
+## The loader is clear (2026-10-26 11:00-11:20)
 
-1. Chainload the dev loader and leave it alone for 5 minutes, no kernel (the chainloaded loader has never sat longer than 30 s).
-2. If it sits: send a fake Image (arm64 header + `b .`) through linux.py, to split the loader's handoff from the kernel.
-3. Only then bisect the device tree node by node from the sit initramfs.
+- The chainloaded dev loader left alone, no kernel: sat 13+ minutes, no reset. Its WD0/1/2 ctrl words read 0, the PMGR words 0.
+- The dev loader handing off through linux.py to a fake Image (arm64 header + `b .`, no kernel code): sat 5+ minutes, no reset. The handoff itself is clear.
+
+So the trigger is in the kernel's own code, before any userspace and independent of NVMe.
+
+## Next: bisect the kernel from the sit initramfs, one boot each
+
+1. `initcall_blacklist=apple_wdt_driver_init` (the only driver that writes the watchdog block; ctrl reads 0xc0 only under the kernel).
+2. `initcall_blacklist=dockchannel_hid_driver_init,dockchannel_driver_init` (the MTP input path).
+3. Then the device tree node by node.
