@@ -32,8 +32,10 @@ test is a file copy to the EFI partition instead of a cable upload.
    chainloaded from the stage 1 proxy boots the kernel from the ESP to the
    disk-root login prompt (20:49); the USB lines of that boot are in its
    journal, not seen on camera. Not exercised: stage 1's own handoff to the
-   ESP stage 2, which only happens with no USB host on the cable (with the
-   host attached stage 1 stays in its proxy). Open: USB 2.0 Ethernet for
+   ESP stage 2 after its window; with the cable attached and the boot tools
+   running on Omarchy, stage 1 sat in its proxy for 10 min three times
+   (cause not isolated: the window ends in the proxy once a host request
+   arrives). Open: USB 2.0 Ethernet for
    pacman and SSH; hot-plug after boot.
 3. **Display driver.** Today the kernel draws into the framebuffer the loader
    left. The real display driver gives brightness, mode setting and later the
