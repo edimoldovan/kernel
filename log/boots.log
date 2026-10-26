@@ -168,3 +168,23 @@
 18:30:36 irq1486: fix13 with the xhci interrupt on line 1486; frames irq1486-01..10
 18:36:55 ptl: fix13, PORTSC0/1 + USBSTS + IMAN/ERDP sampled every 2 s; frames ptl-01..10
 18:44:26 hubdbg: fix13, hub.c/xhci-hub.c dynamic debug, DART error peeks; frames hubdbg-01..10
+18:48:20 repnodbg: reproducibility, fix13 + Image-usb2f, nodbg; frames repnodbg-01..10
+18:51:25 repdbg: reproducibility, fix13 + Image-usb2f, dbg; frames repdbg-01..10
+18:56:16 stat1: statistics run 1, port status at entry + hub trace; frames stat1-01..10
+19:04:47 prep1: loader host prep with retry + record (attempts, PORTSC after prep / before jump) in chosen; kernel prints usbprep; frames prep1-01..08
+19:10:45 rec1: retrying loader prep, record written on the reopened tree; init-usb prints peek-entry/usbprep ungated; frames rec1-01..10
+19:13:50 rec2: retrying loader prep, record written on the reopened tree; init-usb prints peek-entry/usbprep ungated; frames rec2-01..10
+19:16:54 rec3: retrying loader prep, record written on the reopened tree; init-usb prints peek-entry/usbprep ungated; frames rec3-01..10
+19:22:27 p01: ports 0+2 as USB2 hosts (fix14), loader record from a copy, peeks on both ports; frames p01-01..10
+19:25:32 p02: ports 0+2 as USB2 hosts (fix14), loader record from a copy, peeks on both ports; frames p02-01..10
+19:28:36 p03: ports 0+2 as USB2 hosts (fix14), loader record from a copy, peeks on both ports; frames p03-01..10
+19:35:18 chk1: record check: /proc/device-tree/chosen listing + od of apple,t6050-usbprep; frames chk1-01..10
+19:40:52 tm1: record with ms-to-CCS per port, every port flipped, kernel reads the whole record; frames tm1-01..10
+19:43:57 tm2: record with ms-to-CCS per port, every port flipped, kernel reads the whole record; frames tm2-01..10
+19:48:48 tp1: timing probe: first flip waits 1500 ms for CCS, later flips 100 ms; frames tp1-01..10
+19:52:49 fin1: final prep timing 50/100/100 ms, record check; frames fin1-01..10
+19:55:20 esp71: ESP install: stage2.bin (prep), Image.gz (usb2h), t6050-j714c.dtb (ports 0+2); frames esp71-01..05
+20:09:28 real1: real path (stage 1 -> ESP stage 2 -> kernel -> disk root), frames real1-01..16
+20:16:06 esp7b1: ESP install retry after a failed stage 1 handoff: stage2.bin (prep), Image.gz (usb2h), dtb (ports 0+2); frames esp7b1-01..05
+20:30:14 real2: real path (stage 1 -> ESP stage 2 -> kernel -> disk root), frames real2-01..16
+20:35:58 esp7c: ESP install on the dev loader (stage2.bin prep, Image.gz usb2h, dtb ports 0+2); frames esp7c-01..04
