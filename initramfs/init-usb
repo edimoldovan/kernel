@@ -9,7 +9,8 @@ dmesg -n 1
 sleep 3
 echo
 echo "=== USB $(uname -r) ==="
-dmesg | grep -i "peek-entry\|usbprep\|hcrst\|xhci_reset\|xhci_halt\|spmi\|tps6598\|sn20120\|tipd\|atcphy\|phy-apple\|dwc3\|xhci\|typec\|usb-pd\|dart.*usb\|2a2f00000\|2a2f80000" | tail -n 24 | cut -c1-170
+dmesg | grep -i "peek-entry\|usbprep" | cut -c1-170
+dmesg | grep -i "hcrst\|xhci_reset\|xhci_halt\|spmi\|tps6598\|sn20120\|tipd\|atcphy\|phy-apple\|dwc3\|xhci\|typec\|usb-pd\|dart.*usb\|2a2f00000\|2a2f80000" | tail -n 24 | cut -c1-170
 echo "--- irq: $(grep -i 'xhci\|382280000' /proc/interrupts | tr -s ' ' | cut -c1-80)"
 echo "--- hub/dart: $(dmesg | grep -i 'hub\|dart\|fault\|usb 1-\|usb 2-\|port' | grep -v 'input\|rtkit\|keyboard\|multi-touch\|hid\|dockchannel' | tail -n 16 | cut -c1-150 | tr '\n' '|')"
 echo "--- drivers bound: spmi $(ls /sys/bus/spmi/devices 2>/dev/null | tr '\n' ' ') | platform $(ls /sys/bus/platform/drivers/dwc3-apple/ /sys/bus/platform/drivers/apple-atcphy/ /sys/bus/platform/drivers/xhci-hcd/ 2>/dev/null | grep -v '^bind\|^unbind\|^uevent\|^module' | tr '\n' ' ')"
