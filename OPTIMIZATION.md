@@ -27,8 +27,14 @@ test is a file copy to the EFI partition instead of a cable upload.
    tunables AUS40CMN/CIO4PLL/LN*_RX_CFG_TX_OF_RXCLK) in
    drivers/phy/apple/atc.c plus a loader tunable table; the full port
    description for that is t6050-j714c-usb.dtsi (not included).
-   Open: the ESP stage 2 rebuilt with the prep; USB 2.0 Ethernet for pacman
-   and SSH.
+   The ESP carries it since 2026-10-26 19:55 (stage 2 with the prep, usb2h
+   kernel, two-port dtb; boot-esp/ mirrors the files). The stage 2 image
+   chainloaded from the stage 1 proxy boots the kernel from the ESP to the
+   disk-root login prompt (20:49); the USB lines of that boot are in its
+   journal, not seen on camera. Not exercised: stage 1's own handoff to the
+   ESP stage 2, which only happens with no USB host on the cable (with the
+   host attached stage 1 stays in its proxy). Open: USB 2.0 Ethernet for
+   pacman and SSH; hot-plug after boot.
 3. **Display driver.** Today the kernel draws into the framebuffer the loader
    left. The real display driver gives brightness, mode setting and later the
    compositor. Aurora has the M5 Air path to copy from.
