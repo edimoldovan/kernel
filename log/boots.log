@@ -119,3 +119,6 @@
 10:50:20 nonvme: dev loader, monitor kernel, sit initramfs, NVMe node disabled in the dtb; frames nonvme-01..13
 11:00:40 devsit: dev loader chainloaded and left alone, no kernel; proxy timeline above
 11:07:01 fake: dev loader (up since 10:55) handoff to a fake Image (header + b .), no kernel code; proxy timeline above
+11:11:38 nowdtdrv: dev loader, monitor kernel, sit initramfs, initcall_blacklist=apple_wdt_driver_init; frames nowdtdrv-01..13
+11:15:59 nodock: dev loader, monitor kernel, sit initramfs, dockchannel drivers blacklisted; frames nodock-01..14
+11:20:04 nortk: dev loader, monitor kernel, sit initramfs, rtkit helper and mailbox drivers blacklisted; frames nortk-01..13

@@ -33,8 +33,11 @@ Observation: WD0/WD1/WD2 ctrl read 0 in the resident proxy and 0xc0 in the kerne
 
 So the trigger is in the kernel's own code, before any userspace and independent of NVMe.
 
-## Next: bisect the kernel from the sit initramfs, one boot each
+## Kernel bisection from the sit initramfs (2026-10-26 11:05-11:25, `initcall_blacklist=`), all still reset at the same time
 
-1. `initcall_blacklist=apple_wdt_driver_init` (the only driver that writes the watchdog block; ctrl reads 0xc0 only under the kernel).
-2. `initcall_blacklist=dockchannel_hid_driver_init,dockchannel_driver_init` (the MTP input path).
-3. Then the device tree node by node.
+- `apple_wdt_driver_init`: no change (WD1 keeps the loader's 150 s bite, ctrl still reads 0xc0 under the kernel).
+- `dockchannel_hid_driver_init,dockchannel_driver_init,dcuart_init`: no change.
+- `apple_rtkit_helper_driver_init,apple_mbox_driver_init` (no coprocessor firmware started): no change.
+- `apple_pmgr_ps_driver_init`: see log/boots.log (nopmgr).
+
+Next: a minimal device tree (fix2-min.dtb: CPUs, memory, timer, AIC, clocks, framebuffer; every other SoC node disabled). If that still resets, the trigger is in the kernel core (CPU bring-up, MMU, timer, AIC), not in a driver.
