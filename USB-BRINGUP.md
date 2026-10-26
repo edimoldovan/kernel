@@ -171,11 +171,16 @@ the PHY out of the kernel:
   the proxy, usb2phy host bits (`USB2PHY_SIG` = 0x01c1000f | HOST), gadget
   stopped, core soft reset, port capability host, PIPE parked through the
   pipe handler (0x00 |= 5, 0x04 &= ~6), PHY auto-suspend off. Then PORTSC
-  (op base + 0x400) is polled for CCS up to 300 ms; without it the bring-up
-  and flip are redone, three attempts in all. A port without a device stays
-  in host mode after the last attempt. The first flip fails in roughly half
-  of the boots (the port reads 0x2a0, no device, until the kernel); the
-  retry is what makes every boot enumerate.
+  (op base + 0x400) is polled for CCS; without it the bring-up and flip are
+  redone, three attempts in all (windows 50, 100, 100 ms). A port without a
+  device stays in host mode after the last attempt. Measured in four
+  recorded boots: the first flip never shows the plugged stick (not within
+  1.5 s either, the port reads 0x2a0 until the kernel), the second cycle
+  shows it at the first poll. Why the first cycle fails is open; candidates
+  are the eUSB2 repeater (reset out of band by the PD chip, see
+  dwc3-apple.c) and Apple's host tunables (usb-drd2
+  tunable_DRD_USB31_GBL_HOST/CFG_HOST, atc-phy2 tunable_USB2PHY_DFLT
+  register 0x18), which the loader does not apply.
 - Record: `usb_t6050_host_record` (after `display_shutdown`) writes
   `/chosen/apple,t6050-usbprep`, four u32 per port: attempts, PORTSC after
   the prep, PORTSC before the jump, ms until CCS. `kboot_set_chosen_u32s`
