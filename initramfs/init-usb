@@ -1,0 +1,18 @@
+#!/bin/sh
+# Initramfs init: USB-C port 0 host bring-up report. Prints what the kernel said about the
+# SPMI bus, the PD controller, the PHY, the controller and xHCI, then every 15 s the USB
+# devices present, so a device can be plugged into each port in turn. No reboot.
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev 2>/dev/null
+dmesg -n 1
+sleep 3
+echo
+echo "=== USB $(uname -r) ==="
+dmesg | grep -i "spmi\|tps6598\|sn20120\|tipd\|atcphy\|phy-apple\|dwc3\|xhci\|typec\|usb-pd\|dart.*usb\|2a2f00000\|2a2f80000" | tail -n 24 | cut -c1-170
+echo "--- drivers bound: spmi $(ls /sys/bus/spmi/devices 2>/dev/null | tr '\n' ' ') | platform $(ls /sys/bus/platform/drivers/dwc3-apple/ /sys/bus/platform/drivers/apple-atcphy/ /sys/bus/platform/drivers/xhci-hcd/ 2>/dev/null | grep -v '^bind\|^unbind\|^uevent\|^module' | tr '\n' ' ')"
+for i in $(seq 1 40); do
+	echo "usb: up $(cut -d' ' -f1 /proc/uptime) s  devices: $(ls /sys/bus/usb/devices 2>/dev/null | tr '\n' ' ')  $(dmesg | grep -i 'new .*usb device\|product:\|usb-storage\|eth0\|renamed\|rtl8152\|ax88' | tail -n 2 | cut -c1-120 | tr '\n' '|')"
+	sleep 15
+done
+setsid cttyhack /bin/sh

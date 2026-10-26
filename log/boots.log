@@ -137,3 +137,5 @@
 13:09:22 s1fix: ESP dtb replaced (esp5), then stage 1 RAM test -> stage 2 -> disk root with the fixed dtb; frames s1fix-01..32
 13:35:06 freq: new loader (T6050 cpufreq, MCPU0 default P-state 4) + cpufreq kernel/dtb + init-freq; frames freq-01..12
 13:41:06 freq2: same as freq, init prints the boot CPU MPIDR line; frames freq2-01..08
+13:44:18 freq3: cpufreq kernel, dtb with MPIDR cpu regs (fix5), init-freq; frames freq3-01..08
+13:52:32 s1cpu: ESP kernel+dtb replaced (esp6), then stage 1 RAM test -> stage 2 -> disk root with cpufreq; frames s1cpu-01..18

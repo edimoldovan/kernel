@@ -13,7 +13,13 @@ test is a file copy to the EFI partition instead of a cable upload.
    unsupported for frequency setup, so the core runs at its boot clock.
    Adding the T6050 tables to the loader and the kernel's cpufreq driver
    lifts that. Contained work.
-2. **USB host.** The Asahi USB stack exists; this chip needs its device-tree
+2. **USB host.** BLOCKED 2026-10-26: the port is described
+   (t6050-j714c-usb.dtsi, not included), SPMI and the PD controller bind, but
+   the T6050 Type-C PHY is a new generation (44 register windows, tunables
+   AUS40CMN/CIO4PLL/LN*_RX_CFG_TX_OF_RXCLK) that no loader table or kernel
+   PHY generation describes. Needs a T6050 generation in
+   drivers/phy/apple/atc.c plus a loader tunable table: reverse-engineering,
+   not a port. The Asahi USB stack exists; this chip needs its device-tree
    nodes and PHY setup. With USB comes Ethernet adapters, and with network
    comes pacman, Omarchy's own packages and updates from the Mac itself.
 3. **Display driver.** Today the kernel draws into the framebuffer the loader
