@@ -357,3 +357,7 @@ takes USB3 and holds it, with the AUSPLL locked. Then:
 Missing for a USB3 link: the setting that makes the USB3 PHY lane deliver the
 PIPE clock (lane mode / crossbar, the USB3 BIST/PCS enable, or the lane power
 registers core+0x10 / +0x120).
+- `sweep3`: lane power candidates core+0x10 in {0x1ff, 0x1, 0x3, 0x7, 0xf,
+  0x3f, 0xff, 0x155, 0xaa} x core+0x120 in {reset 0x15540fcc, 0x1fffffff, 0,
+  reset | 0xfff, reset & ~0xfff} x core+0x170 in {reset, 0x9249}, PIPE on USB3,
+  PLL locked: 90 combinations, CNR never clears.

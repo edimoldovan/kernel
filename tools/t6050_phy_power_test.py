@@ -3,7 +3,7 @@
 #   PYTHONPATH=proxyclient .venv/bin/python t6050_phy_power_test.py STEP...
 # Steps run in order: read flip flipnophy flipu3s diag pd pd:<domain> cio small big unclamp
 # apb phyrst pwrread coreread core:LO-HI cmn tunables lanes:normal|swapped pipeusb3
-# sswatch warm wmap:LO-HI set:OFF=VAL,... sweep sweep2 wake pllstart pllstart2 muxmap hcreset reboot. The watchdog (90 s) is armed for the whole run.
+# sswatch warm wmap:LO-HI set:OFF=VAL,... sweep sweep2 sweep3 wake pllstart pllstart2 muxmap hcreset reboot. The watchdog (90 s) is armed for the whole run.
 import sys, time
 from m1n1.setup import p, u  # noqa: F401
 from m1n1.proxy import GUARD
@@ -439,6 +439,34 @@ try:
                         print(f"  HIT lane {lane:#07x} core+{xo:#x}={xv:#x}: CNR {st} USBSTS {v:#x} PLS {pls}", flush=True)
             wr(CORE + 0x170, lane0)
             print(f"  {len(lanes) * len(xbars)} combinations, {hits} hits")
+        elif s == "sweep3":
+            # lane power candidates core+0x10 (RX, 9 bits) and core+0x120 (TX) with
+            # lane-mode candidate 0x170; oracle: controller reset completes on USB3 PIPE
+            op = DRD + 0x20
+            r10, _ = rd(CORE + 0x10); r120, _ = rd(CORE + 0x120); r170, _ = rd(CORE + 0x170)
+            v10s = [0x1ff, 0x1, 0x3, 0x7, 0xf, 0x3f, 0xff, 0x155, 0xaa]
+            v120s = [r120, 0x1fffffff, 0x0, r120 | 0xfff, r120 & ~0xfff]
+            hits = 0
+            for v170 in (r170, 0x9249):
+                for v10 in v10s:
+                    for v120 in v120s:
+                        pet()
+                        wr(CORE + 0x170, v170); wr(CORE + 0x10, v10); wr(CORE + 0x120, v120)
+                        time.sleep(0.003)
+                        rmw(DRD + 0xc110, 0, 1 << 11)
+                        time.sleep(0.002)
+                        rmw(DRD + 0xc110, (3 << 12) | (1 << 11), 1 << 12)
+                        time.sleep(0.002)
+                        cmd, _ = rd(op)
+                        wr(op, cmd | 2)
+                        poll(op, 2, 0, 50)
+                        st, v = poll(op + 4, 1 << 11, 0, 50)
+                        pls = (rd(op + 0x410)[0] >> 5) & 0xf
+                        if st == "ok" or pls != 5:
+                            hits += 1
+                            print(f"  HIT 0x170={v170:#x} 0x10={v10:#x} 0x120={v120:#x}: CNR {st} USBSTS {v:#x} PLS {pls}", flush=True)
+            wr(CORE + 0x170, r170); wr(CORE + 0x10, r10); wr(CORE + 0x120, r120)
+            print(f"  {2 * len(v10s) * len(v120s)} combinations, {hits} hits")
         elif s == "cmn":
             # common-block init as recorded in t6050-usb3-usb4-bringup.md
             seq = [(0xc, 0, 1 << 2), (0xc, 0, 1 << 3), (0xc, 0, 1 << 0), (0xc, 0, 1 << 1),
