@@ -3,7 +3,7 @@
 #   PYTHONPATH=proxyclient .venv/bin/python t6050_phy_power_test.py STEP...
 # Steps run in order: read flip flipnophy flipu3s diag pd pd:<domain> cio small big unclamp
 # apb phyrst pwrread coreread core:LO-HI cmn tunables lanes:normal|swapped pipeusb3
-# sswatch warm wmap:LO-HI set:OFF=VAL,... sweep sweep2 sweep3 wake pllstart pllstart2 muxmap hcreset reboot. The watchdog (90 s) is armed for the whole run.
+# sswatch warm wmap:LO-HI set:OFF=VAL,... sweep sweep2 sweep3 wake pllstart pllstart2 muxmap hcreset sweep4 u3loop dwc3rst reboot. The watchdog (90 s) is armed for the whole run.
 import sys, time
 from m1n1.setup import p, u  # noqa: F401
 from m1n1.proxy import GUARD
@@ -467,6 +467,104 @@ try:
                             print(f"  HIT 0x170={v170:#x} 0x10={v10:#x} 0x120={v120:#x}: CNR {st} USBSTS {v:#x} PLS {pls}", flush=True)
             wr(CORE + 0x170, r170); wr(CORE + 0x10, r10); wr(CORE + 0x120, r120)
             print(f"  {2 * len(v10s) * len(v120s)} combinations, {hits} hits")
+        elif s == "sweep4":
+            # lane mode at core+0x6c (bits [4:2], [7:5]) x orientation, PCS enable at
+            # core+0x29004 bit 0, PIPE on USB3; oracle: controller reset completes
+            op = DRD + 0x20
+            l0, _ = rd(CORE + 0x6c); p0, _ = rd(CORE + 0x29004); m0, _ = rd(PWR + 0x8)
+            print(f"  start: core+0x6c {l0:#x} core+0x29004 {p0:#x} misc {m0:#x}")
+            hits = 0
+            for a in (2, 7):
+                for b in (2, 7):
+                    for swap in (0, 1):
+                        pet()
+                        wr(CORE + 0x6c, (l0 & ~0xfc) | (a << 2) | (b << 5))
+                        rmw(PWR + 0x8, 1 << 2, swap << 2)
+                        rmw(CORE + 0x29004, 0, 1)
+                        rmw(PIPE + 0xc, 0x70, 0); rmw(PIPE + 0xc, 0x3, 0); rmw(PIPE + 0xc, 0x70, 1 << 4)
+                        time.sleep(0.003)
+                        rmw(DRD + 0xc110, 0, 1 << 11)
+                        time.sleep(0.002)
+                        rmw(DRD + 0xc110, (3 << 12) | (1 << 11), 1 << 12)
+                        time.sleep(0.002)
+                        cmd, _ = rd(op)
+                        wr(op, cmd | 2)
+                        poll(op, 2, 0, 50)
+                        st, v = poll(op + 4, 1 << 11, 0, 100)
+                        pv, _ = rd(op + 0x410)
+                        r6c, _ = rd(CORE + 0x6c); r29, _ = rd(CORE + 0x29004)
+                        print(f"  [4:2]={a} [7:5]={b} swap {swap}: 0x6c {r6c:#x} 0x29004 {r29:#x} CNR {st} "
+                              f"USBSTS {v:#x} PORTSC[1] {pv:#x} PLS {(pv >> 5) & 0xf}", flush=True)
+                        if st == "ok":
+                            hits += 1
+                        wr(CORE + 0x29004, p0)
+                        wr(CORE + 0x6c, l0)
+                        wr(PWR + 0x8, m0)
+            print(f"  8 combinations, {hits} with CNR clear")
+        elif s == "u3loop":
+            # dwc3-apple order: PHY ready -> dwc3 core reset + glue CIO regs + host +
+            # SUSPHY on -> PIPE to USB3 under the lock -> xHCI reset; per lane mode/orientation
+            op = DRD + 0x20
+            l0, _ = rd(CORE + 0x6c); p0, _ = rd(CORE + 0x29004); m0, _ = rd(PWR + 0x8)
+            for a in (2, 7):
+                for b in (2, 7):
+                    for swap in (0, 1):
+                        pet()
+                        wr(CORE + 0x6c, (l0 & ~0xfc) | (a << 2) | (b << 5))
+                        rmw(PWR + 0x8, 1 << 2, swap << 2)
+                        rmw(CORE + 0x29004, 0, 1)
+                        # dwc3 core soft reset, glue CIO settings, host, SUSPHY on
+                        rmw(DRD + 0xc704, 1 << 31, 0)
+                        rmw(DRD + 0xc110, 0, 1 << 11)
+                        time.sleep(0.005)
+                        rmw(DRD + 0xc110, (3 << 12) | (1 << 11), 1 << 12)
+                        time.sleep(0.005)
+                        wr(DRD + 0xcd38, 0x0f800f80)
+                        wr(DRD + 0xcd3c, 0x0fc00fc0)
+                        rmw(DRD + 0xcd40, 0xffffff, (0x14 << 16) | (0xa << 8) | 0x10)
+                        rmw(DRD + 0xc200, 0, 1 << 6)
+                        rmw(DRD + 0xc2c0, 0, 1 << 17)
+                        # PIPE to USB3 under the lock (T6050 mux: clock [6:4], data [1:0])
+                        rmw(PIPE + 0x4, (1 << 1) | (1 << 2), 0)
+                        rmw(PIPE + 0x0, 0, (1 << 0) | (1 << 2))
+                        rmw(PIPE + 0x10, 0, 1)
+                        lk, _ = poll(PIPE + 0x14, 1, 1, 10)
+                        rmw(PIPE + 0xc, 0x70, 0); rmw(PIPE + 0xc, 0x3, 0); rmw(PIPE + 0xc, 0x70, 1 << 4)
+                        rmw(PIPE + 0x20, (0xf | (1 << 12)), 3)
+                        rmw(PIPE + 0x0, (1 << 0) | (1 << 2), 0)
+                        rmw(PIPE + 0x10, 1, 0)
+                        ul, _ = poll(PIPE + 0x14, 1, 0, 10)
+                        mux, _ = rd(PIPE + 0xc)
+                        # xHCI reset and port power
+                        cmd, _ = rd(op)
+                        wr(op, cmd | 2)
+                        poll(op, 2, 0, 100)
+                        cnr, sts = poll(op + 4, 1 << 11, 0, 200)
+                        for i in range(2):
+                            pa = op + 0x400 + 0x10 * i
+                            v, _ = rd(pa)
+                            wr(pa, (v & (0x40003c09 | 0x0e00c3e0)) | (1 << 9))
+                        time.sleep(0.3)
+                        p0r, _ = rd(op + 0x400); p1r, _ = rd(op + 0x410)
+                        print(f"  [4:2]={a} [7:5]={b} swap {swap}: lock {lk} unlock {ul} mux {mux:#x} "
+                              f"CNR {cnr} ({sts:#x}) PORTSC0 {p0r:#x} PORTSC1 {p1r:#x} "
+                              f"PLS1 {(p1r >> 5) & 0xf} speed1 {(p1r >> 10) & 0xf}", flush=True)
+                        # PIPE back to the dummy backend for the next try
+                        rmw(PIPE + 0x4, (1 << 1) | (1 << 2), 0)
+                        rmw(PIPE + 0x0, 0, (1 << 0) | (1 << 2))
+                        rmw(PIPE + 0xc, 0x70, 0); rmw(PIPE + 0xc, 0x3, 2); rmw(PIPE + 0xc, 0x70, 2 << 4)
+                        rmw(PIPE + 0x20, 0xf, 2); rmw(PIPE + 0x20, 0, 1 << 12)
+                        wr(CORE + 0x29004, p0); wr(CORE + 0x6c, l0); wr(PWR + 0x8, m0)
+        elif s == "dwc3rst":
+            # atcphy_dwc3_reset_assert/deassert: pipe handler AON_GEN RESET_N bit 0, FORCE_CLAMP_EN bit 4
+            rmw(PIPE + 0x1c, 1, 1 << 4)
+            time.sleep(0.01)
+            v, _ = rd(PIPE + 0x1c)
+            print(f"  asserted: AON_GEN {v:#x}")
+            rmw(PIPE + 0x1c, 1 << 4, 1)
+            time.sleep(0.01)
+            v, _ = rd(PIPE + 0x1c)
+            print(f"  deasserted: AON_GEN {v:#x}")
         elif s == "cmn":
             # common-block init as recorded in t6050-usb3-usb4-bringup.md
             seq = [(0xc, 0, 1 << 2), (0xc, 0, 1 << 3), (0xc, 0, 1 << 0), (0xc, 0, 1 << 1),

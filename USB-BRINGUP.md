@@ -361,3 +361,29 @@ registers core+0x10 / +0x120).
   0x3f, 0xff, 0x155, 0xaa} x core+0x120 in {reset 0x15540fcc, 0x1fffffff, 0,
   reset | 0xfff, reset & ~0xfff} x core+0x170 in {reset, 0x9249}, PIPE on USB3,
   PLL locked: 90 combinations, CNR never clears.
+
+## Lane mode core+0x6c, PCS block core+0x29000: no PIPE clock (2026-10-27 10:58)
+
+From Ed's updated `usb3-usb4/t6050-usb3-usb4-bringup.md`: lane mode at
+core+0x6c bits [4:2] / [7:5] (USB3 values 2 or 7 per field), PCS/BIST enable at
+core+0x29004 bit 0. Port 1, PHY up, tunables, common wake, AUSPLL locked.
+
+- core+0x29000 (ADT window 35) is in the `atc1_cio` domain: with it off the
+  first read hung the SoC (the 90 s watchdog rebooted it to the stage 1
+  proxy); with `atc1_cio` + `atc1_cio_usb` on it reads 0x29004 = 0xe00 and
+  bit 0 sets.
+- `sweep4` and `u3loop`: [4:2] in {2, 7} x [7:5] in {2, 7} x lane swap (power
+  block +8 bit 2), PCS enable, PIPE on USB3 (mux 0x10). `u3loop` follows
+  dwc3-apple's order: dwc3 core soft reset, the glue CIO registers (+0xcd38
+  0x0f800f80, +0xcd3c 0x0fc00fc0, +0xcd40 0x140a10), host, SUSPHY on, PIPE
+  switch under the lock, then HCRST. All 8: PIPE lock not acknowledged, CNR
+  stays set (USBSTS 0x801), USB3 port in RxDetect.
+- With `atc1_cio` on, the controller does not finish a reset even for USB2
+  only (dummy PIPE). Cycling the dwc3 block reset (pipe handler AON_GEN
+  RESET_N bit 0 / FORCE_CLAMP_EN bit 4, as `atcphy_dwc3_reset_assert/deassert`)
+  or setting the PCS enable does not change that.
+
+The blocker for USB3: what lets the controller complete its reset once the
+CIO domain is on, which the PCS block in that domain needs. PCS block contents
+with CIO on are dumped above (`core:29000-29200`): +0x2905c 0x06712220,
++0x290c4/c8 0x28008, +0x29104 0x104, +0x29144 0x21001a21, ...
