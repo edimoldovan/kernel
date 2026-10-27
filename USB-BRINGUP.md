@@ -230,3 +230,39 @@ The kernel's first flip finds a device present at power-on; the loader's
 first flip never did. Port 2, the port that carried the proxy, binds without
 the earlier xHCI reset timeout. Not checked yet: hot-plug into the proxy
 port with this driver, and the EFI partition still carries the older kernel.
+
+## SuperSpeed side: atcN_cio breaks the xHCI; the PHY does not need it (2026-10-27 09:57)
+
+Port 1 (left-front, stick plugged in, proxy cable on port 2), over the stage 1
+proxy with `tools/t6050_phy_power_test.py`. After each step the port is flipped
+to USB2 host the way `t6050-usb2.c` does it, then HCRST, CNR and PORTSC are read.
+
+| step | PHY power ctrl / stat | USB2 host |
+|---|---|---|
+| none (control) | 0x04 / 0x100 | CCS on flip 1, CNR clears |
+| `auss` on (pmgr0 +0x248) | - | works |
+| `atc1_cio` on (pmgr0 +0x290) | - | **CNR stuck (USBSTS 0x801), no CCS, GSTS CSR timeout** |
+| + `atc1_cio_usb`, `atc1_cio_auss` | - | still broken |
+| no CIO; sleep small, sleep big | 0x07 / 0x103 | works |
+| no CIO; unclamp, APB reset, PHY reset | 0x1b / 0x103 | works |
+| no CIO; common init on core+0xc / +0xa00 | core+0xc 0x1003f33a, +0x804 0x19 | works |
+
+- `atc1_cio` alone breaks the controller reset. The pipe handler, usb2phy and
+  dwc3 PHY config registers do not change when it powers on; leaving the USB2
+  PHY untouched or letting the USB3 PIPE suspend does not help.
+- The PHY power control is atc-phy1 reg[39] (0x2ab200000; port 0 0x2a3200000),
+  readable with only `atc1_common` / `atc1_usb_aon` / `atc1_usb` on. Its bits
+  match `ATCPHY_POWER_CTRL` in atc.c (sleep small 0, sleep big 1, clamp 2, APB
+  reset 3, PHY reset 4), and STAT at +4 acks the sleep bits (0x100 -> 0x103).
+- With `atc1_cio` off the PHY wakes, the core (atc-phy1 reg[2], 0x2ab000000) is
+  reachable and the common block initialises, and USB2 keeps working throughout.
+  This matches t8103/t8112/t8122, where the PHY sits in `ps_atcN_usb` and
+  `ps_atcN_cio` belongs to the CIO (USB4) side.
+- Port 1 is +0x8000000 from port 0 for the PHY windows (ADT atc-phy1), as for
+  usb-drd1.
+- `atc1_usb_aon` / `atc1_usb` / `atc1_phymxwrap` are in pmgr2 (0x288300000),
+  `atc1_common` / `atc1_cio*` / `auss` in pmgr0 (0x280600000).
+
+Next for USB3: the t8122 USB3 path (`atcphy_configure_pipehandler_usb3_host_t8122`)
+uses the BIST block at core+0x17000; T6050 has no window there, so its location
+is open. A SuperSpeed device is needed on port 1 for the link test.
