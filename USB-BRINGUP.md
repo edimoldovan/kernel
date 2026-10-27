@@ -291,3 +291,43 @@ as `atcphy_configure_pipehandler_usb3` does it without the BIST step.
 
 Missing for a USB3 link: the T6050 lane mode / crossbar registers and the
 USB3 BIST/PHY override block.
+
+## T6050 AUSPLL locks; common block = ACIOPHY_CFG0 at core+0xc (2026-10-27 10:18)
+
+Port 1, `tools/t6050_phy_power_test.py`, same base as above (PHY power control
+0x1b, ADT tunables, USB2 host flip). USB2 keeps working throughout.
+
+Common block wake (`wake`): `atcphy_wake_common_t8122` with ACIOPHY_CFG0 at
+core+0xc instead of +0x8, same bits (BIG 0, BIG_OV 1, SMALL 2, SMALL_OV 3,
+CLAMP 4, CLAMP_OV 5), bias BGBIAS_OV at core+0xa00 bit 1, RCAL done at
+core+0x804 bit 0 (reads 0x19). CFG0 ends at 0x1003f32f. The common-init in
+`usb3-usb4/t6050-usb3-usb4-bringup.md` matches this up to the RCAL read; its
+last four steps (clear BGBIAS_OV, set CLAMP, clear BIG and SMALL) put the
+common block back to sleep (CFG0 0x1003f33a).
+
+AUSPLL start (`pllstart2`): `atc_t8122_tunnel_start`'s PLL steps with the
+AUSPLL registers at +0x1000 (APB command core+0x3000, CLKOUT_MASTER +0x3200,
+BGR +0x3218, FREQ_CFG +0x3234), frequency descriptor left as found
+(+0x3080 0x298d8190, +0x3084 0, +0x3088 0x550800):
+
+    APB 0x10000001 -> ack (0x10000003)
+    lock: core+0x7034 bit 3 set (0x8), as T8122_DP_PCLK_STATUS
+    APB 0x10010000 -> ack low
+
+core+0x7044 stays 0. Without the common wake the APB command is acked but the
+PLL does not lock.
+
+Writable-bit map of core+0x0-0x400 (write ones, write zero, restore; no hang):
+`log/t6050-port1-core-wmap-0-400.txt`. Not writable: +0x0, +0x4, +0x60.
+Field-shaped candidates: +0x170 (18 bits, reset 0x12492 = six 3-bit fields of
+2), +0x038 and +0x13c (18 bits), +0x064 (4 bits), +0x010 (9 bits), +0x120.
+
+Sweep (`sweep`, 120 combinations, run with the PLL off and again with it
+locked): +0x170 in {0x9249, 0, 0x36db, 0x12489, 0x12492} x crossbar
+candidates +0x38 / +0x13c in {0x110, 0x10, 0xa, 0x111} and +0x64 in 0-15.
+No combination made the pipe handler accept the USB3 clock or moved the USB3
+port out of RxDetect.
+
+Still missing for a USB3 link: the lane mode / crossbar registers and the
+USB3 BIST/PHY override block. The pipe handler refuses the USB3 clock select
+in every state tried.

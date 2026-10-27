@@ -3,7 +3,7 @@
 #   PYTHONPATH=proxyclient .venv/bin/python t6050_phy_power_test.py STEP...
 # Steps run in order: read flip flipnophy flipu3s diag pd pd:<domain> cio small big unclamp
 # apb phyrst pwrread coreread core:LO-HI cmn tunables lanes:normal|swapped pipeusb3
-# sswatch warm reboot. The watchdog (90 s) is armed for the whole run.
+# sswatch warm wmap:LO-HI set:OFF=VAL,... sweep wake pllstart pllstart2 reboot. The watchdog (90 s) is armed for the whole run.
 import sys, time
 from m1n1.setup import p, u  # noqa: F401
 from m1n1.proxy import GUARD
@@ -253,6 +253,117 @@ try:
                     print(f"  PORTSC[1] {v:#010x} CCS {v & 1} PED {(v >> 1) & 1} PLS {(v >> 5) & 0xf} speed {(v >> 10) & 0xf}{' FAULT' if f else ''}")
                     last = v
                 time.sleep(0.005)
+        elif s.startswith("wmap:"):
+            # per register: write all-ones, read; write zero, read; restore. Prints
+            # as it goes so a hang shows the last register touched.
+            lo, hi = (int(x, 16) for x in s[5:].split("-"))
+            for n, off in enumerate(range(lo, hi, 4)):
+                if n % 16 == 0:
+                    pet()
+                a = CORE + off
+                v, f = rd(a)
+                if f:
+                    print(f"  core+{off:#05x} read FAULT", flush=True)
+                    continue
+                wr(a, 0xffffffff); r1, _ = rd(a)
+                wr(a, 0); r0, _ = rd(a)
+                wr(a, v); r2, _ = rd(a)
+                w = r1 & ~r0
+                if w or r2 != v or r1 != v or r0 != v:
+                    print(f"  core+{off:#05x} orig {v:#010x} ones {r1:#010x} zero {r0:#010x} "
+                          f"writable {w:#010x}{'  RESTORE-MISMATCH ' + hex(r2) if r2 != v else ''}", flush=True)
+        elif s.startswith("set:"):
+            # set:OFF=VAL[,OFF=VAL...] plain writes to core offsets, read back
+            for item in s[4:].split(","):
+                o, v = (int(x, 16) for x in item.split("="))
+                f = wr(CORE + o, v)
+                r, _ = rd(CORE + o)
+                print(f"  core+{o:#05x} <- {v:#010x} reads {r:#010x}{' FAULT' if f else ''}")
+            v, _ = rd(CORE + 0x7044)
+            print(f"  core+0x7044 = {v:#010x} (bit 3 {(v >> 3) & 1})")
+        elif s == "sweep":
+            # lane-mode candidate 0x170 x crossbar candidates; oracles: PLL lock
+            # (core+0x7044 bit 3), pipe mux accepting the USB3 clock, USB3 port PLS.
+            port = DRD + 0x20 + 0x410
+            lanes = [0x9249, 0x0, 0x36db, 0x12489, 0x12492]
+            xbars = [(0x38, v) for v in (0x110, 0x10, 0xa, 0x111)] + \
+                    [(0x13c, v) for v in (0x110, 0x10, 0xa, 0x111)] + \
+                    [(0x64, v) for v in range(16)]
+            lane0, _ = rd(CORE + 0x170)
+            hits = 0
+            for lane in lanes:
+                for xo, xv in xbars:
+                    pet()
+                    x0, _ = rd(CORE + xo)
+                    wr(CORE + 0x170, lane); wr(CORE + xo, xv)
+                    time.sleep(0.003)
+                    pll, _ = rd(CORE + 0x7044)
+                    pll2, _ = rd(CORE + 0x7034)
+                    wr(PIPE + 0xc, 0x02); wr(PIPE + 0xc, 0x00); wr(PIPE + 0xc, 0x08)
+                    time.sleep(0.001)
+                    mux, _ = rd(PIPE + 0xc)
+                    pls = (rd(port)[0] >> 5) & 0xf
+                    wr(PIPE + 0xc, 0x00); wr(PIPE + 0xc, 0x02); wr(PIPE + 0xc, 0x22)
+                    wr(CORE + xo, x0)
+                    if pll or (pll2 & ~8) or mux & 0x38 or pls != 5:
+                        hits += 1
+                        print(f"  HIT lane {lane:#07x} core+{xo:#x}={xv:#x}: 7044 {pll:#x} 7034 {pll2:#x} mux {mux:#x} PLS {pls}", flush=True)
+            wr(CORE + 0x170, lane0)
+            mux, _ = rd(PIPE + 0xc)
+            print(f"  {len(lanes) * len(xbars)} combinations, {hits} hits; mux back to {mux:#x}")
+        elif s == "pllstart":
+            # atc.c AUSPLL start (t8122 TOP 0x2000 / CORE 0x2200) at T6050 TOP 0x3000 / CORE 0x3200
+            regs = (0x3000, 0x3080, 0x3084, 0x3088, 0x3200, 0x3208, 0x3214, 0x3220, 0x3224, 0x7044)
+            def dump(tag):
+                vals = []
+                for o in regs:
+                    v, f = rd(CORE + o)
+                    vals.append(f"{o:#x}={v:#x}{'!' if f else ''}")
+                print(f"  {tag}: " + " ".join(vals), flush=True)
+            dump("before")
+            rmw(CORE + 0x3214, 0, 1)
+            rmw(CORE + 0x3200, 0, (1 << 2) | (1 << 4) | (1 << 6))
+            v, _ = rd(CORE + 0x3000)
+            wr(CORE + 0x3000, (v & ~(0x1ffffff << 3)) | 1 | (1 << 28))
+            st, v = poll(CORE + 0x3000, 2, 2, 10)
+            print(f"  APB command 0 ack: {st} ({v:#x})")
+            rmw(CORE + 0x3000, 1, 0)
+            st, v = poll(CORE + 0x7044, 8, 8, 10)
+            print(f"  AUSPLL lock: {st} ({v:#x})")
+            dump("after")
+        elif s == "wake":
+            # atcphy_wake_common_t8122 with ACIOPHY_CFG0 at core+0xc (t8122 +0x8);
+            # bias at +0xa00, RCAL done at +0x804 bit 0; left awake
+            for clr, set_ in ((0, 1 << 2), (0, 1 << 3), (0, 1 << 0), (0, 1 << 1), (1 << 4, 0), (0, 1 << 5)):
+                rmw(CORE + 0xc, clr, set_)
+                time.sleep(0.0001)
+            rmw(CORE + 0xa00, 0, 1 << 1)
+            st, v = poll(CORE + 0x804, 1, 1, 10)
+            c, _ = rd(CORE + 0xc)
+            print(f"  CFG0 core+0xc = {c:#010x}; RCAL done: {st} ({v:#x})")
+        elif s == "pllstart2":
+            # t8122 tunnel PLL start (atc_t8122_tunnel_start) with the AUSPLL at +0x1000;
+            # frequency descriptor left at its current value
+            def show(tag):
+                vals = []
+                for o in (0x3000, 0x3200, 0x3218, 0x3234, 0x7034, 0x7044):
+                    v, _ = rd(CORE + o)
+                    vals.append(f"{o:#x}={v:#x}")
+                print(f"  {tag}: " + " ".join(vals), flush=True)
+            show("before")
+            rmw(CORE + 0x3234, 0x3, 0)
+            rmw(CORE + 0x3218, 0, 1)
+            rmw(CORE + 0x3200, 0, (1 << 3) | (1 << 11))
+            rmw(CORE + 0x3000, ~0xe0000006 & 0xffffffff, 0x10000001)
+            st, v = poll(CORE + 0x3000, 2, 2, 10)
+            print(f"  APB 0x10000001 ack: {st} ({v:#x})")
+            st1, v1 = poll(CORE + 0x7034, 8, 8, 10)
+            v2, _ = rd(CORE + 0x7044)
+            print(f"  lock 0x7034: {st1} ({v1:#x}); 0x7044 = {v2:#x}")
+            rmw(CORE + 0x3000, ~0xe0000006 & 0xffffffff, 0x10010000)
+            st, v = poll(CORE + 0x3000, 2, 0, 10)
+            print(f"  APB 0x10010000 ack low: {st} ({v:#x})")
+            show("after")
         elif s == "cmn":
             # common-block init as recorded in t6050-usb3-usb4-bringup.md
             seq = [(0xc, 0, 1 << 2), (0xc, 0, 1 << 3), (0xc, 0, 1 << 0), (0xc, 0, 1 << 1),
