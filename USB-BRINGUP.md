@@ -387,3 +387,22 @@ The blocker for USB3: what lets the controller complete its reset once the
 CIO domain is on, which the PCS block in that domain needs. PCS block contents
 with CIO on are dumped above (`core:29000-29200`): +0x2905c 0x06712220,
 +0x290c4/c8 0x28008, +0x29104 0x104, +0x29144 0x21001a21, ...
+
+## Pipe-clock switch at power block +0x14: status never completes (2026-10-27 11:10)
+
+Ed's bring-up doc step 7: pipe-clock switch at the PHY power block +0x14
+(port 1 0x2ab200014), clear 0x2039, select << 3 (2 or 7), status at +0x18.
+Power block before power-up: +0x14 0, +0x18 0, +0x2c 1; after (0x1b): +0xc 0x8.
+
+- +0x14 takes the select (0x10 for 2, 0x38 for 7) and bits 0 / 13; +0x18
+  stays 0 within 50 ms for select 2 and 7, alone and with bit 0, bit 13 or
+  both (`pclkvar`).
+- `u3doc`: USB2 host up first, then `auss` + `atc1_cio` + `atc1_cio_usb`, AUSPLL
+  locked, then per try: lane mode core+0x6c, the switch, PCS enable
+  core+0x29004 bit 0 (core+0x29110 reads 0), dwc3 core reset + glue CIO
+  registers + host + SUSPHY on, PIPE to USB3 under the lock, HCRST. Select
+  {2, 7} x [4:2] {2, 7} x [7:5] {2, 7} x swap: 16 tries, PIPE lock never
+  acknowledged, CNR stays set, USB3 port in RxDetect.
+
+Open: what completes the switch (+0x18 never changes) before the controller can
+leave reset with the CIO domain on.

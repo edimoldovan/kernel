@@ -3,7 +3,7 @@
 #   PYTHONPATH=proxyclient .venv/bin/python t6050_phy_power_test.py STEP...
 # Steps run in order: read flip flipnophy flipu3s diag pd pd:<domain> cio small big unclamp
 # apb phyrst pwrread coreread core:LO-HI cmn tunables lanes:normal|swapped pipeusb3
-# sswatch warm wmap:LO-HI set:OFF=VAL,... sweep sweep2 sweep3 wake pllstart pllstart2 muxmap hcreset sweep4 u3loop dwc3rst reboot. The watchdog (90 s) is armed for the whole run.
+# sswatch warm wmap:LO-HI set:OFF=VAL,... sweep sweep2 sweep3 wake pllstart pllstart2 muxmap hcreset sweep4 u3loop u3doc dwc3rst pwrdump pclk:SEL pclkvar reboot. The watchdog (90 s) is armed for the whole run.
 import sys, time
 from m1n1.setup import p, u  # noqa: F401
 from m1n1.proxy import GUARD
@@ -565,6 +565,100 @@ try:
             time.sleep(0.01)
             v, _ = rd(PIPE + 0x1c)
             print(f"  deasserted: AON_GEN {v:#x}")
+        elif s == "pwrdump":
+            vals = []
+            for o in range(0, 0x30, 4):
+                v, f = rd(PWR + o)
+                vals.append(f"+{o:#x}={v:#x}{'!' if f else ''}")
+            print("  power block " + " ".join(vals))
+        elif s.startswith("pclk:"):
+            # pipe-clock switch (bring-up doc step 7): PWR+0x14 clear 0x2039, set sel << 3; status PWR+0x18
+            sel = int(s[5:], 16)
+            v14, _ = rd(PWR + 0x14); v18, _ = rd(PWR + 0x18)
+            wr(PWR + 0x14, (v14 & ~0x2039) | (sel << 3))
+            seen = [v18]
+            end = time.time() + 0.05
+            while time.time() < end:
+                v, _ = rd(PWR + 0x18)
+                if v != seen[-1]:
+                    seen.append(v)
+                time.sleep(0.0005)
+            n14, _ = rd(PWR + 0x14)
+            print(f"  pclk sel {sel:#x}: +0x14 {v14:#x} -> {n14:#x}; +0x18 " + " -> ".join(hex(x) for x in seen))
+        elif s == "u3doc":
+            # bring-up doc order (steps 4, 7, 8, 9) after USB2 + CIO + PLL are up
+            op = DRD + 0x20
+            l0, _ = rd(CORE + 0x6c); p0, _ = rd(CORE + 0x29004); m0, _ = rd(PWR + 0x8)
+            c14, _ = rd(PWR + 0x14)
+            for sel in (2, 7):
+                for a, b in ((2, 2), (2, 7), (7, 2), (7, 7)):
+                    for swap in (0, 1):
+                        pet()
+                        wr(CORE + 0x6c, (l0 & ~0xfc) | (a << 2) | (b << 5))
+                        rmw(PWR + 0x8, 1 << 2, swap << 2)
+                        wr(PWR + 0x14, (c14 & ~0x2039) | (sel << 3))
+                        time.sleep(0.002)
+                        s18, _ = rd(PWR + 0x18)
+                        rmw(CORE + 0x29004, 0, 1)
+                        r110, _ = rd(CORE + 0x29110)
+                        rmw(DRD + 0xc704, 1 << 31, 0)
+                        rmw(DRD + 0xc110, 0, 1 << 11)
+                        time.sleep(0.005)
+                        rmw(DRD + 0xc110, (3 << 12) | (1 << 11), 1 << 12)
+                        time.sleep(0.005)
+                        wr(DRD + 0xcd38, 0x0f800f80)
+                        wr(DRD + 0xcd3c, 0x0fc00fc0)
+                        rmw(DRD + 0xcd40, 0xffffff, (0x14 << 16) | (0xa << 8) | 0x10)
+                        rmw(DRD + 0xc200, 0, 1 << 6)
+                        rmw(DRD + 0xc2c0, 0, 1 << 17)
+                        rmw(PIPE + 0x4, (1 << 1) | (1 << 2), 0)
+                        rmw(PIPE + 0x0, 0, (1 << 0) | (1 << 2))
+                        rmw(PIPE + 0x10, 0, 1)
+                        lk, _ = poll(PIPE + 0x14, 1, 1, 10)
+                        rmw(PIPE + 0xc, 0x70, 0); rmw(PIPE + 0xc, 0x3, 0); rmw(PIPE + 0xc, 0x70, 1 << 4)
+                        rmw(PIPE + 0x20, (0xf | (1 << 12)), 3)
+                        rmw(PIPE + 0x0, (1 << 0) | (1 << 2), 0)
+                        rmw(PIPE + 0x10, 1, 0)
+                        poll(PIPE + 0x14, 1, 0, 10)
+                        cmd, _ = rd(op)
+                        wr(op, cmd | 2)
+                        poll(op, 2, 0, 100)
+                        cnr, sts = poll(op + 4, 1 << 11, 0, 200)
+                        for i in range(2):
+                            pa = op + 0x400 + 0x10 * i
+                            v, _ = rd(pa)
+                            wr(pa, (v & (0x40003c09 | 0x0e00c3e0)) | (1 << 9))
+                        time.sleep(0.3)
+                        q0, _ = rd(op + 0x400); q1, _ = rd(op + 0x410)
+                        print(f"  sel {sel} [4:2]={a} [7:5]={b} swap {swap}: +0x18 {s18:#x} 0x29110 {r110:#x} "
+                              f"lock {lk} CNR {cnr} ({sts:#x}) PORTSC0 {q0:#x} PORTSC1 {q1:#x} "
+                              f"PLS1 {(q1 >> 5) & 0xf} speed1 {(q1 >> 10) & 0xf}", flush=True)
+                        rmw(PIPE + 0x4, (1 << 1) | (1 << 2), 0)
+                        rmw(PIPE + 0x0, 0, (1 << 0) | (1 << 2))
+                        rmw(PIPE + 0xc, 0x70, 0); rmw(PIPE + 0xc, 0x3, 2); rmw(PIPE + 0xc, 0x70, 2 << 4)
+                        rmw(PIPE + 0x20, 0xf, 2); rmw(PIPE + 0x20, 0, 1 << 12)
+                        wr(CORE + 0x29004, p0); wr(CORE + 0x6c, l0); wr(PWR + 0x8, m0)
+                        wr(PWR + 0x14, c14)
+        elif s == "pclkvar":
+            # select 2 / 7 with bit 0, bit 13, both; watch PWR+0x18 for 50 ms each
+            c14, _ = rd(PWR + 0x14)
+            for sel in (2, 7):
+                for extra in (0x1, 0x2000, 0x2001):
+                    pet()
+                    wr(PWR + 0x14, (c14 & ~0x2039) | (sel << 3))
+                    time.sleep(0.001)
+                    wr(PWR + 0x14, (c14 & ~0x2039) | (sel << 3) | extra)
+                    seen = []
+                    end = time.time() + 0.05
+                    while time.time() < end:
+                        v, _ = rd(PWR + 0x18)
+                        if not seen or v != seen[-1]:
+                            seen.append(v)
+                        time.sleep(0.0005)
+                    n14, _ = rd(PWR + 0x14)
+                    print(f"  sel {sel} + {extra:#x}: +0x14 {n14:#x}; +0x18 " + " -> ".join(hex(x) for x in seen), flush=True)
+                    wr(PWR + 0x14, c14)
+                    time.sleep(0.002)
         elif s == "cmn":
             # common-block init as recorded in t6050-usb3-usb4-bringup.md
             seq = [(0xc, 0, 1 << 2), (0xc, 0, 1 << 3), (0xc, 0, 1 << 0), (0xc, 0, 1 << 1),
