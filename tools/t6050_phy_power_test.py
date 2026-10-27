@@ -3,13 +3,14 @@
 #   PYTHONPATH=proxyclient .venv/bin/python t6050_phy_power_test.py STEP...
 # Steps run in order: read flip flipnophy flipu3s diag pd pd:<domain> cio small big unclamp
 # apb phyrst pwrread coreread core:LO-HI cmn tunables lanes:normal|swapped pipeusb3
-# sswatch warm wmap:LO-HI set:OFF=VAL,... sweep sweep2 sweep3 wake pllstart pllstart2 muxmap hcreset sweep4 u3loop u3doc dwc3rst pwrdump pclk:SEL pclkvar reboot. The watchdog (90 s) is armed for the whole run.
+# sswatch warm wmap:LO-HI set:OFF=VAL,... sweep sweep2 sweep3 wake pllstart pllstart2 muxmap hcreset sweep4 u3loop u3doc dwc3rst pwrdump pclk:SEL pclkvar probe dump:NAME[:SKIP] retune:fabric|axi2af|cfg glue reboot. The watchdog (90 s) is armed for the whole run.
 import sys, time
 from m1n1.setup import p, u  # noqa: F401
 from m1n1.proxy import GUARD
 
 WDT = 0x28836c000                  # COUNT +0x10, ALARM +0x14, CTL +0x1c
-WDT_ALARM = 24000000 * 90          # 90 s at 24 MHz
+import os
+WDT_ALARM = 24000000 * int(os.environ.get("WDT_SECS", "90"))
 
 PMGR = 0                           # domain entries below are absolute
 PMGR0, PMGR2 = 0x280600000, 0x288300000
@@ -659,6 +660,62 @@ try:
                     print(f"  sel {sel} + {extra:#x}: +0x14 {n14:#x}; +0x18 " + " -> ".join(hex(x) for x in seen), flush=True)
                     wr(PWR + 0x14, c14)
                     time.sleep(0.002)
+        elif s.startswith("probe") or s.startswith("dump:"):
+            # atc-phy1 ADT windows plus the controller side; SKIP=i,j env leaves windows out.
+            # probe: first word of each window; dump:NAME: words up to the next window
+            # (max 0x1000 bytes) into dump-NAME.json next to this script.
+            import json, os as _os
+            node = u.adt["/arm-io/atc-phy1"]
+            bases = sorted(node.get_reg(i)[0] for i in range(len(node.reg)))
+            parts = s.split(":")
+            skip_s = parts[2] if len(parts) > 2 else _os.environ.get("SKIP", "")
+            skip = {int(x) for x in skip_s.split(",") if x and x != "-"}
+            wins = []
+            for i in range(len(node.reg)):
+                if i in skip:
+                    continue
+                b = node.get_reg(i)[0]
+                nxt = [x for x in bases if x > b]
+                ln = min(0x1000, (nxt[0] - b) if nxt else 0x1000)
+                wins.append((f"reg{i}", b, ln))
+            wins += [("dwc3", DRD + 0xc100, 0x700), ("glue", DRD + 0xcd00, 0x100)]
+            out = {}
+            for name, b, ln in wins:
+                pet()
+                print(f"  {name} {b:#x} +{ln:#x}", flush=True)
+                n = 1 if s.startswith("probe") else ln // 4
+                for k in range(n):
+                    v, f = rd(b + 4 * k)
+                    out[f"{b + 4 * k:#x}"] = None if f else v
+            if s.startswith("dump:"):
+                path = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), f"dump-{parts[1]}.json")
+                json.dump(out, open(path, "w"))
+                print(f"  {len(out)} words -> {path}")
+            else:
+                print("  probe done")
+        elif s.startswith("retune:"):
+            # re-apply one ADT tunable after a power-domain change: retune:fabric|axi2af|cfg
+            import struct as _st
+            node = u.adt["/arm-io/atc-phy1"]
+            prop, idx = {"fabric": ("tunable_ATC_FABRIC", 40), "axi2af": ("tunable_ATC0AXI2AF", 41),
+                         "cfg": ("tunable_ATC_COMMON_CFG", 43)}[s[7:]]
+            raw = bytes(node._properties[prop]); base = node.get_reg(idx)[0]
+            faults = 0
+            for j in range(0, len(raw), 12):
+                ofs, mask, val = _st.unpack_from("<III", raw, j)
+                faults += rmw(base + (ofs & 0xffffff), mask, val & mask)
+            v, _ = rd(base)
+            print(f"  {prop} reapplied: {len(raw) // 12} entries, {faults} faults; first word {v:#x}")
+            g, _ = rd(DRD + 0xc118)
+            print(f"  GSTS {g:#x}")
+        elif s == "glue":
+            # glue values seen with CIO off (dump A)
+            for o, v in ((0xcd28, 0x886), (0xcd2c, 0x886), (0xcd40, 0x3c20060c), (0xcd44, 0x2000b)):
+                wr(DRD + o, v)
+                r, _ = rd(DRD + o)
+                print(f"  drd+{o:#x} <- {v:#x} reads {r:#x}")
+            g, _ = rd(DRD + 0xc118)
+            print(f"  GSTS {g:#x}")
         elif s == "cmn":
             # common-block init as recorded in t6050-usb3-usb4-bringup.md
             seq = [(0xc, 0, 1 << 2), (0xc, 0, 1 << 3), (0xc, 0, 1 << 0), (0xc, 0, 1 << 1),

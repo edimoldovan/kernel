@@ -406,3 +406,31 @@ Power block before power-up: +0x14 0, +0x18 0, +0x2c 1; after (0x1b): +0xc 0x8.
 
 Open: what completes the switch (+0x18 never changes) before the controller can
 leave reset with the CIO domain on.
+
+## What CIO power-on changes: register diff (2026-10-27 11:40)
+
+Port 1, `tools/t6050_phy_power_test.py` `dump:` over every atc-phy1 ADT window
+(up to 0x1000 bytes each) plus dwc3 globals (+0xc100) and the Apple glue
+(+0xcd00): A with CIO off (PHY up, tunables, PLL locked, USB2 host working),
+B after `auss` + `atc1_cio` + `atc1_cio_usb` on, C after a controller reset
+attempt. Diff (`tools/t6050_dump_diff.py`): `log/t6050-port1-cio-diff.txt`.
+
+Reads that hang with CIO off: window 35 (core+0x29000, PCS) at its first word,
+window 34 (core+0x28400) partway in; window 34 also hangs partway with CIO on.
+Every other window reads with CIO off.
+
+A -> B, on CIO power-on alone:
+- dwc3 GSTS (+0xc118) bit 5 (CSR timeout) sets at once.
+- The Apple glue registers drd+0xcd28 / +0xcd2c (0x886), +0xcd40 (0x3c20060c),
+  +0xcd44 (0x2000b) read 0; with CIO on they ignore writes (read back 0).
+- The ATC_FABRIC registers (core+0x244000 ...) that the tunables set fall back
+  to 0x80000000: the FABRIC tunables have to go in after CIO power-on.
+B -> C: the controller's own registers (GHWPARAMS area, TX/RX FIFO sizes)
+read 0 and usb2phy SIG loses bit 20 - the controller is not answering.
+
+Re-applying the FABRIC tunables after CIO power-on restores their values but
+not the controller (CNR still stuck). The PMGR registers of `atc1_usb`,
+`atc1_usb_aon`, `atc1_phymxwrap` show no reset or disable bit with CIO on.
+
+Open: what keeps the glue block at drd+0xcd00 and the controller's register
+interface alive once `atc1_cio` is on.
