@@ -759,6 +759,9 @@ try:
             # (drd+0xc120) / CAPLEN (drd+0x0) non-zero == controller alive.
             op = DRD + 0x20
             BB = CORE + 0x29000
+            def snap(tag):
+                b7 = " ".join(f"{o:#x}:{(rd(BB+o)[0]>>7)&1}" for o in (0x80, 0x100, 0x104, 0x108))
+                print(f"  [{tag}] STATUS2bit7 {b7} | c120 {rd(CORE+0x120)[0]:#x} c10 {rd(CORE+0x10)[0]:#x}")
             def chk(tag):
                 sid, _ = rd(DRD + 0xc120); cap, _ = rd(DRD + 0x0)
                 g28, _ = rd(DRD + 0xcd28); sts, _ = rd(op + 4)
@@ -773,6 +776,53 @@ try:
             l0, _ = rd(CORE + 0x6c)
             wr(CORE + 0x6c, (l0 & ~0xfc) | (2 << 2) | (2 << 5))
             chk("baseline")
+            # Lanes FIRST (atcphy_configure_lanes runs before configure_pipehandler):
+            # enable both lanes' TX clock, wake the lanes, rm_ovrd to hand the clock
+            # tree to the FSM. The BIST dance below needs the lanes up - STATUS2 at
+            # +0x104 only acks with the lanes powered (probe-confirmed).
+            def ltdist(ms=300):
+                s = set(); t = time.time() + ms / 1000
+                while time.time() < t:
+                    s.add(rd(DRD + 0xc164)[0]); time.sleep(0.003)
+                return len(s)
+            for TXSHM in (CORE + 0xd000, CORE + 0x1d000):   # both lanes' TX SHM clock
+                rmw(TXSHM + 0x24, 0, (1 << 13) | (1 << 12) | (1 << 15) | (1 << 14))
+                rmw(TXSHM + 0x24, (1 << 9) | (1 << 8) | (1 << 11) | (1 << 10), 0)
+                rmw(TXSHM + 0x00, 0, (1 << 6) | (1 << 3) | (1 << 2))
+                rmw(TXSHM + 0x00, 1 << 5, 1 << 4)
+                rmw(TXSHM + 0x04, 0, (1 << 9) | (1 << 8) | (1 << 23) | (1 << 22))
+                rmw(TXSHM + 0x04, 1 << 11, 1 << 10)
+            for LB in (0, 0x10000):           # power BOTH lanes' TX/RX (lane stride 0x10000)
+                rmw(CORE + 0x120 + LB, 0xfff, 0xcff)   # TX awake+unclamp, OV forced
+                rmw(CORE + 0x10 + LB, 0xfff, 0xcff)    # RX awake+unclamp, OV forced
+            rmw(CORE + 0xc, (1 << 1) | (1 << 3) | (1 << 5), 0)  # cmn rm_ovrd -> FSM
+            for LB in (0, 0x10000):
+                rmw(CORE + 0x120 + LB, 0xccc, 0)       # tx rm_ovrd -> FSM
+                rmw(CORE + 0x10 + LB, 0xccc, 0)        # rx rm_ovrd -> FSM
+            print(f"  lanes up: L0 c120 {rd(CORE + 0x120)[0]:#x} c10 {rd(CORE + 0x10)[0]:#x} | "
+                  f"L1 c120 {rd(CORE + 0x10120)[0]:#x} c10 {rd(CORE + 0x10010)[0]:#x} PLL {rd(CORE + 0x7034)[0] & 8:#x}")
+            chk("lanes up")
+            # Start the PHY management core (acio-phy-cpu) - NEVER started before. The pipe
+            # FSM / PhyStatus likely needs it running. phymxwrap domain already on (0x3ff).
+            # port1 ctrl 0x2ab140000 = CORE+0x140040; read ctrl+0x40, OR bit0 (NOTES: 0xa0002
+            # -> 0xa0003). Skip with NOMC=1.
+            if not os.environ.get("NOMC"):
+                MC = CORE + 0x140040
+                mcv, _ = rd(MC); wr(MC, mcv | 1); mcv2, _ = rd(MC)
+                print(f"  mgmt core {MC:#x}: {mcv:#x} -> {mcv2:#x}{'  STARTED' if mcv2 & 1 else '  no-take'}")
+            # USB3_DP routing (T6050: lane-mode core+0x6c, crossbar core+0x78; t8122's
+            # 0x60/0x64 are dead here). lane0/lane1 = USB3(2)/DP(7); swapped flips them.
+            # crossbar PROTOCOL[4:0] = 0x10 (USB3_DP) / 0x11 swapped, DP_SINGLE_PMA[16:5] =
+            # 0x008. MISC LANE_SWAP = core+0x20008 bit2. SWAP env flips orientation.
+            SWAP = os.environ.get("SWAP")
+            lm = ((7 << 2) | (2 << 5)) if SWAP else ((2 << 2) | (7 << 5))  # [4:2]=lane0,[7:5]=lane1
+            rmw(CORE + 0x6c, 0xfc, lm)
+            rmw(CORE + 0x78, 0x1ffff, (0x11 if SWAP else 0x10) | (0x008 << 5))
+            sw = (1 << 2) if SWAP else 0
+            rmw(CORE + 0x20008, 1 << 2, sw)      # ATCPHY_MISC LANE_SWAP (atc.c offset)
+            rmw(PWR + 0x8, 1 << 2, sw)           # harness lanes: step's LANE_SWAP location
+            print(f"  route: 6c {rd(CORE + 0x6c)[0]:#x} 78 {rd(CORE + 0x78)[0]:#x} "
+                  f"misc20008 {rd(CORE + 0x20008)[0]:#x} pwr8 {rd(PWR + 0x8)[0]:#x}")
             # host USB3 pipehandler: disable link detection, then lock
             rmw(PIPE + 0x4, (1 << 1) | (1 << 2), 0)
             rmw(PIPE + 0x0, 0, 1 << 0)
@@ -780,21 +830,26 @@ try:
             rmw(PIPE + 0x10, 0, 1)
             lk, _ = poll(PIPE + 0x14, 1, 1, 10)
             chk(f"lock {lk}")
-            # --- BIST MAC dance (RMW named bits; block is non-zero on T6050) ---
-            rmw(BB + 0x0, 0, 1 << 0)                    # CFG1 CLOCK_EN
-            rmw(BB + 0x88, 0, 0x100000 | (2 << 25))     # CFG_OV1 PIPE_RESET_N_OV | PWR_DOWN_OV=2
-            rmw(BB + 0x8c, 0, 0x200 | 0x20)             # CFG_OV2 RESET_N_OV | PWR_DOWN_OV
-            rmw(BB + 0x0, 0, 1 << 2); e1, _ = poll(BB + 0x0, 1 << 2, 1 << 2, 10)
-            rmw(BB + 0x0, 1 << 2, 0); s1, _ = poll(BB + 0x80, 1 << 7, 0, 10)
-            rmw(BB + 0x4, 0, 1 << 2); rmw(BB + 0x4, 1 << 2, 0)
-            rmw(BB + 0x88, 3 << 25, 3 << 25)            # PWR_DOWN_OV = 3
-            rmw(BB + 0x0, 0, 1 << 2); e2, _ = poll(BB + 0x0, 1 << 2, 1 << 2, 10)
-            rmw(BB + 0x0, 1 << 2, 0); s2, _ = poll(BB + 0x80, 1 << 7, 0, 10)
-            rmw(BB + 0x4, 0, 1 << 2); rmw(BB + 0x4, 1 << 2, 0)
+            # --- BIST MAC dance, T6050 offsets: CFG1 +0x4 (CLOCK_EN b0, USB_EN b3),
+            # CFG2 +0x8 (PHY_STATUS_RE b5), STATUS2 +0x104 (b7, probe-confirmed), CFG_OV1
+            # +0x10c, CFG_OV2 +0x110. Follows atcphy_configure_pipehandler_usb3_host_t8122.
+            C1, C2, ST2, OV1, OV2 = BB + 0x0, BB + 0x4, BB + 0x104, BB + 0x10c, BB + 0x110
+            CLKEN, USBEN, STRE, ST2B = 1 << 0, 1 << 2, 1 << 2, 1 << 7
+            rmw(C1, 0, CLKEN)
+            wr(OV1, 0x100000 | (2 << 25))               # CFG_OV1 PIPE_RESET_N_OV | PWR_DOWN_OV=2
+            wr(OV2, 0x200 | 0x20)                       # CFG_OV2 RESET_N_OV | PWR_DOWN_OV
+            rmw(C1, 0, USBEN); e1, _ = poll(C1, USBEN, USBEN, 10); snap("en1")
+            rmw(C1, USBEN, 0); s1, _ = poll(ST2, ST2B, 0, 10)
+            rmw(C2, 0, STRE); time.sleep(0.01); rmw(C2, STRE, 0)
+            rmw(OV1, 3 << 25, 3 << 25)                  # CFG_OV1 PWR_DOWN_OV = 3
+            time.sleep(0.01)
+            rmw(C1, 0, USBEN); e2, _ = poll(C1, USBEN, USBEN, 10); snap("en2")
+            rmw(C1, USBEN, 0); s2, _ = poll(ST2, ST2B, 0, 10)
+            rmw(C2, 0, STRE); time.sleep(0.01); rmw(C2, STRE, 0)
             rmw(PIPE + 0x20, 0xf, 3); rmw(PIPE + 0x20, 1 << 12, 0)   # clear_nonselected
-            rmw(BB + 0x8c, 0x200 | 0x20, 0)
-            rmw(BB + 0x0, 0, 1 << 2); e3, _ = poll(BB + 0x0, 1 << 2, 1 << 2, 10)
-            rmw(BB + 0x0, 1 << 2, 0); rmw(BB + 0x0, 1 << 0, 0)
+            rmw(OV2, 0x200 | 0x20, 0)                    # release CFG_OV2 RESET_N_OV | PWR_DOWN_OV
+            rmw(C1, 0, USBEN); e3, _ = poll(C1, USBEN, USBEN, 10); snap("en3")
+            rmw(C1, USBEN, 0); rmw(C1, CLKEN, 0)
             print(f"  BIST polls: USB_EN e1 {e1} e2 {e2} e3 {e3}; STATUS2 s1 {s1} s2 {s2}")
             chk("after BIST")
             # mux to USB3 (T8142: clk [6:4]=1, data [1:0]=0)
@@ -803,62 +858,50 @@ try:
             rmw(PIPE + 0x0, 1 << 0, 0); rmw(PIPE + 0x0, 1 << 2, 0)
             rmw(PIPE + 0x10, 1, 0); ul, _ = poll(PIPE + 0x14, 1, 0, 10)
             chk(f"mux {mux:#x} ul {ul}")
-            chk("no-hcrst")
-            # enable BOTH lanes' TX clock (TX SHM core+0xd000 / +0x1d000): LDO clock
-            # on, byteclk reset-sync released, TXA CLK_EN + DIV2, reset released.
-            # Covers either cable orientation. Never done for USB3 before.
-            for TXSHM in (CORE + 0xd000, CORE + 0x1d000):
-                rmw(TXSHM + 0x24, 0, (1 << 13) | (1 << 12) | (1 << 15) | (1 << 14))
-                rmw(TXSHM + 0x24, (1 << 9) | (1 << 8) | (1 << 11) | (1 << 10), 0)
-                rmw(TXSHM + 0x00, 0, (1 << 6) | (1 << 3) | (1 << 2))
-                rmw(TXSHM + 0x00, 1 << 5, 1 << 4)
-                rmw(TXSHM + 0x04, 0, (1 << 9) | (1 << 8) | (1 << 23) | (1 << 22))
-                rmw(TXSHM + 0x04, 1 << 11, 1 << 10)
-            chk("lane clk (both)")
-            # REMOVE OVERRIDES so the PHY FSM drives the clock tree (the
-            # cmn/tx/txrx override-removal step). `wake` forces the
-            # common block via CFG0 (core+0xc) override bits and never releases
-            # them; the lanes likewise. Clear: CFG0 COMMON_*_OV (bits 1,3,5),
-            # TX OV core+0x120 [3:2]/[7:6]/[11:10], RX OV core+0x10 [3:2]/[7:6].
-            # c120=0x...fcc forces the TX lane ASLEEP+CLAMPED (BIG=0,SMALL=0,CLAMP=3,
-            # all OV=3); c10=0 = RX never powered. Wake both lanes like the common
-            # block: BIG=3, SMALL=3, CLAMP=0, overrides on -> low12 = 0xcff. Then
-            # release overrides so the FSM runs the clock tree.
-            def ltdist(ms=300):
-                s = set(); t = time.time() + ms / 1000
-                while time.time() < t:
-                    s.add(rd(DRD + 0xc164)[0]); time.sleep(0.003)
-                return len(s)
-            print(f"  before: CFG0 {rd(CORE + 0xc)[0]:#010x} c120 {rd(CORE + 0x120)[0]:#010x} "
-                  f"c10 {rd(CORE + 0x10)[0]:#010x} PLL {rd(CORE + 0x7034)[0] & 8:#x} LTSSM {ltdist()}")
-            rmw(CORE + 0x120, 0xfff, 0xcff)   # TX lane awake+unclamp, OV forced
-            rmw(CORE + 0x10, 0xfff, 0xcff)    # RX lane awake+unclamp, OV forced
-            print(f"  lane wake: c120 {rd(CORE + 0x120)[0]:#010x} c10 {rd(CORE + 0x10)[0]:#010x} "
-                  f"PLL {rd(CORE + 0x7034)[0] & 8:#x} LTSSM {ltdist()}")
-            rmw(CORE + 0xc, (1 << 1) | (1 << 3) | (1 << 5), 0)  # cmn rm_ovrd
-            rmw(CORE + 0x120, 0xccc, 0)                          # tx rm_ovrd
-            rmw(CORE + 0x10, 0xccc, 0)                           # rx rm_ovrd
-            print(f"  rm_ovrd: CFG0 {rd(CORE + 0xc)[0]:#010x} c120 {rd(CORE + 0x120)[0]:#010x} "
-                  f"c10 {rd(CORE + 0x10)[0]:#010x} PLL {rd(CORE + 0x7034)[0] & 8:#x} LTSSM {ltdist()}")
-            chk("rm_ovrd")
-            # Start the controller and watch BOTH ports for the phone; try a warm
-            # reset (WPR) to pull the SS link out of SS.Disabled. NO HCRST (keeps
-            # the controller alive). LTSSM.state = GDBGLTSSM bits [21:18].
+            # Start the controller, then drive a DIRECTED link-state change to
+            # RxDetect (PLS=5 + LWS) - NO WPR. A warm reset pins PR=1 and holds the
+            # SS LTSSM in reset, masking the real state; a directed PLS keeps the
+            # port observable. NO HCRST (keeps the controller alive).
             op0 = op + 0x400; op1 = op + 0x410
+            def dec1(v):
+                return (f"{v:#010x} PR {(v>>4)&1} PLS {(v>>5)&0xf} CCS {v&1} "
+                        f"PED {(v>>1)&1} PP {(v>>9)&1} WRC {(v>>19)&1} PRC {(v>>21)&1} spd {(v>>10)&0xf}")
             cmd, _ = rd(op); wr(op, cmd | 1)                     # Run/Stop
             for pa in (op0, op1):
                 v, _ = rd(pa); wr(pa, (v & (0x40003c09 | 0x0e00c3e0)) | (1 << 9))  # port power
-            time.sleep(0.05)
-            v, _ = rd(op1); wr(op1, (v & (0x40003c09 | 0x0e00c3e0)) | (1 << 9) | (1 << 31))  # warm reset
-            last = None; end = time.time() + 5
+            # no-WPR baseline: where do R/S + port power alone park the SS LTSSM?
+            print(f"  base PORTSC1 {dec1(rd(op1)[0])}")
+            time.sleep(0.1)
+            print(f"  base+100ms   {dec1(rd(op1)[0])}")
+            # WPR (warm reset, bit31) to START SS training - the crossbar/lanes are now
+            # correct so the pipe is configured (earlier WPR stuck with PR=1 pre-config).
+            # Preserve PP/PIC/wake; no PED.
+            cur, _ = rd(op1)
+            wr(op1, (cur & (0x200 | 0xc000 | 0x0e000000)) | (1 << 31))
+            last = None; end = time.time() + 6
             while time.time() < end:
                 v0, _ = rd(op0); v1, _ = rd(op1); st = (rd(DRD + 0xc164)[0] >> 18) & 0xf
                 if (v0, v1, st) != last:
-                    print(f"  USB2 PORTSC0 {v0:#010x} CCS {v0 & 1} | SS PORTSC1 {v1:#010x} "
-                          f"CCS {v1 & 1} PLS {(v1 >> 5) & 0xf} | LTSSM.state {st:#x}")
+                    print(f"  USB2 PORTSC0 {v0:#06x} CCS {v0 & 1} | SS PORTSC1 {dec1(v1)} | LTSSM {st:#x}")
                     last = (v0, v1, st)
                 time.sleep(0.01)
             chk("after watch")
+            print(f"  PIPE  GUSB3PIPECTL {rd(DRD+0xc2c0)[0]:#x} GUSB2PHYCFG {rd(DRD+0xc200)[0]:#x} "
+                  f"GCTL {rd(DRD+0xc110)[0]:#x} GSTS {rd(DRD+0xc118)[0]:#x}")
+            print(f"  PCS   CFG1 {rd(CORE+0x29000)[0]:#x} CFG2 {rd(CORE+0x29004)[0]:#x} "
+                  f"STATUS2 {rd(CORE+0x29080)[0]:#x} CFG_OV1 {rd(CORE+0x29088)[0]:#x} CFG_OV2 {rd(CORE+0x2908c)[0]:#x}")
+            print(f"  LANE  TXpwr(c120) {rd(CORE+0x120)[0]:#x} RXpwr(c10) {rd(CORE+0x10)[0]:#x} "
+                  f"CFG0(c) {rd(CORE+0xc)[0]:#x} lanemode(6c) {rd(CORE+0x6c)[0]:#x} PLLlock {rd(CORE+0x7034)[0]&8:#x}")
+            print(f"  PORTSC1 {dec1(rd(op1)[0])} glue {rd(DRD+0xcd28)[0]:#x}")
+            # PHYSoftRst (GUSB3PIPECTL bit31): dwc3 self-clears it only if pipe_clk toggles.
+            # Stuck-set = no pipe clock; self-clears = clock present (look elsewhere).
+            pc0, _ = rd(DRD + 0xc2c0); wr(DRD + 0xc2c0, pc0 | (1 << 31))
+            time.sleep(0.001); a1, _ = rd(DRD + 0xc2c0)
+            time.sleep(0.02); a2, _ = rd(DRD + 0xc2c0)
+            wr(DRD + 0xc2c0, pc0)
+            print(f"  PHYSoftRst: +1ms {a1:#x}(b31 {(a1>>31)&1}) +20ms {a2:#x}(b31 {(a2>>31)&1}) -> "
+                  f"{'PIPE CLK PRESENT (self-cleared)' if not ((a2>>31)&1) else 'NO PIPE CLK (stuck set)'}")
+            print(f"  pipehandler: mux(+0xc) {rd(PIPE+0xc)[0]:#x} nonsel(+0x20) {rd(PIPE+0x20)[0]:#x}")
             wr(CORE + 0x6c, l0)
         elif s == "phypwr":
             # the driver's atcphy_power_on at ATCPHY_POWER_CTRL = core+0x20000

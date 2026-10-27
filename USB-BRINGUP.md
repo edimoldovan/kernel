@@ -904,3 +904,333 @@ full glue/GUSB3PIPECTL as the working reference (done above - glue 0x886/
 write AFTER atc1_cio to see if the glue can be re-established; (c) force the SS
 port to retrain (PORTSC warm reset) and watch the LTSSM state field (not the
 whole word) actually change. The PHY side may already be fine.
+
+## Device present: SS warm reset engages but never completes (PIPE-side) (2026-10-27 19:20)
+
+USB3 stick in port 1 (left-front). Sequence `cio tunables tunx wake pllstart2 u3bist`
+after a clean reboot. u3bist instrumented: glue (drd+0xcd28) printed after each of
+the four port writes; glue restored (cd28/cd2c 0x886, cd40 0x3c20060c, cd44 0x2000b)
+right after the WPR.
+
+- USB2 PORTSC0 0x206e1 CCS 1: stick enumerates at USB2 on port 1.
+- PLL locked (0x7034 bit3); controller alive throughout (SID 0x33313130, CAP
+  0x01100020); no hang.
+- SS PORTSC1 0x2b0 held 5 s: PR 1, WRC 0, PLS 5, CCS 0. The warm reset asserts
+  (PR=1) and never completes (WRC stays 0). Device-free the same WPR settles to
+  0x2a0 (PR 0). The far-end device makes the reset engage, then stall.
+- glue 0x886 after R/S, after both PP writes, and after WPR; the restore took. By
+  end of the 5 s watch glue read 0. No explicit write zeroed it; it is held 0 while
+  PR is asserted (reset domain).
+- GUSB3PIPECTL 0x1021102; BIST STATUS2 (core+0x29080) 0x0 -> bit7 LN0_PHY_STATUS2 = 0:
+  the PHY is not asserting pipe PhyStatus / not in P0, so the warm-reset handshake
+  cannot complete.
+
+Open: get the PHY pipe to P0 (PhyStatus acked) so the reset completes, or drive the
+link with a directed PLS=5+LWS transition (no WPR) that does not hold the glue in reset.
+
+## Directed PLS (no WPR): steady RxDetect, no far-end -> orientation is live (2026-10-27 19:21)
+
+Dropped the WPR; drive PORTSC1 PLS=5 (RxDetect) + LWS instead, so the port stays
+observable (WPR pins PR=1 and masks the LTSSM).
+
+- base PORTSC1 0x2a0 (PR 0, PLS 5, CCS 0, PP 1): R/S + port power alone park the SS
+  link at RxDetect, no reset. Steady across 100 ms and the full 6 s watch.
+- directed PLS=5+LWS added nothing: PORTSC1 held 0x2a0 for 6 s. PR stays 0, PLS 5,
+  never advances to 7 (Polling).
+- USB2 PORTSC0 0x206e1 CCS 1 throughout (stick on port 1).
+- GUSB3PIPECTL 0x1021102, BIST STATUS2 (core+0x29080) 0x0.
+
+Reading: the SS link is in steady RxDetect looking for a far-end SuperSpeed receiver
+and not seeing one. lane-mode 0x6c [4:2]/[7:5] = 2/2 is one of the two cable
+orientations. Next: test the other orientation (flip the stick), one change. If both
+orientations park at 5, investigate STATUS2 / PWR_DOWN_OV (core+0x29088) with PR=0.
+
+## Flip ruled out: both orientations park at RxDetect; PIPE-side (2026-10-27 19:41)
+
+Flipped the stick (other cable orientation), same sequence. Identical result:
+PORTSC1 0x2a0, PR 0, PLS 5, CCS 0, steady; USB2 PORTSC0 0x206e1 CCS 1. Both
+orientations park at RxDetect, so it is not orientation.
+
+STATUS2 (core+0x29080) = 0x0 with PR=0 -> bit7 LN0_PHY_STATUS2 low: the PHY/PCS is
+not asserting pipe PhyStatus, i.e. the lane is not in an active (P0) output state, so
+RxDetect sees no far-end regardless of orientation. GUSB3PIPECTL 0x1021102.
+
+Open: bring the PHY lane/PCS to P0 (PhyStatus asserted) - check CFG_OV1/CFG_OV2
+PWR_DOWN overrides (core+0x29088/0x2908c) and the actual lane power-down state.
+
+## PCS dump at RxDetect: CFG_OV1 holds pipe in reset + P3 (2026-10-27 19:43)
+
+Full state at steady RxDetect (both orientations, PR=0):
+- PIPE: GUSB3PIPECTL 0x1021102, GUSB2PHYCFG 0x102400, GCTL 0x30c11004 (host, no soft
+  reset), GSTS 0x7e800021.
+- PCS (core+0x29000): CFG1 0x0, CFG2 0xe00, STATUS2 0x0, CFG_OV1 0x6100000, CFG_OV2 0x0.
+- LANE: TXpwr c120 0x15540033, RXpwr c10 0x33 (both awake, OV cleared -> FSM-driven),
+  CFG0 0x1003f305, lanemode 6c 0x700004a ([4:2]=2 [7:5]=2), PLL lock 0x8.
+
+CFG_OV1 0x6100000 = PIPE_RESET_N_OV (bit20 0x100000) + PWR_DOWN_OV [26:25] = 3. The
+BIST dance leaves CFG_OV1 asserted: pipe reset_n overridden and power-down forced to 3
+(P3). The lanes are awake but the PCS holds the pipe in reset + deepest power-down, so
+STATUS2 bit7 stays 0 and the lane never outputs -> RxDetect sees nothing either way.
+
+u3bist clears CFG_OV2 (BB+0x8c) at the end but never clears CFG_OV1 (BB+0x88).
+Candidate fix: release CFG_OV1 after the BIST dance so the pipe/FSM drives P0 + reset_n.
+
+## [UNCONFIRMED - pending BASE[35] readback] T6050 BIST block offsets vs t8122 (2026-10-27 19:55)
+
+CAVEAT (20:10): the "block moved by 0x84" claim below is NOT established. seqdec labels
+addresses "[idx35]" by its own inference; BASE[35] was never read as a number. Also
+u3bist's USB_EN set-and-poll PASSES at +0x0 (bits take there), so +0x0 behaves like CFG1.
+The real unexplained symptom is STATUS2 (+0x80) bit7 never asserting. Verifying BASE[35]
+and which offset is the live STATUS2 before trusting any of the below.
+
+Decoded the real AppleT6050TypeCPhy::aciophy_pipe_bist_override from the kernelcache
+(fffffe0009f055f4). It does NOT use the +0x88/+0x8c/+0x80 offsets our u3bist writes
+(those are the t8122 atc.c map, block 0x17000). On T6050 the BIST block (core+0x29000)
+uses a shadow-register / indirect-write protocol:
+- data regs: +0x2910c (|0x6000000 = [26:25]=3), +0x29110 (|0x200)
+- strobe/commit: +0x29004 (set bit3 0x8, poll bit0; also bit0/bit1), +0x29008 (set bit5
+  0x20, poll)
+- status: +0x29104 (bits 6/8 flags, bit0 busy)
+Each data write is followed by a +0x29004 bit3 strobe (poll bit0) to latch it; +0x2910c
+and +0x29110 are polled on bit0 (ready) before access.
+
+The driver's override registers are +0x10c/+0x110 (same bit patterns our u3bist aimed
+at +0x88/+0x8c: [26:25]=3 and 0x200), i.e. the block moved by 0x84 vs the t8122 map.
+u3bist writes +0x88/+0x8c with no strobe; the driver's real override regs (+0x10c/+0x110)
+were never touched by us. Whether our +0x88/+0x8c writes have ANY effect on T6050 is
+unconfirmed (they are writable - read back our value - but are not the driver's override
+regs). So the prior "CFG_OV1 holds pipe in P3" reading (19:43) is unconfirmed, not
+established.
+
+NOTE: pipe_bist_override takes a bool - it is an OVERRIDE path (park pipe for BIST). The
+live USB3 path likely calls it true (park) then false (release). The false arm is the
+fix, probably a couple of strobed writes, not the whole 69-W sequence. Next: raw-disasm
+the arg branch + the two blank +0x10c/+0x110 writes for exact values, then port the
+release arm to the correct offsets. STATUS2 remains the oracle.
+
+## CONFIRMED: STATUS2 at +0x104, PHY acks; BIST MAC group moved +0x84 (2026-10-27 20:05)
+
+Probe (pulse candidate CFG1/USB_EN with lanes powered, watch STATUS2 candidates):
+  probe +0x0.2 / +0x4.2 / +0x4.3 -> STATUS2 bit7 at +0x104 = 1 (+0x80 stays 0)
+  probe +0x8.5                   -> +0x104 = 0
+Resolves the 19:55 UNCONFIRMED tag:
+- STATUS2 (LN0_PHY_STATUS2 bit7) is at +0x104, NOT +0x80. The MAC_USBPHY group moved
+  +0x84: STATUS2 0x80->0x104, CFG_OV1 0x88->0x10c, CFG_OV2 0x8c->0x110.
+- The PHY DOES acknowledge (bit7 asserts). So this is a register-offset bug in u3bist,
+  NOT a dead PHY / lane-power failure (c120/c10 awake 0x...33 throughout).
+- u3bist polled +0x80 (always 0 -> trivially "ok") and wrote overrides to +0x88/+0x8c
+  (dead), so the real STATUS2 was never checked and the real overrides never driven.
+
+T6050 BIST map (macOS decode immediates + probe): CFG1 +0x4 (CLOCK_EN bit0, USB_EN
+bit3), CFG2 +0x8 (PHY_STATUS_RE bit5), STATUS2 +0x104 (bit7), CFG_OV1 +0x10c, CFG_OV2
++0x110. Re-porting the dance (atcphy_configure_pipehandler_usb3_host_t8122) to these.
+
+## Dance completes but SS link stays at RxDetect; STATUS2 semantics (2026-10-27 20:17)
+
+Reordered (lanes before dance) + CFG1/CFG2 reverted to +0x0/+0x4 (only MAC group moved
++0x84: STATUS2 +0x104, CFG_OV1 +0x10c, CFG_OV2 +0x110). Results:
+- Discriminator (from cleared STATUS2): USB_EN at cfg1@0x0.b2 AND cfg1@0x4.b3 both leave
+  STATUS2(+0x104) bit7 = 0 (0->0). So USB_EN does NOT assert +0x104 bit7. The u3run-6
+  "+0x104:1" was stale pre-existing state, cleared by the +0x8.b5 strobe - not a response.
+- BUT Linux polls STATUS2 for bit7 == 0 (!(reg & PHY_STATUS2)) = waits for it to be clear.
+  bit7 == 0 is the expected success post-condition, which we have. So the dance's STATUS2
+  checks pass (trivially or correctly - unresolved which).
+- Dance now completes cleanly: CFG_OV1/OV2 end 0x0 (set then released), glue preserved
+  0x886 (not wiped), mux USB3, GSTS 0x7e800001.
+- SS PORTSC1 still 0x2a0 (RxDetect, PR 0, CCS 0): controller drives RxDetect, no far-end.
+
+Unresolved: is +0x104 really STATUS2 (it responds to the +0x8.b5 strobe but not to USB_EN)?
+And the core gap remains RxDetect -> Polling: the controller sees no far-end SS receiver.
+All orientation tests so far were with the BROKEN dance, so orientation is not re-excluded.
+
+## KEY: u3bist never set the USB3 crossbar/lane-mode (USB3 = DP/USB3 combo) (2026-10-27 20:25)
+
+atc.c APPLE_ATCPHY_MODE_USB3 comment: "USB3/USB3 does not work ... set up the lanes as
+DP/USB3." USB3 on this PHY uses crossbar USB3_DP (0x10 normal / 0x11 swapped),
+DP_SINGLE_PMA UNK008 (0x008), lane_mode {USB3,DP}/{DP,USB3}, ATCPHY_MISC LANE_SWAP per
+orientation. configure_lanes writes aciophy_lane_mode (CORE+0x60) + aciophy_crossbar
+(CORE+0x64), BEFORE configure_pipehandler.
+
+u3bist never did this: it sets CORE+0x6c (NOT the atc.c lane-mode reg 0x60) and never
+touches the crossbar 0x64. So the SS was never routed to a USB3-mode lane - RxDetect sees
+no far-end regardless of orientation. The harness lanes:normal / lanes:swapped steps DO
+encode the correct atc.c values (lane 0x60, xbar 0x64 = 0x10/0x11 | 0x008<<5, MISC swap).
+
+Test: `cio tunables tunx wake pllstart2 lanes:normal u3bist`. normal routes USB3 to lane0
+(u3bist powers lane0 via c120/c10); swapped routes to lane1 (would also need lane1 power).
+The two cover the two cable orientations. (Footnote: the +0x104 "is it STATUS2" question
+is not blocking - the dance end state is verified by CFG_OV/glue/GSTS; do not rathole on it.)
+
+## adjust_lane_mode decode: lane-mode at core+0x6c, T6050 field values 2/7 (2026-10-27 20:35)
+
+AppleT6050TypeCPhy::adjust_lane_mode(uint laneMask, uchar mode) @ f0a234:
+  x8 = this->[0x250] (regs.core); reads+writes core+0x6c.
+  field [4:2] gated by (laneMask & 1); field [7:5] gated by (laneMask & 2).
+  field value = 7 if mode in {0x81,0x82}, else 2.
+So lane-mode reg = core+0x6c (CONFIRMED; NOT 0x60). T6050 field encoding is 2/7, NOT
+atc.c's 1(USB3)/2(DP)/3(OFF) - that enum does not apply to T6050. u3bist sets both
+[4:2]=[7:5]=2. For USB3_DP the two lanes must DIFFER (USB3 vs DP) -> {2,7} in some order.
+Open: which of 2/7 is USB3, and the crossbar offset/value (0x60/0x64 dead here; 0x78
+unverified). NOTE: lanes:normal 0x60/0x64 writes read back 0 (before lanes powered).
+
+## CROSSBAR FOUND: core+0x78 (writable); was 0xa (pure USB3 = "does not work") (2026-10-27 20:31)
+
+DIAG with lanes powered: core+0x60/0x64 writes ignored (dead - t8122 offsets). core+0x78
+is WRITABLE (0x2a -> 0x30 on [4:0]=0x10 write) = the crossbar. Reset value 0x2a =
+protocol [4:0]=0xa (pure USB3) + DP_SINGLE_PMA bit. atc.c: pure USB3 "does not work",
+needs USB3_DP (0x10). So the T6050 map is: lane-mode core+0x6c, crossbar core+0x78 (NOT
+t8122's 0x60/0x64). Register dump @ lanes-up: 0x6c=0x700004a 0x70=0x100 0x74=0x1
+0x78=0x2a 0x7c=0x2a492a 0x80=0x800620.
+
+Fix: crossbar 0x78 = 0x10 | (0x008<<5) (USB3_DP, DP_SINGLE_PMA 0x008) normal / 0x11 swapped;
+lane-mode 0x6c [4:2]=2 (USB3 lane0) [7:5]=7 (DP lane1); MISC core+0x20008 swap bit.
+SWAP env flips orientation. Testing normal first.
+
+## USB3_DP crossbar set correctly, still RxDetect (normal orientation) (2026-10-27 20:33)
+
+route applied: 6c=0x70000ea ([4:2]=2 USB3 lane0, [7:5]=7 DP lane1), 78=0x110 (USB3_DP +
+DP_SINGLE_PMA 0x008), misc=0 (no swap). Crossbar/lane-mode now match atc.c USB3 normal.
+Result: PORTSC1 still 0x2a0 (RxDetect PR0 CCS0), STATUS2 0, no train.
+Next candidates: (a) swapped orientation - but u3bist powers only lane0 (c120 0x120 / c10
+0x10); swapped (USB3 on lane1) needs lane1 powered (lane stride 0x10000 -> 0x10120/0x10010);
+(b) DP lane PMA FSM override (configure_lanes dp_lane[1]: LN1 RX_TOP+PMAFSM PCS_OV/REQ) not
+done; (c) USB3-lane TX driver output enable.
+
+## T6050 is T8122-gen: DP PMA FSM N/A; power lane1 for swapped test (2026-10-27 20:40)
+
+atcphy_hw_t6050.gen = ATCPHY_GENERATION_T8122 ("same T8122-family core as M5 Air t8142").
+configure_lanes early-returns for T8122 BEFORE the dp_lane PMA FSM override (that block is
+T8103-only; T8122 DP lanes start via the link-rate sequence). So the DP PMA FSM is NOT
+wanted for T6050 USB3 - do not add it.
+
+Normal (USB3 lane0, powered) did not train -> stick may be swapped (USB3 on lane1), and
+u3bist powered only lane0. Powering BOTH lanes (stride 0x10000: lane1 TX 0x10120, RX 0x10010)
+and testing SWAP=1 (USB3 routed to lane1). Readback must show L1 c120/c10 = 0x..33.
+
+## Both orientations fail detection -> TX not driving the SS pad (2026-10-27 20:38)
+
+SWAP=1 (swapped): lane1 now powered (L1 c120 0x1033 c10 0x33 - stride 0x10000 correct),
+route 6c=0x700005e ([4:2]=7 DP lane0, [7:5]=2 USB3 lane1), 78=0x111 (USB3_DP_SWAPPED +
+DP_SINGLE_PMA 0x008), misc=0x4 (swap). All correct for swapped. Result: PORTSC1 0x2a0
+(RxDetect PR0 CCS0), no train. Normal (run 12) also no train. So BOTH orientations fail
+with crossbar/lanes correct -> NOT orientation. Host RxDetect sees no far-end either way
+= the USB3 lane TX is not driving the pad. u3bist's c120/c10 + rm_ovrd is only a partial
+lane power-up. Next: the real lane power-up (aciophy_tx_powerup / rx_powerup, decoded in
+scratchpad) / TX output driver enable (LN_AUSPMA_TX_TOP core+0xc000 / 0x1c000).
+
+## PLS=5 is static (device makes no difference); retry WPR kick with correct config (2026-10-27 20:42)
+
+Both orientations + full correct config (crossbar USB3_DP, lanes, both powered): PORTSC1
+0x2a0 (PLS 5), identical to the pre-stick device-free baseline (also 0x2a0). Device present
+changes PORTSC1 by nothing in the no-WPR path -> the SS LTSSM is not actively probing; PLS=5
+is a static resting state. So the link needs KICKING into training. Standard SS start = a
+warm reset (WPR); earlier WPR stuck (PR=1) because the pipe was unconfigured - now the
+crossbar/lanes are correct and glue holds 0x886. Retrying WPR, watching PR->0, WRC->1, PLS.
+(Side note: lane1 c120 upper = 0x1000 vs lane0 0x15540000 - lane1 has less TX upper-config;
+but normal with lane0 full also parked at 5, so that is not the sole cause.)
+
+## WPR still stuck (PR=1) even with correct config + glue preserved (2026-10-27 20:42)
+
+Normal orientation, full correct config, WPR: PORTSC1 -> 0x2b0 (PR=1), held, WRC stays 0 =
+warm reset engages but never completes. glue now PRESERVED (0x886, not wiped - the offset fix
+worked). STATUS2 (+0x104) bit7 stays 0 throughout. So even fully configured, the PHY does not
+complete the reset handshake (no PhyStatus); the dwc3<->PHY pipe is not reaching an active
+(P0 / PhyStatus-asserted) state. Remaining candidates: (1) GUSB3PIPECTL SUSPENDENABLE (bit17)
+or the pipe not requesting P0; (2) the PHY management core (acio-phy-cpu; see usb4/phy-core-start
+NOTES - start = ctrl+0x40 bit0) not running to drive the pipe FSM; (3) limits of software-only
+bring-up without the full OS driver + PHY firmware.
+
+## Both orientations (swap fully applied) fail WPR; need unplugged control (2026-10-27 20:45)
+
+SWAP=1 with BOTH swap regs set (misc20008=0x4 AND pwr8=0x1804 - physical lane swap now
+definitely applied) + swapped crossbar (78=0x111) + both lanes powered: WPR -> PORTSC1 0x2b0
+(PR=1) stuck, WRC 0, STATUS2 0. Normal (run 14) same. So BOTH orientations, fully configured,
+WPR engages but never completes. NOT orientation. The PHY does not complete the reset
+handshake in any config. Decisive next test (needs the stick pulled), re-run:
+  - PR still 1 unplugged -> host-side (PHY/pipe not producing PhyStatus) -> GUSB3PIPECTL /
+    PHY management core (acio-phy-cpu).
+  - PR clears to 0x2a0 unplugged -> device IS seen; stall is the device handshake.
+
+## DECISIVE: unplugged control - PR still stuck -> host-side, not the device (2026-10-27 21:37)
+
+Stick PULLED (USB2 PORTSC0 0x2a0 CCS 0 confirms out). Same sequence + WPR: SS PORTSC1 0x2b0
+PR=1 stuck, WRC 0, STATUS2 0 - IDENTICAL to plugged (runs 14/15). So the warm-reset stall is
+NOT about the device; it is purely host-side. The dwc3<->PHY pipe never completes the reset /
+the PHY never asserts PhyStatus, with or without a device.
+
+Key never-tried gap: the PHY management core (acio-phy-cpu, iop,mxwrap; port0 ctrl 0x2a3140000,
+start 0x2a3140040 bit0 per usb4/phy-core-start/NOTES; port1 +0x8000000 = 0x2ab140040) has NEVER
+been started in the u3bist sequence. The pipe FSM / PhyStatus generation likely needs it.
+Caveat: its power domain is atc1_phymxwrap (PMGR2+0x170), which cio does NOT power (it's only
+in WATCH) - may need powering first. Alt host-side: GUSB3PIPECTL (0x1021102) SUSPENDENABLE b17.
+
+## Port compare: no working SS reference; p1 mgmt core NOT started (2026-10-27 21:38)
+
+Read-only compare (p2 mgmt-core read hung the SoC -> WDT reboot; p2 phymxwrap off):
+- PORT 2 (proxy, working USB2): PORTSC1 (SS) = 0x280 = PLS 4 (SS.Disabled), PP 1, CCS 0.
+  GUSB3PIPECTL 0x1021102, GCTL 0x30c12004, USBSTS 0x1. The proxy is USB2-ONLY; its SS port
+  is Disabled. So there is NO trained-SS reference on this board to compare against.
+- p1 atc1_phymxwrap (PMGR2+0x170) = 0x3ff = ALREADY powered (boot/cio leaves it on; earlier
+  "off" assumption was wrong).
+- p1 mgmt core start 0x2ab140040 = 0xa0002 = bit0 CLEAR = NOT started (= NOTES port0 "before").
+  Never started in any u3bist run.
+Next: start the mgmt core (OR bit0 -> expect 0xa0003) in u3bist after PLL/lanes, then WPR -
+direct test of whether the dwc3<->PHY pipe FSM / PhyStatus needs the core running.
+
+## Management core started (0xa0003) - no change; PR still stuck (2026-10-27 21:46)
+
+Started acio-phy-cpu mgmt core (0x2ab140040: 0xa0002 -> 0xa0003, bit0 held). STATUS2 still 0,
+PORTSC1 still 0x2b0 (PR=1 stuck), WRC 0. So the mgmt core is NOT the gate (or not sufficient).
+The PHY still does not complete the pipe reset / assert PhyStatus.
+
+Remaining hypothesis: no PIPE CLOCK from the PHY to the dwc3 controller. The warm reset waits
+for the PHY's reset-done (PhyStatus); without the pipe3 clock the PHY pipe interface cannot
+run. This is the original "clock path" question. Candidates: pipe-clock routing/derive from
+the lane (TX SHM core+0xd000 beyond CLK_EN) or a pipe-clock mux/enable not yet found.
+
+## PHYSoftRst test INCONCLUSIVE; converging evidence = SS pipe not active (2026-10-27 21:51)
+
+Ran it: GUSB3PIPECTL bit31 set, stays set at +1ms and +20ms. BUT this is NOT a valid pipe-clock
+test: in dwc3 PHYSoftRst (GUSB3PIPECTL bit31) is software-set/cleared, not self-clearing. The
+self-clearing clock-gated reset is DCTL.CSFTRST ("cleared only after all clocks are synchronized")
+- device-side, and dwc3_core_soft_reset returns early in HOST mode (core.c:332). So "stuck set"
+only means software did not clear it. DISREGARD the harness "NO PIPE CLK" print label.
+
+What IS solid (device-independent, converging):
+  (1) SS warm reset engages (PR=1) but never completes (WRC never sets);
+  (2) STATUS2 / PhyStatus2 (core+0x104 b7) never asserts;
+  (3) PLS static, plugged == unplugged (0x2a0 / 0x2b0-under-WPR regardless of device);
+  (4) earlier xHCI HCRST never completed ("killed the controller").
+All point to the dwc3<->PHY SS pipe interface not being active - most likely the PHY not
+providing the SS pipe clock. That is the remaining problem = the original "clock path" question.
+End-state pipehandler: mux(+0xc)=0x10 (clk=1 USB3, data=0), nonsel(+0x20)=0x8333.
+
+## WHERE IT STANDS (session end 2026-10-27 ~21:51)
+
+SOLVED / working this session:
+- USB2 host works on port 1 (left-front); USB3 stick enumerates at USB2 (PORTSC0 CCS=1).
+- Full USB3 PHY bring-up, all with correct T6050 register offsets:
+  * power domains (cio), tunables + per-lane tunables (tunx), AUSPLL locked (0x7034 b3).
+  * BOTH lanes powered (c120/c10 at lane stride 0x10000), FSM-driven (rm_ovrd).
+  * crossbar core+0x78 = USB3_DP (0x10 / 0x11 swapped) + DP_SINGLE_PMA 0x008 (t8122's
+    0x60/0x64 are DEAD on T6050; map discovered this session).
+  * lane-mode core+0x6c: USB3 lane = field 2, DP lane = field 7 (adjust_lane_mode decode).
+  * BIST MAC dance at the real T6050 offsets (STATUS2 +0x104, CFG_OV1 +0x10c, CFG_OV2 +0x110;
+    the MAC_USBPHY group moved +0x84 vs the t8122 map the old u3bist used).
+  * lane order: configure_lanes BEFORE the dance (Linux order).
+  * glue (drd+0xcd28 pipe-clock cfg) preserved at 0x886 (was being wiped by wrong-order resets).
+  * acio-phy-cpu management core started (0x2ab140040 0xa0002->0xa0003).
+- dwc3 controller runs on the USB3 pipe, CIO on, no halt (SID/CAP alive, no HCRST).
+
+THE REMAINING WALL (device-independent):
+- The SS LTSSM never leaves RxDetect; warm reset engages but never completes; PhyStatus2 never
+  asserts. The PHY is not bringing up the active SS pipe (clock + PhyStatus) to the controller.
+- Orientation is NOT the cause (both orientations, swap fully applied, identical).
+- Management core running does NOT fix it.
+
+NEXT (for whoever continues): the USB3 pipe-clock path - how the PHY derives/outputs the pipe3
+clock to the dwc3 controller once the lane is in USB3_DP mode. Candidates untried: a pipe-clock
+source-select/enable in the PCS or the TX SHM beyond CLK_EN; the DP-lane start that T8122 does
+via the link-rate sequence (atcphy_dp_set_rate_t8122) - the USB3_DP combo may need the DP lane's
+PMA actually running, which only that sequence does. A clean pipe-clock-present probe is still
+needed (PHYSoftRst was invalid; DCTL.CSFTRST is device-mode only).
