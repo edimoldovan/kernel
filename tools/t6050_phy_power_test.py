@@ -152,7 +152,7 @@ def step_cio():
     return True
 
 steps = sys.argv[1:] or ["read"]
-if is_proxy(DRD):
+if is_proxy(DRD) and not os.environ.get("FORCE_PORT1"):
     sys.exit("port 1 looks like the proxy port (device, HS, U0); refusing")
 if not is_proxy(PORTS_PROXY_CHECK[2]):
     print("note: port 2 does not look like the proxy port")
@@ -640,6 +640,288 @@ try:
                         rmw(PIPE + 0x20, 0xf, 2); rmw(PIPE + 0x20, 0, 1 << 12)
                         wr(CORE + 0x29004, p0); wr(CORE + 0x6c, l0); wr(PWR + 0x8, m0)
                         wr(PWR + 0x14, c14)
+        elif s == "tunx":
+            # the every-mode per-lane tunables + LIOA the `tunables` step omits:
+            # RX_EQ_DFLT (reg 18/27) and RX_CFG_TX_OF_RXCLK (reg 20/29, lane TX
+            # clocking), plus ATC0AXI2AF_LIOA (reg 42). CIO-off.
+            import struct as _st
+            node = u.adt["/arm-io/atc-phy1"]
+            for prop, idx in (("tunable_ATC0AXI2AF_LIOA", 42),
+                              ("tunable_LN0_RX_EQ_DFLT", 18), ("tunable_LN0_RX_CFG_TX_OF_RXCLK", 20),
+                              ("tunable_LN1_RX_EQ_DFLT", 27), ("tunable_LN1_RX_CFG_TX_OF_RXCLK", 29)):
+                raw = bytes(node._properties[prop])
+                base = node.get_reg(idx)[0]
+                faults = 0
+                for j in range(0, len(raw), 12):
+                    ofs, mask, val = _st.unpack_from("<III", raw, j)
+                    faults += rmw(base + (ofs & 0xffffff), mask, val & mask)
+                print(f"  {prop:30} reg[{idx}] {base:#x}: {len(raw) // 12} entries, {faults} faults")
+                pet()
+        elif s == "u3clean":
+            # CIO-OFF USB3 attempt: lane mode core+0x6c [4:2]/[7:5], PIPE to USB3,
+            # dwc3 reset + HCRST. Never touches core+0x29000 (PCS, CIO domain) or
+            # PWR+0x14 (DP switch). Oracle: does CNR clear with the mux on USB3?
+            op = DRD + 0x20
+            l0, _ = rd(CORE + 0x6c); m0, _ = rd(PWR + 0x8)
+            bsid, _ = rd(DRD + 0xc120); bcap, _ = rd(DRD + 0x0)
+            bgsts, _ = rd(DRD + 0xc118); bsts, _ = rd(op + 4)
+            print(f"  start: core+0x6c {l0:#x} misc {m0:#x}")
+            print(f"  baseline(dummy): SID {bsid:#x} CAPLEN {bcap:#x} GSTS {bgsts:#x} "
+                  f"USBSTS {bsts:#x} HCH {bsts & 1}")
+            hits = 0
+            for a in (2, 7):
+                for b in (2,):
+                    for swap in (0,):
+                        pet()
+                        wr(CORE + 0x6c, (l0 & ~0xfc) | (a << 2) | (b << 5))
+                        rmw(PWR + 0x8, 1 << 2, swap << 2)
+                        time.sleep(0.003)
+                        rmw(DRD + 0xc704, 1 << 31, 0)
+                        rmw(DRD + 0xc110, 0, 1 << 11)
+                        time.sleep(0.005)
+                        rmw(DRD + 0xc110, (3 << 12) | (1 << 11), 1 << 12)
+                        time.sleep(0.005)
+                        wr(DRD + 0xcd38, 0x0f800f80)
+                        wr(DRD + 0xcd3c, 0x0fc00fc0)
+                        rmw(DRD + 0xcd40, 0xffffff, (0x14 << 16) | (0xa << 8) | 0x10)
+                        rmw(DRD + 0xc200, 0, 1 << 6)
+                        rmw(DRD + 0xc2c0, 0, 1 << 17)
+                        rmw(PIPE + 0x4, (1 << 1) | (1 << 2), 0)
+                        rmw(PIPE + 0x0, 0, (1 << 0) | (1 << 2))
+                        rmw(PIPE + 0x10, 0, 1)
+                        lk, _ = poll(PIPE + 0x14, 1, 1, 10)
+                        rmw(PIPE + 0xc, 0x70, 0); rmw(PIPE + 0xc, 0x3, 0); rmw(PIPE + 0xc, 0x70, 1 << 4)
+                        rmw(PIPE + 0x0, (1 << 0) | (1 << 2), 0)
+                        rmw(PIPE + 0x10, 1, 0)
+                        poll(PIPE + 0x14, 1, 0, 10)
+                        cmd, _ = rd(op)
+                        wr(op, cmd | 2)
+                        poll(op, 2, 0, 100)
+                        cnr, sts = poll(op + 4, 1 << 11, 0, 200)
+                        sid, _ = rd(DRD + 0xc120); cap, _ = rd(DRD + 0x0)
+                        gsts, _ = rd(DRD + 0xc118)
+                        pv, _ = rd(op + 0x410)
+                        mux, _ = rd(PIPE + 0xc)
+                        alive = sid != 0 and cap != 0
+                        print(f"  [4:2]={a} [7:5]={b} swap {swap}: lock {lk} mux {mux:#x} "
+                              f"SID {sid:#x} CAPLEN {cap:#x} GSTS {gsts:#x} USBSTS {sts:#x} "
+                              f"HCH {sts & 1} CNRpoll {cnr} {'ALIVE' if alive else 'DEAD(zero-read)'} "
+                              f"PORTSC1 {pv:#x}", flush=True)
+                        if cnr == "ok":
+                            hits += 1
+                        rmw(PIPE + 0x4, (1 << 1) | (1 << 2), 0)
+                        rmw(PIPE + 0x0, 0, (1 << 0) | (1 << 2))
+                        rmw(PIPE + 0xc, 0x70, 0); rmw(PIPE + 0xc, 0x3, 2); rmw(PIPE + 0xc, 0x70, 2 << 4)
+                        wr(CORE + 0x6c, l0); wr(PWR + 0x8, m0)
+            print(f"  8 combinations, {hits} with CNR clear")
+        elif s == "u3stage":
+            # one orientation, staged: read SID (drd+0xc120) / CAPLEN (drd+0x0) /
+            # GSTS / USBSTS after each write group to find which one kills the
+            # dwc3 register interface. SID+CAPLEN non-zero == controller alive.
+            op = DRD + 0x20
+            def chk(tag):
+                sid, _ = rd(DRD + 0xc120); cap, _ = rd(DRD + 0x0)
+                gsts, _ = rd(DRD + 0xc118); sts, _ = rd(op + 4)
+                print(f"  {tag:20} SID {sid:#010x} CAP {cap:#010x} GSTS {gsts:#x} "
+                      f"USBSTS {sts:#x} {'ALIVE' if sid and cap else 'DEAD'}", flush=True)
+            l0, _ = rd(CORE + 0x6c); m0, _ = rd(PWR + 0x8)
+            chk("baseline")
+            wr(CORE + 0x6c, (l0 & ~0xfc) | (2 << 2) | (2 << 5)); rmw(PWR + 0x8, 1 << 2, 0)
+            chk("lane mode")
+            rmw(DRD + 0xc704, 1 << 31, 0)
+            rmw(DRD + 0xc110, 0, 1 << 11); time.sleep(0.005)
+            rmw(DRD + 0xc110, (3 << 12) | (1 << 11), 1 << 12); time.sleep(0.005)
+            chk("core reset+host")
+            wr(DRD + 0xcd38, 0x0f800f80); wr(DRD + 0xcd3c, 0x0fc00fc0)
+            rmw(DRD + 0xcd40, 0xffffff, (0x14 << 16) | (0xa << 8) | 0x10)
+            chk("glue writes")
+            rmw(DRD + 0xc200, 0, 1 << 6); rmw(DRD + 0xc2c0, 0, 1 << 17)
+            chk("c200/c2c0")
+            rmw(PIPE + 0x4, (1 << 1) | (1 << 2), 0)
+            rmw(PIPE + 0x0, 0, (1 << 0) | (1 << 2))
+            rmw(PIPE + 0x10, 0, 1)
+            lk, _ = poll(PIPE + 0x14, 1, 1, 10)
+            chk(f"pipe lock {lk}")
+            rmw(PIPE + 0xc, 0x70, 0); rmw(PIPE + 0xc, 0x3, 0); rmw(PIPE + 0xc, 0x70, 1 << 4)
+            mux, _ = rd(PIPE + 0xc)
+            chk(f"mux USB3 {mux:#x}")
+            rmw(PIPE + 0x0, (1 << 0) | (1 << 2), 0); rmw(PIPE + 0x10, 1, 0)
+            poll(PIPE + 0x14, 1, 0, 10)
+            chk("unlock")
+            cmd, _ = rd(op); wr(op, cmd | 2); poll(op, 2, 0, 100)
+            chk("HCRST")
+            rmw(PIPE + 0xc, 0x70, 0); rmw(PIPE + 0xc, 0x3, 2); rmw(PIPE + 0xc, 0x70, 2 << 4)
+            wr(CORE + 0x6c, l0); wr(PWR + 0x8, m0)
+        elif s == "u3bist":
+            # Full USB3-host pipehandler path incl the BIST MAC lane power-up /
+            # PIPE-reset release (atcphy_configure_pipehandler_usb3_host_t8122),
+            # CIO ON. BIST block base reg[35] = core+0x29000. Oracle: SID
+            # (drd+0xc120) / CAPLEN (drd+0x0) non-zero == controller alive.
+            op = DRD + 0x20
+            BB = CORE + 0x29000
+            def chk(tag):
+                sid, _ = rd(DRD + 0xc120); cap, _ = rd(DRD + 0x0)
+                g28, _ = rd(DRD + 0xcd28); sts, _ = rd(op + 4)
+                print(f"  {tag:16} SID {sid:#010x} CAP {cap:#010x} glue {g28:#010x} "
+                      f"USBSTS {sts:#x} {'ALIVE' if sid and cap else 'DEAD'}", flush=True)
+            for off in (0x0, 0x4, 0x80, 0x88, 0x8c):
+                v, f = rd(BB + off)
+                print(f"  BIST+{off:#04x} = {v:#010x}{' FAULT' if f else ''}")
+            # host mode WITHOUT a GCTL CoreSoftReset (bit 11) - the reset gates the
+            # SS glue when CIO is on; the controller is already ready here.
+            rmw(DRD + 0xc110, 3 << 12, 1 << 12)
+            l0, _ = rd(CORE + 0x6c)
+            wr(CORE + 0x6c, (l0 & ~0xfc) | (2 << 2) | (2 << 5))
+            chk("baseline")
+            # host USB3 pipehandler: disable link detection, then lock
+            rmw(PIPE + 0x4, (1 << 1) | (1 << 2), 0)
+            rmw(PIPE + 0x0, 0, 1 << 0)
+            rmw(PIPE + 0x0, 0, 1 << 2)
+            rmw(PIPE + 0x10, 0, 1)
+            lk, _ = poll(PIPE + 0x14, 1, 1, 10)
+            chk(f"lock {lk}")
+            # --- BIST MAC dance (RMW named bits; block is non-zero on T6050) ---
+            rmw(BB + 0x0, 0, 1 << 0)                    # CFG1 CLOCK_EN
+            rmw(BB + 0x88, 0, 0x100000 | (2 << 25))     # CFG_OV1 PIPE_RESET_N_OV | PWR_DOWN_OV=2
+            rmw(BB + 0x8c, 0, 0x200 | 0x20)             # CFG_OV2 RESET_N_OV | PWR_DOWN_OV
+            rmw(BB + 0x0, 0, 1 << 2); e1, _ = poll(BB + 0x0, 1 << 2, 1 << 2, 10)
+            rmw(BB + 0x0, 1 << 2, 0); s1, _ = poll(BB + 0x80, 1 << 7, 0, 10)
+            rmw(BB + 0x4, 0, 1 << 2); rmw(BB + 0x4, 1 << 2, 0)
+            rmw(BB + 0x88, 3 << 25, 3 << 25)            # PWR_DOWN_OV = 3
+            rmw(BB + 0x0, 0, 1 << 2); e2, _ = poll(BB + 0x0, 1 << 2, 1 << 2, 10)
+            rmw(BB + 0x0, 1 << 2, 0); s2, _ = poll(BB + 0x80, 1 << 7, 0, 10)
+            rmw(BB + 0x4, 0, 1 << 2); rmw(BB + 0x4, 1 << 2, 0)
+            rmw(PIPE + 0x20, 0xf, 3); rmw(PIPE + 0x20, 1 << 12, 0)   # clear_nonselected
+            rmw(BB + 0x8c, 0x200 | 0x20, 0)
+            rmw(BB + 0x0, 0, 1 << 2); e3, _ = poll(BB + 0x0, 1 << 2, 1 << 2, 10)
+            rmw(BB + 0x0, 1 << 2, 0); rmw(BB + 0x0, 1 << 0, 0)
+            print(f"  BIST polls: USB_EN e1 {e1} e2 {e2} e3 {e3}; STATUS2 s1 {s1} s2 {s2}")
+            chk("after BIST")
+            # mux to USB3 (T8142: clk [6:4]=1, data [1:0]=0)
+            rmw(PIPE + 0xc, 0x70, 0); rmw(PIPE + 0xc, 0x3, 0); rmw(PIPE + 0xc, 0x70, 1 << 4)
+            mux, _ = rd(PIPE + 0xc)
+            rmw(PIPE + 0x0, 1 << 0, 0); rmw(PIPE + 0x0, 1 << 2, 0)
+            rmw(PIPE + 0x10, 1, 0); ul, _ = poll(PIPE + 0x14, 1, 0, 10)
+            chk(f"mux {mux:#x} ul {ul}")
+            chk("no-hcrst")
+            # enable BOTH lanes' TX clock (TX SHM core+0xd000 / +0x1d000): LDO clock
+            # on, byteclk reset-sync released, TXA CLK_EN + DIV2, reset released.
+            # Covers either cable orientation. Never done for USB3 before.
+            for TXSHM in (CORE + 0xd000, CORE + 0x1d000):
+                rmw(TXSHM + 0x24, 0, (1 << 13) | (1 << 12) | (1 << 15) | (1 << 14))
+                rmw(TXSHM + 0x24, (1 << 9) | (1 << 8) | (1 << 11) | (1 << 10), 0)
+                rmw(TXSHM + 0x00, 0, (1 << 6) | (1 << 3) | (1 << 2))
+                rmw(TXSHM + 0x00, 1 << 5, 1 << 4)
+                rmw(TXSHM + 0x04, 0, (1 << 9) | (1 << 8) | (1 << 23) | (1 << 22))
+                rmw(TXSHM + 0x04, 1 << 11, 1 << 10)
+            chk("lane clk (both)")
+            # REMOVE OVERRIDES so the PHY FSM drives the clock tree (the
+            # cmn/tx/txrx override-removal step). `wake` forces the
+            # common block via CFG0 (core+0xc) override bits and never releases
+            # them; the lanes likewise. Clear: CFG0 COMMON_*_OV (bits 1,3,5),
+            # TX OV core+0x120 [3:2]/[7:6]/[11:10], RX OV core+0x10 [3:2]/[7:6].
+            # c120=0x...fcc forces the TX lane ASLEEP+CLAMPED (BIG=0,SMALL=0,CLAMP=3,
+            # all OV=3); c10=0 = RX never powered. Wake both lanes like the common
+            # block: BIG=3, SMALL=3, CLAMP=0, overrides on -> low12 = 0xcff. Then
+            # release overrides so the FSM runs the clock tree.
+            def ltdist(ms=300):
+                s = set(); t = time.time() + ms / 1000
+                while time.time() < t:
+                    s.add(rd(DRD + 0xc164)[0]); time.sleep(0.003)
+                return len(s)
+            print(f"  before: CFG0 {rd(CORE + 0xc)[0]:#010x} c120 {rd(CORE + 0x120)[0]:#010x} "
+                  f"c10 {rd(CORE + 0x10)[0]:#010x} PLL {rd(CORE + 0x7034)[0] & 8:#x} LTSSM {ltdist()}")
+            rmw(CORE + 0x120, 0xfff, 0xcff)   # TX lane awake+unclamp, OV forced
+            rmw(CORE + 0x10, 0xfff, 0xcff)    # RX lane awake+unclamp, OV forced
+            print(f"  lane wake: c120 {rd(CORE + 0x120)[0]:#010x} c10 {rd(CORE + 0x10)[0]:#010x} "
+                  f"PLL {rd(CORE + 0x7034)[0] & 8:#x} LTSSM {ltdist()}")
+            rmw(CORE + 0xc, (1 << 1) | (1 << 3) | (1 << 5), 0)  # cmn rm_ovrd
+            rmw(CORE + 0x120, 0xccc, 0)                          # tx rm_ovrd
+            rmw(CORE + 0x10, 0xccc, 0)                           # rx rm_ovrd
+            print(f"  rm_ovrd: CFG0 {rd(CORE + 0xc)[0]:#010x} c120 {rd(CORE + 0x120)[0]:#010x} "
+                  f"c10 {rd(CORE + 0x10)[0]:#010x} PLL {rd(CORE + 0x7034)[0] & 8:#x} LTSSM {ltdist()}")
+            chk("rm_ovrd")
+            # Start the controller and watch BOTH ports for the phone; try a warm
+            # reset (WPR) to pull the SS link out of SS.Disabled. NO HCRST (keeps
+            # the controller alive). LTSSM.state = GDBGLTSSM bits [21:18].
+            op0 = op + 0x400; op1 = op + 0x410
+            cmd, _ = rd(op); wr(op, cmd | 1)                     # Run/Stop
+            for pa in (op0, op1):
+                v, _ = rd(pa); wr(pa, (v & (0x40003c09 | 0x0e00c3e0)) | (1 << 9))  # port power
+            time.sleep(0.05)
+            v, _ = rd(op1); wr(op1, (v & (0x40003c09 | 0x0e00c3e0)) | (1 << 9) | (1 << 31))  # warm reset
+            last = None; end = time.time() + 5
+            while time.time() < end:
+                v0, _ = rd(op0); v1, _ = rd(op1); st = (rd(DRD + 0xc164)[0] >> 18) & 0xf
+                if (v0, v1, st) != last:
+                    print(f"  USB2 PORTSC0 {v0:#010x} CCS {v0 & 1} | SS PORTSC1 {v1:#010x} "
+                          f"CCS {v1 & 1} PLS {(v1 >> 5) & 0xf} | LTSSM.state {st:#x}")
+                    last = (v0, v1, st)
+                time.sleep(0.01)
+            chk("after watch")
+            wr(CORE + 0x6c, l0)
+        elif s == "phypwr":
+            # the driver's atcphy_power_on at ATCPHY_POWER_CTRL = core+0x20000
+            # (reg[32]) - the USB3 PHY power/reset block, distinct from the reg[39]
+            # reset controller at 0x2ab200000 used elsewhere. This releases the
+            # per-lane USB3 PHY's OWN reset (PHY_RESET_N bit4), never done before.
+            PC = CORE + 0x20000; PS = CORE + 0x20004; MISC = CORE + 0x20008
+            v, _ = rd(PC); vm, _ = rd(MISC)
+            print(f"  before: ctrl core+0x20000 = {v:#010x} stat {rd(PS)[0]:#010x} misc {vm:#010x}")
+            rmw(MISC, 0, 1 << 0)                          # ATCPHY_MISC RESET_N
+            rmw(PC, 0, 1 << 0); ss, _ = poll(PS, 1 << 0, 1 << 0, 100)   # sleep small + stat
+            rmw(PC, 0, 1 << 1); sb, _ = poll(PS, 1 << 1, 1 << 1, 100)   # sleep big + stat
+            rmw(PC, 1 << 2, 0)                            # clamp off
+            rmw(PC, 0, 1 << 3)                            # APB reset N
+            rmw(PC, 0, 1 << 4)                            # PHY reset N (USB3 PHY out of reset)
+            v, _ = rd(PC)
+            print(f"  after: ctrl = {v:#010x} stat {rd(PS)[0]:#010x} (small {ss} big {sb})")
+        elif s == "gluewr":
+            # restore the dwc3-apple glue (drd+0xcd00) that the core-soft-reset
+            # zeroed; it holds the pipe/ref-clock enables and m1n1 never rewrites
+            # it. Report whether the writes stick (expected to stick CIO-off).
+            for off, val in ((0xcd28, 0x886), (0xcd2c, 0x886), (0xcd40, 0x3c20060c), (0xcd44, 0x0002000b)):
+                wr(DRD + off, val); v, _ = rd(DRD + off)
+                print(f"  glue drd+{off:#x} <= {val:#010x} reads {v:#010x} {'OK' if v == val else 'IGNORED'}")
+            # now power each CIO sub-domain and see which one zeroes the glue
+            for name, off in (("atc1_cio", 0x280600290), ("atc1_cio_usb", 0x280600358), ("atc1_cio_auss", 0x280600360)):
+                v, _ = rd(off); wr(off, (v & ~(0xf | 0x300)) | 0xf); poll(off, 0xf0, 0xf0, 100)
+                g, _ = rd(DRD + 0xcd28)
+                print(f"  after +{name:14}: glue cd28 = {g:#010x} {'(alive)' if g else '(ZEROED)'}")
+        elif s == "u3after":
+            # NEW ORDER: run after `flip` (USB2 host up, dwc3 core-soft-reset done
+            # CIO OFF so the glue is configured + SS block init'd) AND after CIO
+            # domains are powered. Do BIST dance + lane + mux to USB3 with NO
+            # further dwc3 reset (which would gate the glue once CIO is on).
+            op = DRD + 0x20; BB = CORE + 0x29000
+            def chk(t):
+                sid, _ = rd(DRD + 0xc120); cap, _ = rd(DRD + 0x0); g, _ = rd(DRD + 0xcd28); sts, _ = rd(op + 4)
+                print(f"  {t:14} SID {sid:#010x} CAP {cap:#010x} glue {g:#010x} USBSTS {sts:#x} {'ALIVE' if sid and cap else 'DEAD'}")
+            def ltd(ms=500):
+                s = set(); t = time.time() + ms / 1000
+                while time.time() < t:
+                    s.add(rd(DRD + 0xc164)[0]); time.sleep(0.003)
+                return len(s)
+            chk("cio-on")
+            l0, _ = rd(CORE + 0x6c); wr(CORE + 0x6c, (l0 & ~0xfc) | (2 << 2) | (2 << 5))
+            rmw(PIPE + 0x4, (1 << 1) | (1 << 2), 0); rmw(PIPE + 0x0, 0, 1 << 0); rmw(PIPE + 0x0, 0, 1 << 2)
+            rmw(PIPE + 0x10, 0, 1); lk, _ = poll(PIPE + 0x14, 1, 1, 10)
+            rmw(BB + 0x0, 0, 1 << 0); rmw(BB + 0x88, 0, 0x100000 | (2 << 25)); rmw(BB + 0x8c, 0, 0x200 | 0x20)
+            rmw(BB + 0x0, 0, 1 << 2); poll(BB + 0x0, 1 << 2, 1 << 2, 10); rmw(BB + 0x0, 1 << 2, 0); poll(BB + 0x80, 1 << 7, 0, 10)
+            rmw(BB + 0x4, 0, 1 << 2); rmw(BB + 0x4, 1 << 2, 0)
+            rmw(BB + 0x88, 3 << 25, 3 << 25)
+            rmw(BB + 0x0, 0, 1 << 2); poll(BB + 0x0, 1 << 2, 1 << 2, 10); rmw(BB + 0x0, 1 << 2, 0); poll(BB + 0x80, 1 << 7, 0, 10)
+            rmw(BB + 0x4, 0, 1 << 2); rmw(BB + 0x4, 1 << 2, 0)
+            rmw(PIPE + 0x20, 0xf, 3); rmw(PIPE + 0x20, 1 << 12, 0)
+            rmw(BB + 0x8c, 0x200 | 0x20, 0)
+            rmw(BB + 0x0, 0, 1 << 2); poll(BB + 0x0, 1 << 2, 1 << 2, 10); rmw(BB + 0x0, 1 << 2, 0); rmw(BB + 0x0, 1 << 0, 0)
+            chk(f"after BIST lk {lk}")
+            rmw(PIPE + 0xc, 0x70, 0); rmw(PIPE + 0xc, 0x3, 0); rmw(PIPE + 0xc, 0x70, 1 << 4)
+            rmw(PIPE + 0x0, 1 << 0, 0); rmw(PIPE + 0x0, 1 << 2, 0)
+            rmw(PIPE + 0x10, 1, 0); poll(PIPE + 0x14, 1, 0, 10)
+            mux, _ = rd(PIPE + 0xc)
+            chk(f"mux {mux:#x}")
+            print(f"  LTSSM distinct {ltd(1500)} ({'LIVE' if False else '?'}); PORTSC1 {rd(op + 0x410)[0]:#010x}")
         elif s == "pclkvar":
             # select 2 / 7 with bit 0, bit 13, both; watch PWR+0x18 for 50 ms each
             c14, _ = rd(PWR + 0x14)
