@@ -772,6 +772,10 @@ try:
                 print(f"  BIST+{off:#04x} = {v:#010x}{' FAULT' if f else ''}")
             # host mode WITHOUT a GCTL CoreSoftReset (bit 11) - the reset gates the
             # SS glue when CIO is on; the controller is already ready here.
+            # host mode (prtcap), NO GCTL CoreSoftReset: with CIO on the reset zeroes the Apple
+            # glue and wedges the controller in CNR (glue cannot be restored while CNR=1). Also
+            # NO SUSPHY-clear: it zeroed the glue with no benefit. Best stable state = controller
+            # runs on the pipe, glue 0x886, LTSSM 0x9cc20026, PLS 5 (not trained).
             rmw(DRD + 0xc110, 3 << 12, 1 << 12)
             l0, _ = rd(CORE + 0x6c)
             wr(CORE + 0x6c, (l0 & ~0xfc) | (2 << 2) | (2 << 5))
@@ -792,16 +796,30 @@ try:
                 rmw(TXSHM + 0x00, 1 << 5, 1 << 4)
                 rmw(TXSHM + 0x04, 0, (1 << 9) | (1 << 8) | (1 << 23) | (1 << 22))
                 rmw(TXSHM + 0x04, 1 << 11, 1 << 10)
-            for LB in (0, 0x10000):           # power BOTH lanes' TX/RX (lane stride 0x10000)
-                rmw(CORE + 0x120 + LB, 0xfff, 0xcff)   # TX awake+unclamp, OV forced
-                rmw(CORE + 0x10 + LB, 0xfff, 0xcff)    # RX awake+unclamp, OV forced
+            # Lane TX/RX power-up on c120/c10. BOTH lanes are BIT FIELDS of the SAME reg (not
+            # a +0x10000 stride). aciophy_tx_powerup/rx_powerup: step1 = OR bit(4+lane),
+            # step2 = OR bit(6+lane); no poll (seqdec "bit0 wait" was a logging-gate misread).
+            # Both lanes -> bits 4-7. First unclamp the low override bits + release the common
+            # block (CFG0 core+0xc) to the FSM; u3bist was MISSING step2 (bits 6,7).
+            rmw(CORE + 0x120, 0xfff, 0xcff)   # TX unclamp/awake (low override bits)
+            rmw(CORE + 0x10, 0xfff, 0xcff)    # RX unclamp/awake
             rmw(CORE + 0xc, (1 << 1) | (1 << 3) | (1 << 5), 0)  # cmn rm_ovrd -> FSM
-            for LB in (0, 0x10000):
-                rmw(CORE + 0x120 + LB, 0xccc, 0)       # tx rm_ovrd -> FSM
-                rmw(CORE + 0x10 + LB, 0xccc, 0)        # rx rm_ovrd -> FSM
-            print(f"  lanes up: L0 c120 {rd(CORE + 0x120)[0]:#x} c10 {rd(CORE + 0x10)[0]:#x} | "
-                  f"L1 c120 {rd(CORE + 0x10120)[0]:#x} c10 {rd(CORE + 0x10010)[0]:#x} PLL {rd(CORE + 0x7034)[0] & 8:#x}")
+            rmw(CORE + 0x120, 0xccc, 0); rmw(CORE + 0x10, 0xccc, 0)   # tx/rx rm_ovrd -> FSM
+            for lane in (0, 1):               # tx/rx_powerup: step1 bit(4+lane), step2 bit(6+lane)
+                rmw(CORE + 0x120, 0, 1 << (4 + lane)); rmw(CORE + 0x120, 0, 1 << (6 + lane))
+                rmw(CORE + 0x10, 0, 1 << (4 + lane)); rmw(CORE + 0x10, 0, 1 << (6 + lane))
+            print(f"  lanes up: c120 {rd(CORE + 0x120)[0]:#x} c10 {rd(CORE + 0x10)[0]:#x} "
+                  f"PLL {rd(CORE + 0x7034)[0] & 8:#x}")
             chk("lanes up")
+            # atc.c "take the USB3 PHY out of reset" AFTER configure_lanes, via the REAL
+            # ATCPHY_POWER_CTRL = core+0x20000 (not the reg[39] 0x2ab200000 block the harness
+            # uses). Take it to the working "on + out-of-reset" value 0x1b (sleep_small b0,
+            # sleep_big b1, apb_reset_n b3, phy_reset_n b4; clamp b2 off). atc.c does NOT poll
+            # its status. Never done in-sequence after lanes before. Skip with NOPHYPWR=1.
+            if not os.environ.get("NOPHYPWR"):
+                pcb = rd(CORE + 0x20000)[0]; rmw(CORE + 0x20000, 0x1f, 0x1b)
+                print(f"  phy_reset_n: core+0x20000 {pcb:#x} -> {rd(CORE + 0x20000)[0]:#x} "
+                      f"stat {rd(CORE + 0x20004)[0]:#x}")
             # Start the PHY management core (acio-phy-cpu) - NEVER started before. The pipe
             # FSM / PhyStatus likely needs it running. phymxwrap domain already on (0x3ff).
             # port1 ctrl 0x2ab140000 = CORE+0x140040; read ctrl+0x40, OR bit0 (NOTES: 0xa0002
@@ -852,8 +870,10 @@ try:
             rmw(C1, USBEN, 0); rmw(C1, CLKEN, 0)
             print(f"  BIST polls: USB_EN e1 {e1} e2 {e2} e3 {e3}; STATUS2 s1 {s1} s2 {s2}")
             chk("after BIST")
-            # mux to USB3 (T8142: clk [6:4]=1, data [1:0]=0)
-            rmw(PIPE + 0xc, 0x70, 0); rmw(PIPE + 0xc, 0x3, 0); rmw(PIPE + 0xc, 0x70, 1 << 4)
+            # mux to USB3 (T8142: clk [6:4]=1, data [1:0]=0). NOSWITCH=1 leaves it at 0x22 (the
+            # USB2-working "dummy" clock) so the controller stays clocked while the PHY comes up.
+            if not os.environ.get("NOSWITCH"):
+                rmw(PIPE + 0xc, 0x70, 0); rmw(PIPE + 0xc, 0x3, 0); rmw(PIPE + 0xc, 0x70, 1 << 4)
             mux, _ = rd(PIPE + 0xc)
             rmw(PIPE + 0x0, 1 << 0, 0); rmw(PIPE + 0x0, 1 << 2, 0)
             rmw(PIPE + 0x10, 1, 0); ul, _ = poll(PIPE + 0x14, 1, 0, 10)
@@ -866,24 +886,30 @@ try:
             def dec1(v):
                 return (f"{v:#010x} PR {(v>>4)&1} PLS {(v>>5)&0xf} CCS {v&1} "
                         f"PED {(v>>1)&1} PP {(v>>9)&1} WRC {(v>>19)&1} PRC {(v>>21)&1} spd {(v>>10)&0xf}")
+            def gdbg():  # GDBGLTSSM: LTSSM state [25:22], RXELECIDLE b17, TXDETRXLOOPBACK b24
+                g, _ = rd(DRD + 0xc164)
+                return f"{g:#010x} ltssm {(g>>22)&0xf:#x} rxei {(g>>17)&1} txdet {(g>>24)&1}"
             cmd, _ = rd(op); wr(op, cmd | 1)                     # Run/Stop
             for pa in (op0, op1):
                 v, _ = rd(pa); wr(pa, (v & (0x40003c09 | 0x0e00c3e0)) | (1 << 9))  # port power
-            # no-WPR baseline: where do R/S + port power alone park the SS LTSSM?
-            print(f"  base PORTSC1 {dec1(rd(op1)[0])}")
+            # controller ring state (expected all 0 - running with no event ring can wedge
+            # the warm-reset completion, a PR-stuck cause unrelated to the PHY)
+            rts = rd(DRD + 0x18)[0] & ~0x1f
+            print(f"  CTLR: USBCMD {rd(op)[0]:#x} USBSTS {rd(op+4)[0]:#x} CRCR {rd(op+0x18)[0]:#x} "
+                  f"DCBAAP {rd(op+0x30)[0]:#x} CONFIG {rd(op+0x38)[0]:#x} "
+                  f"ERSTSZ {rd(DRD+rts+0x28)[0]:#x} ERSTBA {rd(DRD+rts+0x30)[0]:#x}")
+            print(f"  base PORTSC1 {dec1(rd(op1)[0])} | GDBG {gdbg()}")
             time.sleep(0.1)
-            print(f"  base+100ms   {dec1(rd(op1)[0])}")
-            # WPR (warm reset, bit31) to START SS training - the crossbar/lanes are now
-            # correct so the pipe is configured (earlier WPR stuck with PR=1 pre-config).
-            # Preserve PP/PIC/wake; no PED.
-            cur, _ = rd(op1)
-            wr(op1, (cur & (0x200 | 0xc000 | 0x0e000000)) | (1 << 31))
+            print(f"  base+100ms   {dec1(rd(op1)[0])} | GDBG {gdbg()}")
+            cur, _ = rd(op1)                                     # WPR (warm reset, bit31)
+            if not os.environ.get("NOSWITCH"):                   # skip: don't fire WPR on top of
+                wr(op1, (cur & (0x200 | 0xc000 | 0x0e000000)) | (1 << 31))  # the controller's own PR
             last = None; end = time.time() + 6
             while time.time() < end:
-                v0, _ = rd(op0); v1, _ = rd(op1); st = (rd(DRD + 0xc164)[0] >> 18) & 0xf
-                if (v0, v1, st) != last:
-                    print(f"  USB2 PORTSC0 {v0:#06x} CCS {v0 & 1} | SS PORTSC1 {dec1(v1)} | LTSSM {st:#x}")
-                    last = (v0, v1, st)
+                v0, _ = rd(op0); v1, _ = rd(op1); g = gdbg()
+                if (v0, v1, g) != last:
+                    print(f"  USB2 PORTSC0 {v0:#06x} CCS {v0 & 1} | SS {dec1(v1)} | GDBG {g}")
+                    last = (v0, v1, g)
                 time.sleep(0.01)
             chk("after watch")
             print(f"  PIPE  GUSB3PIPECTL {rd(DRD+0xc2c0)[0]:#x} GUSB2PHYCFG {rd(DRD+0xc200)[0]:#x} "
@@ -892,15 +918,20 @@ try:
                   f"STATUS2 {rd(CORE+0x29080)[0]:#x} CFG_OV1 {rd(CORE+0x29088)[0]:#x} CFG_OV2 {rd(CORE+0x2908c)[0]:#x}")
             print(f"  LANE  TXpwr(c120) {rd(CORE+0x120)[0]:#x} RXpwr(c10) {rd(CORE+0x10)[0]:#x} "
                   f"CFG0(c) {rd(CORE+0xc)[0]:#x} lanemode(6c) {rd(CORE+0x6c)[0]:#x} PLLlock {rd(CORE+0x7034)[0]&8:#x}")
-            print(f"  PORTSC1 {dec1(rd(op1)[0])} glue {rd(DRD+0xcd28)[0]:#x}")
-            # PHYSoftRst (GUSB3PIPECTL bit31): dwc3 self-clears it only if pipe_clk toggles.
-            # Stuck-set = no pipe clock; self-clears = clock present (look elsewhere).
-            pc0, _ = rd(DRD + 0xc2c0); wr(DRD + 0xc2c0, pc0 | (1 << 31))
-            time.sleep(0.001); a1, _ = rd(DRD + 0xc2c0)
-            time.sleep(0.02); a2, _ = rd(DRD + 0xc2c0)
-            wr(DRD + 0xc2c0, pc0)
-            print(f"  PHYSoftRst: +1ms {a1:#x}(b31 {(a1>>31)&1}) +20ms {a2:#x}(b31 {(a2>>31)&1}) -> "
-                  f"{'PIPE CLK PRESENT (self-cleared)' if not ((a2>>31)&1) else 'NO PIPE CLK (stuck set)'}")
+            print(f"  PORTSC1 {dec1(rd(op1)[0])} glue cd28 {rd(DRD+0xcd28)[0]:#x} "
+                  f"cd40 {rd(DRD+0xcd40)[0]:#x} cd44 {rd(DRD+0xcd44)[0]:#x}")
+            # host LSP debug sweep: is the SS LTSSM live (changing) or truly frozen? GDBGLTSSM
+            # may be a stale view; the live host link-state is GDBGLSP after a GDBGLSPMUX
+            # host-select (+ENDBC). Sweep selects, read GDBGLSP twice 4ms apart, flag changers.
+            live = []
+            for sel in range(0, 24):
+                wr(DRD + 0xc170, (sel & 0x3fff) | (1 << 15))   # HOSTSELECT(sel) | ENDBC
+                x = rd(DRD + 0xc174)[0]; time.sleep(0.004); y = rd(DRD + 0xc174)[0]
+                if x or y:
+                    print(f"  LSP sel {sel}: {x:#010x} / {y:#010x}{'  LIVE' if x != y else ''}")
+                    if x != y:
+                        live.append(sel)
+            print(f"  LSP live sels: {live}  GDBGLTSSM {rd(DRD+0xc164)[0]:#x}")
             print(f"  pipehandler: mux(+0xc) {rd(PIPE+0xc)[0]:#x} nonsel(+0x20) {rd(PIPE+0x20)[0]:#x}")
             wr(CORE + 0x6c, l0)
         elif s == "phypwr":
@@ -1090,6 +1121,34 @@ try:
                 rmw(PWR, 0, 1 << (3 if s == "apb" else 4))
             v, f = rd(PWR)
             print(f"  power ctrl = {v:#010x}{' FAULT' if f else ''}")
+        elif s == "clkdump":
+            # dump the controller clock-select candidates (pipehandler + dwc3 glue + usb2phy)
+            # so CIO-off vs CIO-on can be diffed - whatever CIO flips gates the reset clock.
+            for nm, a in (("pipe OVERRIDE", PIPE + 0x0), ("pipe OVR_VAL", PIPE + 0x4),
+                          ("pipe MUX_CTRL", PIPE + 0xc), ("pipe LOCK_REQ", PIPE + 0x10),
+                          ("pipe LOCK_ACK", PIPE + 0x14), ("pipe AON_GEN", PIPE + 0x18),
+                          ("pipe NONSEL", PIPE + 0x20), ("glue cd28", DRD + 0xcd28),
+                          ("glue cd2c", DRD + 0xcd2c), ("glue cd40", DRD + 0xcd40),
+                          ("glue cd44", DRD + 0xcd44), ("usb2phy+0x0", USB2PHY + 0x0),
+                          ("usb2phy+0x8", USB2PHY + 0x8)):
+                v, f = rd(a)
+                print(f"  {nm:14} {a:#x} = {v:#010x}{' FAULT' if f else ''}")
+            op = DRD + 0x20
+            print(f"  CTLR SID {rd(DRD+0xc120)[0]:#x} CAP {rd(DRD+0x0)[0]:#x} "
+                  f"USBCMD {rd(op)[0]:#x} USBSTS {rd(op+4)[0]:#x} (CNR {(rd(op+4)[0]>>11)&1})")
+        elif s == "xhcirst":
+            # Feasibility gate for the real-host path: does the xHCI-level HCRST (USBCMD b1)
+            # clear CNR (USBSTS b11) on a freshly-powered controller? HCRST self-clears when
+            # the reset completes (gated by clocks). Watch the glue across it too.
+            op = DRD + 0x20
+            print(f"  pre:  USBCMD {rd(op)[0]:#x} USBSTS {rd(op+4)[0]:#x} "
+                  f"glue {rd(DRD+0xcd28)[0]:#x} SID {rd(DRD+0xc120)[0]:#x}")
+            rmw(op, 0, 1 << 1)                                  # HCRST
+            sr, vr = poll(op, 1 << 1, 0, 1000)                  # self-clear of HCRST
+            sc, vc = poll(op + 4, 1 << 11, 0, 1000)             # CNR clear
+            print(f"  HCRST self-clear {sr} (USBCMD {vr:#x}); CNR clear {sc} (USBSTS {vc:#x})")
+            print(f"  post: glue {rd(DRD+0xcd28)[0]:#x} SID {rd(DRD+0xc120)[0]:#x} "
+                  f"CAP {rd(DRD+0x0)[0]:#x} HCSPARAMS1 {rd(DRD+0x4)[0]:#x}")
         elif s == "reboot":
             disarm()
             p.reboot()

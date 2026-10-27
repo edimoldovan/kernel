@@ -1234,3 +1234,117 @@ source-select/enable in the PCS or the TX SHM beyond CLK_EN; the DP-lane start t
 via the link-rate sequence (atcphy_dp_set_rate_t8122) - the USB3_DP combo may need the DP lane's
 PMA actually running, which only that sequence does. A clean pipe-clock-present probe is still
 needed (PHYSoftRst was invalid; DCTL.CSFTRST is device-mode only).
+
+## Full lane power-up (step1+step2, bits 4-7) - still no pipe clock (2026-10-27 22:18)
+
+Ported tx/rx_powerup faithfully: c120/c10 now 0x..f3 (bits 4-7 both lanes; step2 bits 6,7
+were missing before). STATUS2 still 0, PORTSC1 still 0x2b0 (PR=1), warm reset still never
+completes. So lane power-up was NOT the gate. (Stick re-plugged - PORTSC0 CCS 1 again - no
+effect, as expected for a host-side stall.) NOTE: seqdec "bit0 wait" was a misread (it was
+the logging-gate tbz on flags [0xe]/[0x1e]); tx_powerup has NO poll - just OR bit(4+lane)
+then bit(6+lane) per lane on c120 (rx_powerup same on c10).
+
+All documented PHY config now done (power, tunables, PLL lock, lanes fully powered, crossbar
+USB3_DP + lane modes, BIST dance at real offsets, mgmt core) per atcphy_configure's sequence -
+yet the SS pipe clock never comes up and the warm reset never completes. Out of high-confidence
+host-side leads from the current sources.
+
+## Controller rings unset; GDBGLTSSM frozen constant -> LTSSM unclocked (2026-10-27 22:22)
+
+Controller-side read (advisor angle): CRCR/DCBAAP/CONFIG/ERSTSZ/ERSTBA all 0 - the xHCI runs
+(USBCMD R/S=1) with NO rings. (Note: WRC is a HW PORTSC bit, so this may not be why PR sticks,
+but the controller is uninitialised.)
+
+GDBGLTSSM (drd+0xc164) re-decoded with the CORRECT nibble [25:22]: = 0x9cc20026, ltssm 0x3,
+rxei(b17) 1, txdet(b24) 0 - and CONSTANT at base / +100ms / through the watch, stick in. This
+is the same 0x9cc20026 seen at session start. A GDBGLTSSM frozen at one value across every
+config and plugged/unplugged = the SS LTSSM is NOT being clocked. Robust "no pipe clock".
+(Earlier I had read bits [21:18] = 0 and called it SS.Disabled-normal; the frozen-ness is the
+real tell, not the nibble value.)
+
+So: PHY fully configured, controller runs on the pipe, but the SS LTSSM is unclocked. The
+remaining problem is strictly the USB3 pipe-clock generation/routing from the PHY. Untested
+pipe-clock candidates: the dwc3 glue clock-config regs drd+0xcd40/0xcd44 (only cd28=0x886 has
+been verified-preserved; cd40/cd44 never checked) and pclk:SEL re-run with the crossbar fixed.
+
+## GCTL CoreSoftReset wedges the controller (CNR stuck) - the SS-init dead end (2026-10-27 22:32)
+
+Tried the one standard dwc3 init step u3bist always skipped: GCTL CoreSoftReset (b11), then
+host mode + clear SUSPHY + restore glue. Result:
+- GDBGLTSSM 0x9cc20026 -> 0x0: so it is NOT immutably frozen - the core reset changed it - but
+  it then stays 0 and the controller is wedged.
+- USBSTS 0x801 = HCH + CNR (Controller Not Ready) SET and STUCK. CoreSoftReset puts the
+  controller in CNR and it never comes ready; glue restore does not take (CNR blocks writes,
+  glue reads 0); lock times out; USBCMD R/S won't set.
+Confirms the original reason u3bist avoids CoreSoftReset: with CIO on the reset zeroes the Apple
+glue (pipe-clock cfg) and the controller cannot come ready without it, but the glue cannot be
+restored while CNR=1. Chicken-and-egg. Reverted CoreSoftReset + SUSPHY-clear in the harness.
+
+BOTTOM LINE (session end): SuperSpeed does NOT train. The SS core appears to need CoreSoftReset
+to initialise, but that wedges the controller (CNR) over the proxy given how the Apple glue is
+managed. Best stable state = "controller runs on the USB3 pipe, glue 0x886, LTSSM 0x9cc20026,
+PLS 5" - not trained. Getting past this likely needs the full dwc3+xHCI+clock driver framework
+(proper reset handshake that restores the glue and clears CNR), not register pokes over m1n1.
+Leads if ever resumed: the glue/CNR reset-handshake ordering; a minimal xHCI init (rings) so the
+controller is driven as a real host; or the exact pipe-clock gate the frozen 0x9cc20026 implies.
+
+## xHCI HCRST also wedges (same as CoreSoftReset); use firmware-clean controller (2026-10-27 22:50)
+
+cio xhcirst: pre USBCMD 0x0 USBSTS 0x1 (HCH, clean) glue 0x886 SID alive. After HCRST (USBCMD
+b1): HCRST does NOT self-clear (USBCMD 0x2, timeout); SID/CAP/glue all -> 0 (controller held in
+reset, regs read 0 - so "CNR clear" was just everything reading 0). The xHCI-level reset wipes
+the Apple glue and never completes - SAME wall as GCTL CoreSoftReset. ANY controller reset over
+the proxy wipes the glue (clock cfg) and can't complete without it; the OS driver avoids this
+via the Apple dwc3 glue/clock/reset framework.
+
+Implication for the real-host path: do NOT issue our own reset. Firmware left the controller
+clean (CNR clear, HCH set). Build rings (DCBAA/cmd/event, DART-mapped via hw/dart8110.py) +
+CONFIG on the as-is controller, bring up the PHY, R/S, enable the port. m1n1 provides XhciRegs
+and the DART driver. OPEN: the SS LTSSM is a HW port state machine - unclear if rings make it
+train or the real gate is still the pipe clock.
+
+## BREAKTHROUGH: reset BEFORE CIO -> controller survives; order was the deadlock (2026-10-27 22:57)
+
+xhcirst (CIO off) -> HCRST completes, controller clean. THEN cio -> controller SURVIVES: SID/CAP
+alive, glue 0x886, USBSTS 0x1 (CNR 0, HCH). So powering CIO AFTER a clean reset does NOT wedge
+the controller - only resetting WHILE CIO is on wedges it. The harness always ran cio FIRST and
+never did a clean HCRST with CIO off, so the SS controller was never properly reset = the
+self-inflicted deadlock. clkdump confirmed CIO flips NO software-visible register (MUX 0x22,
+glue 0x886 both ways) - it's a hardware clock-tree gate, fixable only by ORDER (the driver's
+"HCRST on the dummy pipe, then switch").
+
+Fix under test: HCRST first (CIO off), THEN cio + PHY bring-up + u3bist:
+`xhcirst cio tunables tunx wake pllstart2 u3bist`. May also need to keep the pipehandler mux
+off pipe3 until the PHY produces the clock (not switch to the dead pipe early in the dance).
+
+## Corrected order (reset-first) preserves the controller but LTSSM still frozen (2026-10-27 22:58)
+
+xhcirst cio tunables tunx wake pllstart2 u3bist: the controller now SURVIVES clean (glue 0x886
+preserved through u3bist, CNR clear, SID/CAP alive) - the order fix works and the controller is
+no longer wedged. BUT GDBGLTSSM still 0x9cc20026 (frozen), STATUS2 0, PORTSC1 0x2b0 (PR=1 stuck),
+LSP sels []. base PORTSC1 now 0x2b0 (PR=1) vs 0x2a0 before - reset-first changed the port state.
+So the order fix resolved the controller deadlock (real, explains "CIO halts the controller")
+but SS still does not train: switching the pipehandler mux onto pipe3 freezes the LTSSM because
+pipe3 has no clock. Back to the fundamental pipe3-clock wall. Advisor point (2) untried: keep the
+pipehandler mux OFF pipe3 (dummy/AON clock) during PHY bring-up, switch only once pipe3 is live.
+
+## RCAL done; PHY_RESET_N no help; pipe3-clock wall stands (session end 2) (2026-10-27 23:07)
+
+RCAL ALL_CODES_DONE = bit0; harness wake polls bit0 and reads 0x19 (bit0 set) = calibration IS
+done. core+0x20000 <= 0x1b took (PHY_RESET_N set, write sticks) but did NOT unfreeze the LTSSM.
+GDBGLTSSM relentlessly 0x9cc20026 across: corrected reset order, dummy mux (0x22), USB3 mux,
+both orientations, device in/out, mgmt core, PHY_RESET_N, full lane power-up (bits 4-7).
+
+SESSION RESULT: SuperSpeed does not train. GENUINE BREAKTHROUGH this session: the reset-order
+deadlock ("CIO halts the controller") - resetting the controller WHILE atc1_cio is on wedges it
+(glue/clock wiped, CNR stuck); reset FIRST (CIO off, HCRST completes) then power CIO -> the
+controller survives clean. Real fix, real mechanism. Also corrected the T6050 register map
+(crossbar core+0x78, lane-mode 0x6c, BIST MAC group +0x84, lane power c120/c10 bits 4-7).
+
+But the core wall is unmoved: the T6050 USB3 PHY, fully configured per every documented
+atc.c/kernelcache step (power, tunables, AUSPLL lock, RCAL done, lanes powered, crossbar
+USB3_DP, lane modes, BIST dance at real offsets, PHY_RESET_N, mgmt core started), does NOT
+output the pipe3 clock -> the SS LTSSM never runs (GDBGLTSSM frozen) and nothing trains. Beyond
+register-poking over the m1n1 proxy with current sources; needs the exact (not-in-these-sources)
+T8122/T6050 pipe-clock generation/handoff, or the full OS dwc3+xHCI+PHY+clock driver doing the
+dummy-pipe -> real-pipe handoff.
