@@ -3,7 +3,7 @@
 #   PYTHONPATH=proxyclient .venv/bin/python t6050_phy_power_test.py STEP...
 # Steps run in order: read flip flipnophy flipu3s diag pd pd:<domain> cio small big unclamp
 # apb phyrst pwrread coreread core:LO-HI cmn tunables lanes:normal|swapped pipeusb3
-# sswatch warm wmap:LO-HI set:OFF=VAL,... sweep wake pllstart pllstart2 reboot. The watchdog (90 s) is armed for the whole run.
+# sswatch warm wmap:LO-HI set:OFF=VAL,... sweep sweep2 wake pllstart pllstart2 muxmap hcreset reboot. The watchdog (90 s) is armed for the whole run.
 import sys, time
 from m1n1.setup import p, u  # noqa: F401
 from m1n1.proxy import GUARD
@@ -226,11 +226,12 @@ try:
             rmw(PIPE + 0x10, 0, 1)
             st, v = poll(PIPE + 0x14, 1, 1, 10)
             print(f"  lock ack: {st} ({v:#x})")
-            rmw(PIPE + 0xc, 0x38, 0)
+            # MUX_CTRL fields on T6050: clock [6:4], data [1:0] (bits 3:2 not implemented)
+            rmw(PIPE + 0xc, 0x70, 0)
             time.sleep(0.001)
-            rmw(PIPE + 0xc, 0x7, 0)
+            rmw(PIPE + 0xc, 0x3, 0)
             time.sleep(0.001)
-            rmw(PIPE + 0xc, 0x38, 1 << 3)
+            rmw(PIPE + 0xc, 0x70, 1 << 4)
             time.sleep(0.001)
             rmw(PIPE + 0x20, (0xf | (1 << 12)), 3)
             rmw(PIPE + 0x0, (1 << 0) | (1 << 2), 0)
@@ -364,6 +365,80 @@ try:
             st, v = poll(CORE + 0x3000, 2, 0, 10)
             print(f"  APB 0x10010000 ack low: {st} ({v:#x})")
             show("after")
+        elif s == "muxmap":
+            # which PIPEHANDLER_MUX_CTRL values stick; restored to dummy (0x22) after
+            res = {}
+            for v in range(0x80):
+                wr(PIPE + 0xc, v)
+                time.sleep(0.0005)
+                r, _ = rd(PIPE + 0xc)
+                res[v] = r
+            wr(PIPE + 0xc, 0x02); wr(PIPE + 0xc, 0x22)
+            ok = [f"{v:#x}" for v, r in res.items() if r == v]
+            print(f"  values that stick: {' '.join(ok)}")
+            other = [f"{v:#x}->{r:#x}" for v, r in res.items() if r != v]
+            print(f"  others: {' '.join(other[:40])}{' ...' if len(other) > 40 else ''}")
+            r, _ = rd(PIPE + 0xc)
+            print(f"  mux now {r:#x}")
+        elif s == "hcreset":
+            # dwc3 core soft reset + host + xHCI reset; pipe handler left as it is
+            rmw(DRD + 0xc110, 0, 1 << 11)
+            time.sleep(0.01)
+            rmw(DRD + 0xc110, (3 << 12) | (1 << 11), 1 << 12)
+            time.sleep(0.01)
+            rmw(DRD + 0xc200, 1 << 6, 0)
+            rmw(DRD + 0xc2c0, 1 << 17, 0)
+            op = DRD + 0x20
+            cmd, _ = rd(op)
+            wr(op, cmd | 2)
+            st, v = poll(op, 2, 0, 1000)
+            st2, v2 = poll(op + 4, 1 << 11, 0, 1000)
+            print(f"  HCRST {st}, CNR clear {st2} (USBSTS {v2:#x})")
+            for i in range(2):
+                a = op + 0x400 + 0x10 * i
+                v, _ = rd(a)
+                wr(a, (v & (0x40003c09 | 0x0e00c3e0)) | (1 << 9))
+            last = None
+            end = time.time() + 2
+            while time.time() < end:
+                v, _ = rd(op + 0x410)
+                if v != last:
+                    print(f"  PORTSC[1] {v:#010x} CCS {v & 1} PLS {(v >> 5) & 0xf} speed {(v >> 10) & 0xf}")
+                    last = v
+                time.sleep(0.005)
+            g, _ = rd(DRD + 0xc118)
+            print(f"  GSTS {g:#x}")
+        elif s == "sweep2":
+            # PIPE on USB3 (mux 0x10): does the controller reset complete (CNR clears)
+            # for a lane-mode / crossbar candidate? Candidates restored after each try.
+            op = DRD + 0x20
+            lanes = [0x9249, 0x0, 0x36db, 0x12489, 0x12492]
+            xbars = [(0x38, v) for v in (0x110, 0x10, 0xa, 0x111)] + \
+                    [(0x13c, v) for v in (0x110, 0x10, 0xa, 0x111)] + \
+                    [(0x64, v) for v in range(16)]
+            lane0, _ = rd(CORE + 0x170)
+            hits = 0
+            for lane in lanes:
+                for xo, xv in xbars:
+                    pet()
+                    x0, _ = rd(CORE + xo)
+                    wr(CORE + 0x170, lane); wr(CORE + xo, xv)
+                    time.sleep(0.003)
+                    rmw(DRD + 0xc110, 0, 1 << 11)
+                    time.sleep(0.002)
+                    rmw(DRD + 0xc110, (3 << 12) | (1 << 11), 1 << 12)
+                    time.sleep(0.002)
+                    cmd, _ = rd(op)
+                    wr(op, cmd | 2)
+                    poll(op, 2, 0, 50)
+                    st, v = poll(op + 4, 1 << 11, 0, 50)
+                    pls = (rd(op + 0x410)[0] >> 5) & 0xf
+                    wr(CORE + xo, x0)
+                    if st == "ok" or pls != 5:
+                        hits += 1
+                        print(f"  HIT lane {lane:#07x} core+{xo:#x}={xv:#x}: CNR {st} USBSTS {v:#x} PLS {pls}", flush=True)
+            wr(CORE + 0x170, lane0)
+            print(f"  {len(lanes) * len(xbars)} combinations, {hits} hits")
         elif s == "cmn":
             # common-block init as recorded in t6050-usb3-usb4-bringup.md
             seq = [(0xc, 0, 1 << 2), (0xc, 0, 1 << 3), (0xc, 0, 1 << 0), (0xc, 0, 1 << 1),

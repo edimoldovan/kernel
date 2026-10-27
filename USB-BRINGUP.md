@@ -331,3 +331,29 @@ port out of RxDetect.
 Still missing for a USB3 link: the lane mode / crossbar registers and the
 USB3 BIST/PHY override block. The pipe handler refuses the USB3 clock select
 in every state tried.
+
+## Pipe handler MUX_CTRL is the T8142 layout; PIPE routes to USB3 (2026-10-27 10:22)
+
+`muxmap` writes 0x00-0x7f to PIPEHANDLER_MUX_CTRL (port 1, pipe handler
+0x2aaa84000) and reads back: only bits [1:0] and [6:4] are implemented, before
+and after the PLL lock. That is the T8142 field layout (clock [6:4], data
+[1:0]); bit 3, the T8103 clock field's low bit, does not exist. The boot value
+0x22 is clock 2 / data 2 in that layout. `atcphy_hw_t6050` in
+drivers/phy/apple/atc.c uses the T8103 fields. The earlier USB3 attempts above
+wrote clock USB3 as 0x08 and could not stick for this reason.
+
+With the T8142 layout (clock off, data 0, clock 1 -> MUX_CTRL 0x10) the mux
+takes USB3 and holds it, with the AUSPLL locked. Then:
+
+- A controller reset with the PIPE on USB3 (`hcreset`: dwc3 core soft reset,
+  host, HCRST) does not complete: CNR stays set (USBSTS 0x801), GSTS CSR
+  timeout. No PIPE clock from the USB3 PHY.
+- `sweep2`: the 120 lane-mode / crossbar combinations from the sweep above,
+  each followed by that reset with the PIPE on USB3: CNR never clears, the
+  USB3 port stays in RxDetect.
+- PIPE lock (LOCK_REQ/ACK +0x10/+0x14) is acknowledged only while the dwc3 is
+  in device mode (the stage 1 state), not in host mode after HCRST.
+
+Missing for a USB3 link: the setting that makes the USB3 PHY lane deliver the
+PIPE clock (lane mode / crossbar, the USB3 BIST/PCS enable, or the lane power
+registers core+0x10 / +0x120).
