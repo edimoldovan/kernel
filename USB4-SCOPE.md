@@ -129,3 +129,27 @@ registers must first run the core power-on (`ATCPHY_MISC_RESET_N` +
 `ATCPHY_POWER_SLEEP`) that `atcphy_power_on()` does - or, more safely, be done
 from inside the kernel driver. The ADT tunables above already give the register
 targets without touching the core live.
+
+## Correction (2026-10-27): the sub-block offsets are not the t8122 ones
+
+The ADT atc-phy0 node lists 44 register windows. Core-relative
+(core = 0x2a3000000): 0x0, 0x400, 0x800, 0xa00, 0x1000, 0x3000, 0x3200,
+0x3800, 0x3a00, 0x4000-0x10000 in 0x1000 steps, 0x18000-0x1f000 in 0x1000
+steps, 0x20000, 0x28000, 0x28400, 0x29000, 0x40000 (0x20000), 0xc0000
+(0x10000), 0x140000 (0x1c000), 0x200000, 0x244000, 0x250000. Outside the core:
+0x2a2a90000 (usb2phy), 0x2a2800000, 0x2a0000000 (0x8000), 0x2a0020000.
+
+- No window starts at 0x2000, 0x2200, 0x2800 or 0x2a00. The PLL-like TOP/CORE
+  pairs are at 0x3000/0x3200 and 0x3800/0x3a00, so AUSPLL_CORE at 0x2200 and
+  CIO4PLL_CORE at 0x2a00 (the "same offsets" claim above) are unverified.
+- 0x2a0000000 (0x8000) is core - 0x3000000, where t8103 has its axi2af. The
+  axi2af at 0x2a2800000 in `t6050-j714c-usb.dtsi` is a different window.
+- The tunables carry block-relative offsets only (ATC_FABRIC 0x4-0x18c,
+  AXI2AF 0x0-0x401c, LN0/1 RX_TOP 0x35c, RX_CFG 0x94-0xa8, RX_EQ 0x698-0x6a0).
+  The ADT does not say which window each tunable belongs to.
+- Upstream m1n1 (main, checked 2026-10-27) has no t6040/t6050 table.
+- `usb2-host/t6050-usb4-m1n1-tunables.patch` places the tunables at the t8122
+  offsets. Not applied.
+
+Next: the tunable-to-window map and the PHY bring-up sequence from the macOS
+driver (`AppleT6050TypeCPhy`, in the kernelcache).
