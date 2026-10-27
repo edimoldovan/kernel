@@ -2,7 +2,8 @@
 # usage (from forks/omacom-m1n1, M1N1DEVICE=/dev/serial/by-id/...g7cde*-if00):
 #   PYTHONPATH=proxyclient .venv/bin/python t6050_phy_power_test.py STEP...
 # Steps run in order: read flip flipnophy flipu3s diag pd pd:<domain> cio small big unclamp
-# apb phyrst pwrread coreread cmn reboot. The watchdog (90 s) is armed for the whole run.
+# apb phyrst pwrread coreread core:LO-HI cmn tunables lanes:normal|swapped pipeusb3
+# sswatch warm reboot. The watchdog (90 s) is armed for the whole run.
 import sys, time
 from m1n1.setup import p, u  # noqa: F401
 from m1n1.proxy import GUARD
@@ -183,6 +184,75 @@ try:
             for off in (0x0, 0x4, 0x8, 0xc, 0xa00, 0x804):
                 v, f = rd(CORE + off)
                 print(f"  core+{off:#x} = {v:#010x}{' FAULT' if f else ''}")
+        elif s.startswith("core:"):
+            lo, hi = (int(x, 16) for x in s[5:].split("-"))
+            for off in range(lo, hi, 0x10):
+                vals = []
+                for o in range(off, min(off + 0x10, hi), 4):
+                    v, f = rd(CORE + o)
+                    vals.append(f"{v:#010x}{'!' if f else ''}")
+                print(f"  core+{off:#06x}: " + " ".join(vals))
+        elif s == "tunables":
+            # values from the ADT node; window = ADT reg index (fabric 40, axi2af 41,
+            # common cfg 43, AUS40CMN 5, AUSPLL 8, as in t6050-usb3-usb4-bringup.md)
+            import struct as _st
+            node = u.adt["/arm-io/atc-phy1"]
+            for prop, idx in (("tunable_ATC_COMMON_CFG", 43), ("tunable_ATC_FABRIC", 40),
+                              ("tunable_ATC0AXI2AF", 41), ("tunable_AUS40CMN_SHM", 5),
+                              ("tunable_AUSPLL_CORE", 8)):
+                raw = bytes(node._properties[prop])
+                base = node.get_reg(idx)[0]
+                faults = 0
+                for j in range(0, len(raw), 12):
+                    ofs, mask, val = _st.unpack_from("<III", raw, j)
+                    faults += rmw(base + (ofs & 0xffffff), mask, val & mask)
+                print(f"  {prop:24} reg[{idx}] {base:#x}: {len(raw) // 12} entries, {faults} faults")
+                pet()
+        elif s.startswith("lanes:"):
+            swapped = s == "lanes:swapped"
+            lane = (0x2 | 0x2 << 3 | 0x1 << 6 | 0x1 << 9) if swapped else (0x1 | 0x1 << 3 | 0x2 << 6 | 0x2 << 9)
+            xbar = (0x11 if swapped else 0x10) | (0x008 << 5)
+            rmw(CORE + 0x60, 0xfff, lane)
+            rmw(CORE + 0x64, 0x3ffff, xbar)
+            rmw(PWR + 0x8, 1 << 2, (1 << 2) if swapped else 0)
+            for o in (0x60, 0x64):
+                v, f = rd(CORE + o)
+                print(f"  core+{o:#x} = {v:#010x}{' FAULT' if f else ''}")
+            v, _ = rd(PWR + 0x8)
+            print(f"  power misc = {v:#010x}")
+        elif s == "pipeusb3":
+            rmw(PIPE + 0x4, (1 << 1) | (1 << 2), 0)
+            rmw(PIPE + 0x0, 0, (1 << 0) | (1 << 2))
+            rmw(PIPE + 0x10, 0, 1)
+            st, v = poll(PIPE + 0x14, 1, 1, 10)
+            print(f"  lock ack: {st} ({v:#x})")
+            rmw(PIPE + 0xc, 0x38, 0)
+            time.sleep(0.001)
+            rmw(PIPE + 0xc, 0x7, 0)
+            time.sleep(0.001)
+            rmw(PIPE + 0xc, 0x38, 1 << 3)
+            time.sleep(0.001)
+            rmw(PIPE + 0x20, (0xf | (1 << 12)), 3)
+            rmw(PIPE + 0x0, (1 << 0) | (1 << 2), 0)
+            rmw(PIPE + 0x10, 1, 0)
+            st, v = poll(PIPE + 0x14, 1, 0, 10)
+            print(f"  unlock ack: {st} ({v:#x})")
+            for o in (0x0, 0x4, 0xc, 0x10, 0x14, 0x20):
+                v, _ = rd(PIPE + o)
+                print(f"  pipe+{o:#x} = {v:#010x}")
+        elif s in ("sswatch", "warm"):
+            a = DRD + 0x20 + 0x410
+            if s == "warm":
+                v, _ = rd(a)
+                wr(a, (v & (0x40003c09 | 0x0e00c3e0)) | (1 << 31))
+            last = None
+            end = time.time() + 1.5
+            while time.time() < end:
+                v, f = rd(a)
+                if v != last:
+                    print(f"  PORTSC[1] {v:#010x} CCS {v & 1} PED {(v >> 1) & 1} PLS {(v >> 5) & 0xf} speed {(v >> 10) & 0xf}{' FAULT' if f else ''}")
+                    last = v
+                time.sleep(0.005)
         elif s == "cmn":
             # common-block init as recorded in t6050-usb3-usb4-bringup.md
             seq = [(0xc, 0, 1 << 2), (0xc, 0, 1 << 3), (0xc, 0, 1 << 0), (0xc, 0, 1 << 1),

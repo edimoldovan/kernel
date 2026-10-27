@@ -266,3 +266,28 @@ to USB2 host the way `t6050-usb2.c` does it, then HCRST, CNR and PORTSC are read
 Next for USB3: the t8122 USB3 path (`atcphy_configure_pipehandler_usb3_host_t8122`)
 uses the BIST block at core+0x17000; T6050 has no window there, so its location
 is open. A SuperSpeed device is needed on port 1 for the link test.
+
+## USB3 trial at the t8122 offsets: no link (2026-10-27 10:10)
+
+Port 1 with a USB3 device in it (Ed, 10:00). The device is seen on the USB2
+side (PORTSC[0] CCS=1); the USB3 port stays in RxDetect (PORTSC[1] 0x2a0).
+Sequence, both orientations, from `tools/t6050_phy_power_test.py`: PHY power
+control 0x1b, common init, then the ADT tunables at the windows in Ed's
+bring-up doc (COMMON_CFG reg[43], FABRIC reg[40], AXI2AF reg[41] 0x2a8000000,
+AUS40CMN_SHM reg[5], AUSPLL_CORE reg[8]: 148 entries, no faults; USB2 still
+works after them), lane mode / crossbar at the t8122 spots, pipe handler to USB3
+as `atcphy_configure_pipehandler_usb3` does it without the BIST step.
+
+- core+0x60 / +0x64 are not the lane mode / crossbar on T6050: writes read back
+  0, except bit 0 of +0x64.
+- The lane-swap bit at power block +8 bit 2 sticks (0x1800 -> 0x1804), like
+  `ATCPHY_MISC_LANE_SWAP`.
+- Pipe handler: the PIPE lock is never acknowledged; MUX_CTRL takes clock OFF and
+  data USB3 but not the USB3 clock select (reads back 0). Consistent with no
+  USB3 PIPE clock from the PHY while its lanes are not configured.
+- PORTSC[1] stays 0x2a0 (RxDetect), also after a warm reset.
+- The first window (core+0x0-0x400) does not have the t8103 or t8122 layout:
+  two blocks of the same shape at +0x80 and +0xd0, 0x50 apart.
+
+Missing for a USB3 link: the T6050 lane mode / crossbar registers and the
+USB3 BIST/PHY override block.
