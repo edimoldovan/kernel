@@ -1,6 +1,7 @@
 # reads.py BIN BASE START END REG TAG [PTR_OFF TAG2 ...]: memory accesses relative to a structure
-# pointer in a function. REG holds the TAG structure's address at START; a load of a pointer from
-# TAG + PTR_OFF gives the TAG2 structure. Straight-line tracking (no control flow): a register
+# pointer in a function. REG holds the TAG structure's address at START (REG may be @ADDR: a load
+# from the global at hex ADDR, through ADRP, gives TAG wherever it happens); a load of a pointer
+# from TAG + PTR_OFF gives the TAG2 structure. Indexed accesses print "indexed" and the base offset. Straight-line tracking (no control flow): a register
 # keeps its (structure, offset) until it is written with anything else. Prints
 # "TAG +offset size load|store address".
 import sys, capstone
@@ -16,7 +17,8 @@ def canon(r):  # w8 and x8 are one register
     n = md.reg_name(r)
     return 'x' + n[1:] if n[0] in 'wx' and n[1:].isdigit() else n
 
-track = {reg0: (tag0, 0)}; consts = {}
+gptr = int(reg0[1:], 16) if reg0.startswith('@') else None
+track = {} if gptr else {reg0: (tag0, 0)}; consts = {}
 SIZES = {'ldrb': 1, 'ldrsb': 1, 'strb': 1, 'ldrh': 2, 'ldrsh': 2, 'strh': 2, 'ldrsw': 4}
 out = set()
 for x in md.disasm(data[start:end], base + start):
@@ -34,7 +36,13 @@ for x in md.disasm(data[start:end], base + start):
             width = 16 if n[0] == 'q' else 8 if n[0] in 'xd' else 4
         if m in ('ldp', 'stp', 'ldnp', 'stnp'):
             width *= 2
-        if b in track and o.mem.index == 0:
+        if b in track and track[b][0] == 'PAGE':
+            if m == 'ldr' and regs and o.mem.index == 0 and (track[b][1] + o.mem.disp) & (2**64 - 1) == gptr:
+                track[canon(regs[0].reg)] = (tag0, 0); continue
+        elif b in track and o.mem.index != 0:
+            tag, off = track[b]
+            out.add((tag, off + o.mem.disp, width, 'indexed', x.address - base))
+        elif b in track:
             tag, off = track[b]
             a = off + o.mem.disp
             out.add((tag, a, width, 'load' if m.startswith('ld') else 'store', x.address - base))
@@ -48,6 +56,8 @@ for x in md.disasm(data[start:end], base + start):
     if not ops or ops[0].type != ARM64_OP_REG:
         continue
     d = canon(ops[0].reg)
+    if m == 'adrp' and gptr:
+        track[d] = ('PAGE', ops[1].imm); consts.pop(d, None); continue
     if m == 'mov' and len(ops) == 2 and ops[1].type == ARM64_OP_IMM:
         track.pop(d, None); consts[d] = ops[1].imm; continue
     if m == 'mov' and len(ops) == 2 and ops[1].type == ARM64_OP_REG and canon(ops[1].reg) in track:
@@ -61,5 +71,5 @@ for x in md.disasm(data[start:end], base + start):
             track[d] = (tag, off + consts[canon(ops[2].reg)]); consts.pop(d, None); continue
     track.pop(d, None); consts.pop(d, None)
 
-for tag, a, w, kind, at in sorted(out):
+for tag, a, w, kind, at in sorted(o for o in out if o[0] != 'PAGE'):
     print(f"{tag} +{a:#06x} {w} {kind} {at:#x}")

@@ -70,16 +70,26 @@ Mesa's asahi driver), not llvmpipe.
     (`0x2614` + 4 x 0x20). `0x26ac` is a u32 and `0x26b0` a u64, where G17P has
     `qos_va` (u64) at `0x26ac`. From about `0x2600` on, the g17c HwData differs
     from G17P's; the reads go on to `0x2825` (G17P: `unk_26ec`, unknown).
-- Next: where g17c uses its completion rings and the QoS table at run time,
-  which gives their HwData offsets; then region A, region C, the status
-  blocks and the channels.
+- Whole-firmware reads through the main config global `0xfffffc0000108888`
+  (124 sites; `log/gpu-g17c-reads.txt`):
+  - The HwData tail is G17P's layout 0x128 bytes later. Four completion-ring
+    descriptors at `0x273c` (G17P `0x2614`), each read as G17P's
+    `CompletionRingDescriptor`: `+0x00` u64, `+0x10` and `+0x18` u32 loads,
+    `+0x1c` stored by the firmware. QoS address at `0x27d4` (G17P `0x26ac`).
+    Minus 0x128, the reads land on G17P's filled fields `unk_2544`-`unk_2550`,
+    `unk_2570`, `unk_25f4`, `unk_2600`, `unk_2608`, `unk_2610`.
+  - The extra 0x128 bytes are between G17P `0x1cf4` (inside `perf_b`) and
+    `0x2534` (inside `unk_23dc`); no tracked read falls there. g17c HwData is
+    at least 0x3edc bytes (G17P 0x3db4).
+- Next: pin the 0x128 insertion (indexed reads of `perf_b`), then region A,
+  region C, the status blocks and the channels.
 
 ## Steps
 
 1. Firmware interface (in progress, above). Version, root and the init reads
-   of main config and HwData done; next the HwData tail from `0x2600`, then
-   regions A and C, the status blocks and the channels, each diffed against
-   `g17/fw/` (G17P).
+   of main config and HwData done, HwData tail placed (+0x128); next the
+   insertion point, then regions A and C, the status blocks and the channels,
+   each diffed against `g17/fw/` (G17P).
 2. GPU identity (done, above).
 3. m1n1: `dt_set_gpu_t6050()` from `dt_set_gpu_t8140()`.
 4. Device tree: GPU node for T6050 (`asc` and `sgx` regs, `gfx`/`gfx1` mailboxes,
