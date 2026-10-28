@@ -9,13 +9,13 @@ TTY> CPU init (MIDR: 0x611f0681 smp_id:0x0)...
 TTY>   CPU part: 0x68 rev: 0x11
 TTY>   CPU: M5 Max Sotra C (M core)
 TTY> 
-TTY> boot_args at 0x100067e4000
+TTY> boot_args at 0x10006240000
 TTY>   revision:     3
 TTY>   version:      2
-TTY>   virt_base:    0x5df0000
+TTY>   virt_base:    0x15df0000
 TTY>   phys_base:    0x10003df0000
 TTY>   mem_size:     0x1fc6610000
-TTY>   top_of_kdata: 0x100067f4000
+TTY>   top_of_kdata: 0x10006250000
 TTY>   video:
 TTY>     base:       0x11fd310c000
 TTY>     display:    0x1
@@ -25,7 +25,7 @@ TTY>     height:     1964
 TTY>     depth:      30bpp
 TTY>     density:    1
 TTY>   machine_type: 0
-TTY>   devtree:      0x7ad0000
+TTY>   devtree:      0x1752c000
 TTY>   devtree_size: 0xbc000
 TTY>   cmdline:      
 TTY>   boot_flags:   0x0
@@ -41,7 +41,7 @@ TTY> Running in EL2
 TTY> 
 TTY> OS FW version: unknown (mBoot-20457.41.3)
 TTY> System FW version: unknown (mBoot-20457.41.3)
-TTY> Heap base: 0x100067f4000
+TTY> Heap base: 0x10006250000
 TTY> Boot policy: sip0 = 0
 TTY> MCC: Unsupported version:mcc,t6050
 TTY> MMU: Initializing...
@@ -85,17 +85,17 @@ TTY> cpufreq: Chip 0x6050 is unsupported
 TTY> Initialization complete.
 TTY> Checking for payloads...
 TTY> Devicetree compatible value: apple,j714c
-TTY> Unknown payload at 0x100060d0000 (magic: 5b41464b)
+TTY> Unknown payload at 0x10005b2c000 (magic: 5b41464b)
 TTY> No valid payload found
 TTY> dart: dart /arm-io/dart-usb0 at 0x2a2f80000 is a t8110
-TTY> USB0: initialized at 0x100067f8090
+TTY> USB0: initialized at 0x10006254090
 TTY> dart: dart /arm-io/dart-usb1 at 0x2aaf80000 is a t8110
-TTY> USB1: initialized at 0x100067f8560
+TTY> USB1: initialized at 0x10006254560
 TTY> dart: dart /arm-io/dart-usb2 at 0x382f80000 is a t8110
-TTY> USB2: initialized at 0x100067f8a60
+TTY> USB2: initialized at 0x10006254a60
 TTY> Running proxy...
-TTY> Heap limit: 0x10010e3c000 (128 MiB)
-m1n1 base: 0x10005c00000
+TTY> Heap limit: 0x10010890000 (128 MiB)
+m1n1 base: 0x1000565c000
 Fetching ADT (0x000BC000 bytes)...
 LOAD: _HDR 65536 bytes from 0 to 0
 LOAD: TEXT 655360 bytes from 10000 to 10000
@@ -104,13 +104,13 @@ LOAD: DATA 196608 bytes from f0000 to f0000
 ZERO: 3145728 bytes from 0x120000 to 0x420000
 LOAD: PYLD 0 bytes from 120000 to 420000
 SKIP: 67108864 bytes from 0x420000 to 0x4420000
-Copy span: 0xbb0000 bytes; firmware block: 0x10006024000
-Copying SEPFW                         : 0x100061d8000..0x10006794000 -> 0x10009260000 (0x5bc000 bytes)
-Copying SEPPatches                    : 0x10006794000..0x100067a0000 -> 0x1000981c000 (0xc000 bytes)
-Copying uStuff                        : 0x100067a0000..0x100067a4000 -> 0x10009828000 (0x4000 bytes)
-Copying preoslog                      : 0x100067a4000..0x100067e4000 -> 0x1000982c000 (0x40000 bytes)
-Copying RTBuddySeg                    : 0x100060d0000..0x100061d8000 -> 0x1000986c000 (0x108000 bytes)
-Copying TrustCache                    : 0x10005b8c000..0x10005c00000 -> 0x10009974000 (0x74000 bytes)
+Copy span: 0xbb0000 bytes; firmware block: 0x10005a80000
+Copying SEPFW                         : 0x10005c34000..0x100061f0000 -> 0x10008cb4000 (0x5bc000 bytes)
+Copying SEPPatches                    : 0x100061f0000..0x100061fc000 -> 0x10009270000 (0xc000 bytes)
+Copying uStuff                        : 0x100061fc000..0x10006200000 -> 0x1000927c000 (0x4000 bytes)
+Copying preoslog                      : 0x10006200000..0x10006240000 -> 0x10009280000 (0x40000 bytes)
+Copying RTBuddySeg                    : 0x10005b2c000..0x10005c34000 -> 0x100092c0000 (0x108000 bytes)
+Copying TrustCache                    : 0x100055e8000..0x1000565c000 -> 0x100093c8000 (0x74000 bytes)
 Loading kernel image (0x420008 bytes)...
 ...................................................
 Adjusting addresses in ADT...
@@ -135,7 +135,33 @@ Setting secondary CPU RVBARs...
 Pushing ADT (769208 bytes)...
 Setting up bootargs...
 Copying stub...
-Entry point: 0x10005c10800
-Reloading into stub at 0x100099ec000
-TTY> Preparing to run next stage at 0x100099ec000...
-Waiting for reconnection... ..............................................................................................................
+Entry point: 0x1000566c800
+Reloading into stub at 0x10009440000
+TTY> Preparing to run next stage at 0x10009440000...
+Waiting for reconnection... ........................................................................................................................................................................................................Traceback (most recent call last):
+  File "/home/ed/dev/omarchy/forks/omacom-m1n1/proxyclient/m1n1/proxy.py", line 351, in wait_boot
+    return self.reply(self.REQ_BOOT)
+           ~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/home/ed/dev/omarchy/forks/omacom-m1n1/proxyclient/m1n1/proxy.py", line 270, in reply
+    reply += self.readfull(1)
+             ~~~~~~~~~~~~~^^^
+  File "/home/ed/dev/omarchy/forks/omacom-m1n1/proxyclient/m1n1/proxy.py", line 202, in readfull
+    block = self.dev.read(size - len(d))
+  File "/home/ed/dev/omarchy/forks/omacom-m1n1/.venv/lib/python3.14/site-packages/serial/serialposix.py", line 595, in read
+    raise SerialException(
+        'device reports readiness to read but returned no data '
+        '(device disconnected or multiple access on port?)')
+serial.serialutil.SerialException: device reports readiness to read but returned no data (device disconnected or multiple access on port?)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/ed/dev/omarchy/forks/omacom-m1n1/proxyclient/tools/chainload.py", line 255, in <module>
+    p.reload(stub.addr, fw_dest + bootargs_off, image_addr, new_base, copy_size)
+    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ed/dev/omarchy/forks/omacom-m1n1/proxyclient/m1n1/proxy.py", line 798, in reload
+    self.iface.wait_boot()
+    ~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/ed/dev/omarchy/forks/omacom-m1n1/proxyclient/m1n1/proxy.py", line 367, in wait_boot
+    raise UartTimeout("Reconnection timed out")
+m1n1.proxy.UartTimeout: Reconnection timed out

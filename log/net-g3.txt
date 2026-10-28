@@ -1,0 +1,335 @@
+=== report 7.56 s
+--- net: inet 192.168.188.39/24 link 1000 Mb/s
+3 packets transmitted, 3 packets received, 0% packet loss
+round-trip min/avg/max = 12.594/15.990/22.693 ms
+--- usb 1-1: speed 480 version  2.10 ASIX AX88179B
+--- usb 4-1: speed 10000 version  3.20 SanDisk SanDisk 3.2 Gen2
+--- blkid
+/dev/sda1: LABEL="USB" UUID="5A10-6053" TYPE="exfat"
+--- read 2 GiB, direct I/O
+2048+0 records in
+2048+0 records out
+2147483648 bytes (2.0GB) copied, 2.634064 seconds, 777.5MB/s
+--- sha256 of the first 256 MiB, twice
+5fd91c2a40fc84c285871505c727f6262c6264bfb68edc2781966cc9db0b5d3a  -
+5fd91c2a40fc84c285871505c727f6262c6264bfb68edc2781966cc9db0b5d3a  -
+--- dmesg
+Booting Linux on physical CPU 0x0000040000 [0x611f0681]
+Linux version 7.2.11-aurora-j714c-wip+ (ed@omarchy) (aarch64-linux-gnu-gcc (GCC) 16.2.0, GNU ld (GNU Binutils) 2.47) #66 SMP PREEMPT Wed Oct 28 12:38:01 CET 2026
+random: crng init done
+Machine model: Apple MacBook Pro (14-inch, M5 Max, 18 CPU cores)
+OF: reserved mem: 0x0000011fca3fc000..0x0000011fca3fffff (16 KiB) map non-reusable flash@11fca3fc000
+OF: reserved mem: 0x0000010004194000..0x000001000424ffff (752 KiB) map non-reusable flash@10004194000
+Zone ranges:
+  Normal   [mem 0x0000010003df0000-0x0000011fca3fffff]
+Movable zone start for each node
+Early memory node ranges
+  node   0: [mem 0x0000010003df0000-0x0000011fca3f7fff]
+  node   0: [mem 0x0000011fca3fc000-0x0000011fca3fffff]
+Initmem setup node 0 [mem 0x0000010003df0000-0x0000011fca3fffff]
+On node 0, zone Normal: 3964 pages in unavailable ranges
+On node 0, zone Normal: 1 pages in unavailable ranges
+On node 0, zone Normal: 5888 pages in unavailable ranges
+percpu: Embedded 4 pages/cpu s36312 r0 d29224 u65536
+pcpu-alloc: s36312 r0 d29224 u65536 alloc=4*16384
+pcpu-alloc: [0] 0 
+Detected PIPT I-cache on CPU0
+CPU features: SYS_ID_AA64ISAR2_EL1[3:0]: forced to 0
+CPU features: detected: Virtualization Host Extensions
+CPU features: detected: Spectre-v4
+CPU features: detected: Spectre-BHB
+CPU features: kernel page table isolation disabled by kernel configuration
+alternatives: applying boot alternatives
+Kernel command line: maxcpus=1 console=tty0 t6050_wdt=170 pd_ignore_unused idle=nop arm64.nowfxt
+printk: log buffer data + meta data: 1048576 + 3670016 = 4718592 bytes
+Dentry cache hash table entries: 8388608 (order: 12, 67108864 bytes, linear)
+Inode-cache hash table entries: 4194304 (order: 11, 33554432 bytes, linear)
+software IO TLB: SWIOTLB bounce buffer size adjusted to 64MB
+software IO TLB: area num 1.
+software IO TLB: mapped [mem 0x0000011f9c690000-0x0000011fa0690000] (64MB)
+Built 1 zonelists, mobility grouping on.  Total pages: 8329603
+mem auto-init: stack:all(zero), heap alloc:off, heap free:off
+SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
+rcu: Hierarchical RCU implementation.
+rcu: 	RCU restricting CPUs from NR_CPUS=18 to nr_cpu_ids=1.
+	Trampoline variant of Tasks RCU enabled.
+	Tracing variant of Tasks RCU enabled.
+rcu: RCU calculated value of scheduler-enlistment delay is 25 jiffies.
+rcu: Adjusting geometry for rcu_fanout_leaf=16, nr_cpu_ids=1
+RCU Tasks: Setting shift to 0 and lim to 1 rcu_task_cb_adjust=1 rcu_task_cpu_ids=1.
+NR_IRQS: 64, nr_irqs: 64, preallocated irqs: 0
+Root IRQ handler: aic_handle_irq
+Root FIQ handler: aic_handle_fiq
+irq_apple_aic: Using Fast IPIs
+irq_apple_aic: Initialized with 3104/4096 IRQs * 1/4 die(s), 7 FIQs, 32 vIPIs
+rcu: srcu_init: Setting srcu_struct sizes based on contention.
+clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 7645041785100000 ns
+arch_timer: cp15 timer running at 1000.00MHz (hyp-virt).
+clocksource: arch_sys_counter: mask: 0x1fffffffffffffff max_cycles: 0x1cd42e4dffb, max_idle_ns: 881590591483 ns
+sched_clock: 61 bits at 1000MHz, resolution 1ns, wraps every 4398046511103ns
+Console: colour dummy device 80x25
+printk: legacy console [tty0] enabled
+Calibrating delay loop (skipped), value calculated using timer frequency.. 2000.00 BogoMIPS (lpj=4000000)
+pid_max: default: 32768 minimum: 301
+Mount-cache hash table entries: 131072 (order: 6, 1048576 bytes, linear)
+Mountpoint-cache hash table entries: 131072 (order: 6, 1048576 bytes, linear)
+VFS: Finished mounting rootfs on nullfs
+Apple: preserving registers across WFI
+rcu: Hierarchical SRCU implementation.
+rcu: 	Max phase no-delay instances is 1000.
+smp: Bringing up secondary CPUs ...
+smp: Brought up 1 node, 1 CPU
+SMP: Total of 1 processors activated.
+CPU: All CPU(s) started at EL2
+CPU features: detected: ARMv8.4 Translation Table Level
+CPU features: detected: Data cache clean to the PoU not required for I/D coherence
+CPU features: detected: CRC32 instructions
+CPU features: detected: Data independent timing control (DIT)
+CPU features: detected: Enhanced Counter Virtualization
+CPU features: detected: Enhanced Virtualization Traps
+CPU features: detected: Fine Grained Traps
+CPU features: detected: RCpc load-acquire (LDAPR)
+CPU features: detected: LSE atomic instructions
+CPU features: detected: Privileged Access Never
+CPU features: detected: Speculation barrier (SB)
+CPU features: detected: Stage-2 Force Write-Back
+CPU features: detected: Trap EL0 IMPLEMENTATION DEFINED functionality
+CPU features: detected: TLB range maintenance instructions
+CPU features: detected: XNX
+CPU features: detected: Scalable Matrix Extension
+CPU features: detected: SME2
+alternatives: applying system-wide alternatives
+CPU features: detected: ACTLR virtualization (architectural?)
+SME: minimum available vector length 64 bytes per vector
+SME: maximum available vector length 64 bytes per vector
+SME: default vector length 64 bytes per vector
+Memory: 132405536K/133273648K available (9664K kernel code, 4014K rwdata, 2544K rodata, 768K init, 1201K bss, 862832K reserved, 0K cma-reserved)
+devtmpfs: initialized
+posixtimers hash table entries: 512 (order: 0, 8192 bytes, linear)
+futex hash table entries: 256 (16384 bytes on 1 NUMA nodes, total 16 KiB, linear).
+NET: Registered PF_NETLINK/PF_ROUTE protocol family
+DMA: preallocated 16384 KiB GFP_KERNEL pool for atomic allocations
+ASID allocator initialised with 65536 entries
+raid6: using neon recovery algorithm
+raid6: int64x1  gen()  4240 MB/s
+raid6: int64x2  gen()  5118 MB/s
+raid6: int64x4  gen()  5761 MB/s
+raid6: int64x8  gen()  5934 MB/s
+raid6: neonx1   gen() 13457 MB/s
+raid6: neonx2   gen() 13999 MB/s
+raid6: neonx4   gen() 14170 MB/s
+raid6: neonx8   gen() 13939 MB/s
+raid6: using algorithm neonx4 gen() 14170 MB/s
+raid6: .... xor() 12051 MB/s, rmw enabled
+iommu: Default domain type: Translated
+iommu: DMA domain TLB invalidation policy: strict mode
+SCSI subsystem initialized
+usbcore: registered new interface driver usbfs
+usbcore: registered new interface driver hub
+usbcore: registered new device driver usb
+clocksource: Switched to clocksource arch_sys_counter
+NET: Registered PF_INET protocol family
+IP idents hash table entries: 262144 (order: 7, 2097152 bytes, linear)
+tcp_listen_portaddr_hash hash table entries: 65536 (order: 6, 1048576 bytes, linear)
+Table-perturb hash table entries: 65536 (order: 4, 262144 bytes, linear)
+TCP established hash table entries: 524288 (order: 8, 4194304 bytes, linear)
+TCP bind hash table entries: 65536 (order: 7, 2097152 bytes, linear)
+TCP: Hash tables configured (established 524288 bind 65536)
+UDP hash table entries: 65536 (order: 8, 4194304 bytes, linear)
+NET: Registered PF_UNIX/PF_LOCAL protocol family
+Unpacking initramfs...
+workingset: timestamp_bits=46 (anon: 41) max_order=23 bucket_order=0 (anon: 0)
+xor: measuring software checksum speed
+   eor3            : 23798 MB/sec
+   32regs          : 24160 MB/sec
+   8regs           : 25510 MB/sec
+xor: using function: 8regs (25510 MB/sec)
+apple-pmgr-pwrstate 280600000.power-management:power-controller@240: firmware-owned domain atc3_common does not read as on
+apple-pmgr-pwrstate 280600000.power-management:power-controller@280: firmware-owned domain atc0_cio does not read as on
+apple-pmgr-pwrstate 280600000.power-management:power-controller@290: firmware-owned domain atc1_cio does not read as on
+apple-pmgr-pwrstate 280600000.power-management:power-controller@2e8: firmware-owned domain atc2_cio does not read as on
+apple-pmgr-pwrstate 280600000.power-management:power-controller@2f8: firmware-owned domain atc3_cio does not read as on
+apple-pmgr-pwrstate 2380600000.power-management:power-controller@658: PS b2bd_afc_0: Failed to reach power state 0xf (requested 0xf00000f, now: 0xf000300)
+apple-pmgr-pwrstate 2380600000.power-management:power-controller@668: PS b2bd_afc_1: Failed to reach power state 0xf (requested 0xf00000f, now: 0xf000300)
+apple-pmgr-pwrstate 2380600000.power-management:power-controller@678: PS b2bd_afr_0: Failed to reach power state 0xf (requested 0xf00000f, now: 0xf00030f)
+apple-pmgr-pwrstate 2380600000.power-management:power-controller@678: PS b2bd_afr_0: Failed to reach power state 0xf (requested 0xf00000f, now: 0xf00030f)
+apple-pmgr-pwrstate 2380600000.power-management:power-controller@698: PS b2bd_afr_3: Failed to reach power state 0xf (requested 0xf00000f, now: 0xf00030f)
+apple-pmgr-pwrstate 2380600000.power-management:power-controller@698: PS b2bd_afr_3: Failed to reach power state 0xf (requested 0xf00000f, now: 0xf00030f)
+Freeing initrd memory: 1120K
+505200000.serial: ttySAC0 at MMIO 0x505200000 (irq = 41, base_baud = 0) is a APPLE S5L
+platform 294600000.mtp: Adding to iommu group 0
+platform 294b30000.input: Adding to iommu group 0
+platform 2a2280000.usb: Adding to iommu group 1
+platform 2aa280000.usb: Adding to iommu group 2
+platform 382280000.usb: Adding to iommu group 3
+usbcore: registered new device driver r8152-cfgselector
+usbcore: registered new interface driver r8152
+usbcore: registered new interface driver asix
+usbcore: registered new interface driver ax88179_178a
+usbcore: registered new interface driver cdc_ether
+usbcore: registered new interface driver net1080
+usbcore: registered new interface driver cdc_subset
+usbcore: registered new interface driver zaurus
+usbcore: registered new interface driver cdc_ncm
+usbcore: registered new interface driver r8153_ecm
+usbcore: registered new interface driver uas
+usbcore: registered new interface driver usb-storage
+usbcore: registered new interface driver usbhid
+usbhid: USB HID core driver
+NET: Registered PF_INET6 protocol family
+Segment Routing with IPv6
+In-situ OAM (IOAM) with IPv6
+sit: IPv6, IPv4 and MPLS over IPv4 tunneling driver
+NET: Registered PF_PACKET protocol family
+Btrfs loaded, zoned=no, fsverity=no
+pmgr: AP watchdog armed, reset in 170 s
+simple-framebuffer 11fd31e6880.framebuffer: framebuffer at 0x11fd31e6880, 0x15cd680 bytes
+simple-framebuffer 11fd31e6880.framebuffer: format=x2r10g10b10, mode=3024x1890x32, linelength=12096
+Console: switching to colour frame buffer device 189x59
+simple-framebuffer 11fd31e6880.framebuffer: fb0: simplefb registered!
+rtkit-helper 294600000.mtp: RTKit: Initializing (protocol version 12)
+apple-pmgr-pwrstate 2380600000.power-management:power-controller@658: PS b2bd_afc_0: Failed to reach power state 0xf (requested 0xf00000f, now: 0xf000300)
+apple-pmgr-pwrstate 2380600000.power-management:power-controller@668: PS b2bd_afc_1: Failed to reach power state 0xf (requested 0xf00000f, now: 0xf000300)
+apple-pmgr-pwrstate 2380600000.power-management:power-controller@678: PS b2bd_afr_0: Failed to reach power state 0xf (requested 0xf00000f, now: 0xf00030f)
+apple-pmgr-pwrstate 2380600000.power-management:power-controller@678: PS b2bd_afr_0: Failed to reach power state 0xf (requested 0xf00000f, now: 0xf00030f)
+rtkit-helper 294600000.mtp: RTKit: syslog message: main.c:199: MTP Says Hello
+rtkit-helper 294600000.mtp: RTKit: syslog message: main.c:199: Version: AppleMTPFirmwareMac-6310.85.7~38
+rtkit-helper 294600000.mtp: RTKit: syslog message: main.c:199: Personality: MTP_SYS
+rtkit-helper 294600000.mtp: RTKit: syslog message: main.c:199: SDK: 26B109
+rtkit-helper 294600000.mtp: RTKit: syslog message: main.c:199: Built on: 2026-10-07__22:07:42
+nvme-apple 45dcc0000.nvme: RTKit: Initializing (protocol version 12)
+nvme-apple 45dcc0000.nvme: RTKit: syslog message: gc.c:9368: Restarting rebuild from lba 0
+nvme-apple 45dcc0000.nvme: RTKit: syslog message: cmd.c:8550: boot: mode normal
+nvme-apple 45dcc0000.nvme: RTKit: syslog message: power_budget.c:1001: PowerBudget: set on boot setByHost=1, is_warm_boot=0
+nvme-apple 45dcc0000.nvme: RTKit: syslog message: power_budget.c:130: PowerBudget V5V1 bu=400 pc=1 rc=0 ppm=0 pbio=0 ess=0
+nvme-apple 45dcc0000.nvme: RTKit: syslog message: power_budget.c:144: e=100 p=100/0/100 rmp=100 rsp=25/0/25 ressmp=0 ressspn=0/0 sio=0 comp=0
+rtkit-helper 294600000.mtp: RTKit: syslog message: kb_transport.c:270: IPD HIDSPI attached
+rtkit-helper 294600000.mtp: RTKit: syslog message: touch_pwr_mgr.c:208: [TPM] Mac Power Manager State Machine Initialized ret(0) status(0)
+rtkit-helper 294600000.mtp: RTKit: syslog message: act_mgr.c:563: Called act_mgr_init()
+rtkit-helper 294600000.mtp: RTKit: syslog message: comm.c:200: Initializing comm interface <0- "comm">
+rtkit-helper 294600000.mtp: RTKit: syslog message: comm.c:200: Initializing comm interface <1- "multi-touch">
+rtkit-helper 294600000.mtp: RTKit: syslog message: comm.c:200: Initializing comm interface <2- "keyboard">
+nvme-apple 45dcc0000.nvme: RTKit: syslog message: power_budget.c:269: PowerBudget: num dies horizontal change 1 -> 1
+rtkit-helper 294600000.mtp: RTKit: syslog message: comm.c:200: Initializing comm interface <3- "stm">
+nvme-apple 45dcc0000.nvme: RTKit: syslog message: power_budget.c:130: PowerBudget V5V1 bu=0 pc=0 rc=0 ppm=0 pbio=0 ess=0
+rtkit-helper 294600000.mtp: RTKit: syslog message: comm.c:200: Initializing comm interface <4- "actuator">
+nvme-apple 45dcc0000.nvme: RTKit: syslog message: power_budget.c:144: e=0 p=0/0/0 rmp=0 rsp=0/0/0 ressmp=0 ressspn=0/0 sio=0 comp=0
+rtkit-helper 294600000.mtp: RTKit: syslog message: comm.c:200: Initializing comm interface <5- "tp-accel">
+nvme-apple 45dcc0000.nvme: RTKit: syslog message: rtkpmc_t6050.cpp:208: pmc_init PMC-T6050 Init die = 0 io_base 0
+rtkit-helper 294600000.mtp: RTKit: syslog message: comm.c:200: Initializing comm interface <6- "mtp">
+rtkit-helper 294600000.mtp: RTKit: syslog message: stm.c:75: ST IF complete enumeration: SENT (0x0)
+rtkit-helper 294600000.mtp: RTKit: syslog message: touch_iface.c:171: Grape interface initializing
+rtkit-helper 294600000.mtp: RTKit: syslog message: touch_iface.c:179: Grape interface initialized
+nvme-apple 45dcc0000.nvme: RTKit: syslog message: push.c:2552: Push is skipping band:0691 flow:FLOW_CLOG
+rtkit-helper 294600000.mtp: RTKit: syslog message: touch_mgr.c:65: Touch IF complete enumeration: SENT
+rtkit-helper 294600000.mtp: RTKit: syslog message: keyboard.c:63: Keyboard initialized
+rtkit-helper 294600000.mtp: RTKit: syslog message: accel.c:57: Accel initialized
+rtkit-helper 294600000.mtp: RTKit: syslog message: actuator.c:57: Actuator initialized
+rtkit-helper 294600000.mtp: RTKit: syslog message: mtp_iface.c:139: MTP interface complete enumeration: SENT
+nvme-apple 45dcc0000.nvme: RTKit: syslog message: band.c:6118: Push abandoning non-blank band:0691 flow:FLOW_CLOG Validity 00000000 Age 0 uncleanReboot yes
+phy-apple-t6050-usb2 2a2a90000.phy: USB 2.0 host mode, PORTSC 0x206e1 after 1 flip(s)
+xhci-hcd 2a2280000.usb: xHCI Host Controller
+xhci-hcd 2a2280000.usb: new USB bus registered, assigned bus number 1
+xhci-hcd 2a2280000.usb: hcc params 0x0238ffcd hci version 0x110 quirks 0x0000000000000010
+xhci-hcd 2a2280000.usb: irq 49, io mem 0x2a2280000
+xhci-hcd 2a2280000.usb: xHCI Host Controller
+xhci-hcd 2a2280000.usb: new USB bus registered, assigned bus number 2
+xhci-hcd 2a2280000.usb: Host supports USB 3.1 Enhanced SuperSpeed
+hub 1-0:1.0: USB hub found
+hub 1-0:1.0: 1 port detected
+usb usb2: We don't know the algorithms for LPM for this host, disabling LPM.
+hub 2-0:1.0: USB hub found
+hub 2-0:1.0: 1 port detected
+nvme-apple 45dcc0000.nvme: RTKit: syslog message: push.c:3427: Finished abort skip flow:FLOW_CLOG band:0691 boff 34512 pgIdx 3000 abort_band0:0691 abort_band1:0000
+phy-apple-t6050-usb2 2aaa90000.phy: USB 2.0 host mode, PORTSC 0x206e1 after 1 flip(s)
+nvme-apple 45dcc0000.nvme: RTKit: syslog message: bg.c:554: Unclean boot 1/1
+usb 1-1: new high-speed USB device number 2 using xhci-hcd
+nvme-apple 45dcc0000.nvme: RTKit: syslog message: ric.c:443:  RIC update silo after SPF !! Start silo: 30 start entry: 4
+cdc_ncm 1-1:2.0: MAC-Address: 6c:6e:07:41:d2:14
+cdc_ncm 1-1:2.0: setting rx_max = 16384
+cdc_ncm 1-1:2.0: setting tx_max = 16384
+cdc_ncm 1-1:2.0 eth0: register 'cdc_ncm' at usb-2a2280000.usb-1, CDC NCM (NO ZLP), 6c:6e:07:41:d2:14
+nvme nvme0: passthrough uses implicit buffer lengths
+ nvme0n1: p1 p2 p3 p4 p5 p6
+nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+phy-apple-t6050-usb2 2aaa90000.phy: SS: PHY CPU RTKit v12, endpoints 0x3, AP 0x20, IOP 0x20, 1 other message(s), last 0x1:0x10100010007df0
+phy-apple-t6050-usb2 2aaa90000.phy: SS: HCRST 1 CNR 1, CIO 1, mxwrap 1, UC_TNBL_DONE 1
+phy-apple-t6050-usb2 2aaa90000.phy: SS: cd28 from the write through step 16: 886 886 886 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+phy-apple-t6050-usb2 2aaa90000.phy: SS: PhyStatus s1 1 rise 1 fall 1 (STATUS2 0xc4), lock 0 ack 1 unlock 1 release 1
+phy-apple-t6050-usb2 2aaa90000.phy: SS: glue 0x0 0x0 0x0 0x0, PORTSC 0x206e1 / 0x2a0
+xhci-hcd 2aa280000.usb: xHCI Host Controller
+xhci-hcd 2aa280000.usb: new USB bus registered, assigned bus number 3
+xhci-hcd 2aa280000.usb: hcc params 0x0238ffcd hci version 0x110 quirks 0x0000000000000010
+phy-apple-t6050-usb2 2aaa90000.phy: SS: after xHCI reset: glue read 0x886 0x886 0x3c20060c 0x2000b, rewritten 0x0, now 0x886 0x886 0x3c20060c 0x2000b
+phy-apple-t6050-usb2 2aaa90000.phy: SS: after xHCI reset: USBSTS 0x11, PORTSC 0x206e1 / 0x2a0
+xhci-hcd 2aa280000.usb: irq 50, io mem 0x2aa280000
+xhci-hcd 2aa280000.usb: xHCI Host Controller
+xhci-hcd 2aa280000.usb: new USB bus registered, assigned bus number 4
+xhci-hcd 2aa280000.usb: Host supports USB 3.1 Enhanced SuperSpeed
+hub 3-0:1.0: USB hub found
+hub 3-0:1.0: 1 port detected
+usb usb4: We don't know the algorithms for LPM for this host, disabling LPM.
+hub 4-0:1.0: USB hub found
+hub 4-0:1.0: 1 port detected
+phy-apple-t6050-usb2 382a90000.phy: USB 2.0 host mode, PORTSC 0x2a0 after 3 flip(s)
+xhci-hcd 382280000.usb: xHCI Host Controller
+xhci-hcd 382280000.usb: new USB bus registered, assigned bus number 5
+xhci-hcd 382280000.usb: hcc params 0x0238ffcd hci version 0x110 quirks 0x0000000000000010
+xhci-hcd 382280000.usb: irq 51, io mem 0x382280000
+xhci-hcd 382280000.usb: xHCI Host Controller
+xhci-hcd 382280000.usb: new USB bus registered, assigned bus number 6
+xhci-hcd 382280000.usb: Host supports USB 3.1 Enhanced SuperSpeed
+hub 5-0:1.0: USB hub found
+hub 5-0:1.0: 1 port detected
+usb usb6: We don't know the algorithms for LPM for this host, disabling LPM.
+hub 6-0:1.0: USB hub found
+hub 6-0:1.0: 1 port detected
+dockchannel-hid 294b30000.input: Interface stm is now ready
+rtkit-helper 294600000.mtp: RTKit: syslog message: stm_cr.c:93: ST management interface configuration completed
+rtkit-helper 294600000.mtp: RTKit: syslog message: stm.c:89: ST management ready
+hid-generic 0019:0000:0000.0001: device has no listeners, quitting
+apple-pmgr-pwrstate 280600000.power-management:power-controller@208: sync_state() pending due to 288300000.power-management
+apple-pmgr-pwrstate 280600000.power-management:power-controller@210: sync_state() pending due to 288300000.power-management
+apple-pmgr-pwrstate 280600000.power-management:power-controller@238: sync_state() pending due to 288300000.power-management
+apple-pmgr-pwrstate 280600000.power-management:power-controller@240: sync_state() pending due to 288300000.power-management
+apple-pmgr-pwrstate 2380600000.power-management:power-controller@658: sync_state() pending due to 2380600000.power-management:power-controller@660
+apple-pmgr-pwrstate 2380600000.power-management:power-controller@668: sync_state() pending due to 2380600000.power-management:power-controller@670
+apple-pmgr-pwrstate 2380600000.power-management:power-controller@678: sync_state() pending due to 2380600000.power-management:power-controller@680
+apple-pmgr-pwrstate 2380600000.power-management:power-controller@678: sync_state() pending due to 2380600000.power-management:power-controller@688
+apple-pmgr-pwrstate 2380600000.power-management:power-controller@698: sync_state() pending due to 2380600000.power-management:power-controller@6a0
+apple-pmgr-pwrstate 2380600000.power-management:power-controller@698: sync_state() pending due to 2380600000.power-management:power-controller@6a8
+clk: Disabling unused clocks
+PM: genpd: Not disabling unused power domains
+Freeing unused kernel memory: 768K
+Run /init as init process
+  with arguments:
+    /init
+  with environment:
+    HOME=/
+    TERM=linux
+rtkit-helper 294600000.mtp: RTKit: syslog message: touch_iface.c:458: Grape interface configuration completed
+input: Apple MTP multi-touch as /devices/platform/soc/294b14000.fifo/294b30000.input/0019:05AC:0359.0002/input/input0
+magicmouse 0019:05AC:0359.0002: input: HOST HID v5.10 Mouse [Apple MTP multi-touch] on 294b30000.input.1 (multi-touch)
+rtkit-helper 294600000.mtp: RTKit: syslog message: keyboard_cr.c:73: Keyboard interface configuration completed
+rtkit-helper 294600000.mtp: RTKit: syslog message: keyboard.c:77: Keyboard ready
+dockchannel-hid 294b30000.input: Interface keyboard is now ready
+input: Apple MTP keyboard as /devices/platform/soc/294b14000.fifo/294b30000.input/0019:05AC:0359.0003/input/input1
+apple 0019:05AC:0359.0003: input: HOST HID v5.10 Keyboard [Apple MTP keyboard] on 294b30000.input.2 (keyboard)
+dockchannel-hid 294b30000.input: Interface actuator is now ready
+rtkit-helper 294600000.mtp: RTKit: syslog message: actuator_cr.c:84: Actuator interface configuration completed
+rtkit-helper 294600000.mtp: RTKit: syslog message: actuator.c:71: Actuator ready
+usb 4-1: new SuperSpeed Plus Gen 2x1 USB device number 2 using xhci-hcd
+usb 4-1: UAS is ignored for this device, using usb-storage instead
+usb 4-1: UAS is ignored for this device, using usb-storage instead
+usb-storage 4-1:1.0: USB Mass Storage device detected
+usb-storage 4-1:1.0: Quirks match for vid 0781 pid 55e8: 800000
+scsi host0: usb-storage 4-1:1.0
+nvme-apple 45dcc0000.nvme: RTKit: syslog message: gc.c:9348: Stopping GC rebuild
+scsi 0:0:0:0: Direct-Access     SanDisk  Extreme Pro DDE1 0010 PQ: 0 ANSI: 6
+sd 0:0:0:0: [sda] 1953525168 512-byte logical blocks: (1.00 TB/932 GiB)
+sd 0:0:0:0: [sda] Write Protect is off
+sd 0:0:0:0: [sda] Mode Sense: 3d 00 10 00
+scsi 0:0:0:1: Enclosure         SanDisk  SES Device       0010 PQ: 0 ANSI: 6
+sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, supports DPO and FUA
+ sda: sda1
+sd 0:0:0:0: [sda] Attached SCSI disk

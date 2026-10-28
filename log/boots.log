@@ -188,3 +188,42 @@
 20:16:06 esp7b1: ESP install retry after a failed stage 1 handoff: stage2.bin (prep), Image.gz (usb2h), dtb (ports 0+2); frames esp7b1-01..05
 20:30:14 real2: real path (stage 1 -> ESP stage 2 -> kernel -> disk root), frames real2-01..16
 20:35:58 esp7c: ESP install on the dev loader (stage2.bin prep, Image.gz usb2h, dtb ports 0+2); frames esp7c-01..04
+20:53:12 real4: real path (stage 1 -> ESP stage 2 -> kernel -> disk root), frames real4-01..16
+23:33:16 p1a: real root, fix15.dtb; frames p1a-1..9
+23:51:06 p1c: real root, fix15.dtb; frames p1c-1..9
+23:57:52 p1d: real root, fix15.dtb; frames p1d-1..9
+00:05:02 p1e: real root, fix15.dtb; frames p1e-1..9
+00:15:18 p1f: real root, fix15.dtb; frames p1f-1..9
+00:31:39 p1g: real root, fix15.dtb; frames p1g-1..9
+00:50:45 ctl1: control: prep loader, usb2h kernel, fix15 (3 ports), loop check after the camera changes; frames ctl1-01..08
+00:54:09 k11: kernel-only port setup: no-prep loader, usb2k kernel with apple,t6050-usb2-phy, ports 0+1, stick in left-front; frames k11-01..11
+00:57:22 k21: kernel-only port setup, all three ports incl. the proxy port (right), stick in left-front; frames k21-01..11
+01:00:37 k31: loader prep AND kernel PHY (the EFI boot combination), all three ports, stick in left-front; frames k31-01..11
+01:03:30 e11: EFI install: usb2k kernel (2388d15af0ea) + fix16 dtb (e329e773a288); frames e11-01..05
+11:58:12 ss1: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
+12:02:28 ss2: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped
+12:06:08 ss3: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
+12:12:56 ss4: handoff ok, proxy back after 182s (offset 11, net 171s) -> unmapped
+12:32:19 net1: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
+12:38:16 net-g1: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
+12:41:42 net-g2: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
+12:45:09 net-g3: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
+12:52:09 net-t1: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped
+12:55:36 net-t2: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped
+12:59:03 net-t3: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
+13:04:15 net-p1: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
+13:07:41 net-p2: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
+13:11:08 net-p3: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped
+13:14:35 net-p4: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
+13:18:42 net-s1: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
+13:22:09 net-s2: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
+13:25:35 net-s3: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
+13:29:01 net-s4: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
+13:33:04 net-w1: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
+13:36:30 net-w2: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
+13:39:57 net-w3: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
+13:43:23 net-w4: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
+13:47:30 net-u1: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
+13:50:56 net-u2: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
+13:54:23 net-u3: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
+13:57:49 net-u4: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped

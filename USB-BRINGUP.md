@@ -1625,3 +1625,86 @@ Screen capture: the BRIO's MJPEG mode tops out at 1920x1080 (a 3840x2160 request
 1080p). A 150 s recording (`ffmpeg -f v4l2 -input_format mjpeg -video_size 1920x1080 ... -vf
 fps=4 -c:v libx264`) catches the lines that scroll off before the shell prompt; tesseract on
 the frames finds them.
+
+## Network logs instead of the camera; stick test: SuperSpeed 1 of 2 boots (2026-10-28 ~12:33, boot net1)
+
+USB Ethernet adapter (ASIX AX88179B, 0b95:1790) in the left rear port (port 0, USB 2.0 host),
+cabled to the router: enumerates as `usb 1-1` at 480 Mb/s, binds `cdc_ncm` as eth0
+(6c:6e:07:41:d2:14), DHCP 192.168.188.39, link 1000 Mb/s, ping to 192.168.188.1 3/3.
+
+`initramfs/init-net` (+ `initramfs/udhcpc.sh`; packed as `boot/initramfs-net.cpio.gz` = the
+stock image followed by a gzip cpio of the two files, the later /init wins): waits for eth0 and
+/dev/sda, DHCP, runs read-only stick tests (USB speeds, blkid, a 2 GiB direct read, sha256 of
+the first 256 MiB twice), keeps dmesg, and sends the report one way to 192.168.188.35:8000 (open
+in Omarchy's ufw for 192.168.188.0/24). Nothing listens on the Mac. Receiver on Omarchy: a
+one-shot Python TCP accept that writes the bytes to a file (scratchpad, not in this folder).
+Boot: `IRD=/home/ed/dev/omarchy/kernel/boot/initramfs-net.cpio.gz` with the ss4 command.
+
+net1 report (`log/net1-report.txt`, includes the full dmesg):
+- Stick on `usb 3-1`, speed 480 (USB 2.0), "SanDisk 3.2 Gen2"; sda1 exFAT, LABEL "USB";
+  2 GiB direct read 51.2 s = 40.0 MB/s; sha256 of the first 256 MiB equal on both reads.
+- The SS driver lines are identical to ss4 (glue written 0x886, HCRST/CNR/CIO/mxwrap/
+  UC_TNBL_DONE ok, RTKit v12 AP/IOP 0x20, PhyStatus ok, lock 0, glue 0 at step 16, "glue
+  restored 0xf" after the xHCI reset, PORTSC2 0x2a0 = PP set, RxDetect). ss4 went
+  `usb 3-1` high-speed first, then `usb 4-1` SuperSpeed Plus; net1 stayed high-speed.
+- So the SuperSpeed link trains on some boots only (1 of 2 so far). Not known: whether the
+  host SS port reached Polling in net1 (no PORTSC trace after the hub's USB 2.0 reset), and
+  where the glue goes to 0 between step 1 and step 16 (the proven proxy runs report it held
+  0x886 with CIO on).
+
+## Glue traced; SuperSpeed is a race with the hub's USB 2.0 enumeration (2026-10-28 ~12:45, boots net-g1..g3)
+
+Driver change (linux-aurora, uncommitted): cd28 logged after the iBoot write and after each of
+steps 1-16; `phy_calibrate()` now writes the iBoot glue values back after the xHCI reset
+(only where they differ) instead of the end-of-sequence snapshot, and logs what it read.
+Three network boots, adapter in port 0 each time (`log/net-g1..g3.txt`):
+
+| Boot | Stick | 2 GiB direct read |
+|---|---|---|
+| g1 | `usb 3-1`, 480 Mb/s | 40.0 MB/s |
+| g2 | `usb 3-1`, 480 Mb/s | 39.4 MB/s |
+| g3 | `usb 4-1`, 10000 Mb/s, SuperSpeed Plus Gen 2x1 | 777.5 MB/s |
+
+- cd28 in all three: 886 after the write, after step 1 and after steps 2-3; 0 from the CIO
+  domains (step 4) through step 16. After the xHCI reset it reads 0x886 0x886 0x3c20060c 0x2000b
+  again and nothing is rewritten. The glue is not wiped: it reads 0 while CIO is on before the
+  controller runs on the USB3 PIPE clock. The earlier snapshot restore wrote those zeros back
+  over the iBoot values (ss2, ss3, ss4, net1).
+- Every SS driver line is identical in g1, g2 and g3 (RTKit, HCRST/CNR, CIO, UC_TNBL_DONE,
+  PhyStatus, lock 0, TXDETRX, PORTSC 0x206e1 / 0x2a0 before and after the reset).
+- The difference is the order after the root hubs register. g1, g2: `usb 3-1: new high-speed`
+  right after hub 4-0, the stick stays on USB 2.0. g3: no USB 2.0 enumeration of the stick at
+  all; `usb 4-1: new SuperSpeed Plus` follows a few seconds later. ss4: high-speed first, then
+  SuperSpeed (the hub's USB 2.0 port reset worked as the proxy's U2RESET did).
+- sha256 of the first 256 MiB is the same at 480 Mb/s and at 10 Gbps
+  (5fd91c2a...0b5d3a) in every boot.
+- With the adapter in port 0: 1 of 3 SS. Without (ss4): 1 of 1. Each port has its own
+  controller and PHY.
+
+Since the glue fix, SuperSpeed has come up on 2 of 5 boots. Not known: what the host SS port
+does after the hub's USB 2.0 port reset in a failing boot (stays in RxDetect = the stick never
+retries SS; Polling then back = training fails). The kernel has DEBUG_FS (xhci debugfs
+portsc) and DYNAMIC_DEBUG (hub / xhci-hub port events via `dyndbg=`) for that.
+
+## Timing and SUSPHY tests (2026-10-28 13:00-13:58, boots net-t*, net-p*, net-s*, net-w*, net-u*)
+
+Driver boot parameters (module `phy_apple_t6050_usb2`, uncommitted): `ss_pace_us` (gap after
+each sequence write, default 0), `ss_settle_ms` (pause after step 16, default 0), `ss_susphy`
+(set GUSB3PIPECTL SUSPHY before step 1, default 1). A 3 s logger after the xHCI reset prints
+every change of PORTSC (USB 2.0 / SS) and GDBGLTSSM.
+
+| Batch | Setting | SuperSpeed |
+|---|---|---|
+| ss4, net1, g1-g3, t1-t3 | no pacing, SUSPHY cleared by the flip | 3 of 8 |
+| p1-p4, s1-s4 | 1 ms per write | 0 of 8 (s1-s4: the parameters had the wrong prefix) |
+| w1-w4 | settle 2000 ms | 0 of 4 |
+| u1-u4 | SUSPHY set before step 1 | 0 of 4 |
+
+- Failing boots without SUSPHY: the SS port stays in RxDetect (PLS 5) through the hub's
+  USB 2.0 resets; it never reaches Polling. GDBGLTSSM stays 0x9cc20024.
+- Passing boot t1: Polling 16 ms after the hub's first USB 2.0 port reset, U0 3 ms later.
+- With SUSPHY set (u1): the SS port leaves RxDetect on its own after the stick has enumerated
+  on USB 2.0: Polling (0x2e0) at 3.49 s, SS.Inactive (0x2c0) at 4.58 s; the hub then warm
+  resets it at 6.2 s (Polling again, then RxDetect, no connection).
+- The resident proxy leaves port 1 in device mode with GUSB3PIPECTL 0x01021102 (SUSPHY set),
+  GUSB2PHYCFG 0x00102400, glue 0x886: the proven proxy runs never ran the USB 2.0 flip.

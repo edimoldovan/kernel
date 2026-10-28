@@ -1,0 +1,528 @@
+=== report 10.01 s
+--- portsc 2aa280000 port01: 0x00000e03 Speed=3 Link=U0 CCS PP PED 
+--- portsc 2aa280000 port02: 0x0a0002a0 Speed=0 Link=RxDetect PP WCE WOE 
+--- net: inet 192.168.188.39/24 link 1000 Mb/s
+3 packets transmitted, 3 packets received, 0% packet loss
+round-trip min/avg/max = 12.666/19.428/32.931 ms
+--- usb 1-1: speed 480 version  2.10 ASIX AX88179B
+--- usb 3-1: speed 480 version  2.10 SanDisk SanDisk 3.2 Gen2
+--- blkid
+/dev/sda1: LABEL="USB" UUID="5A10-6053" TYPE="exfat"
+--- read 2 GiB, direct I/O
+2048+0 records in
+2048+0 records out
+2147483648 bytes (2.0GB) copied, 51.215965 seconds, 40.0MB/s
+--- sha256 of the first 256 MiB, twice
+5fd91c2a40fc84c285871505c727f6262c6264bfb68edc2781966cc9db0b5d3a  -
+5fd91c2a40fc84c285871505c727f6262c6264bfb68edc2781966cc9db0b5d3a  -
+=== after the tests 79.07 s
+--- portsc 2aa280000 port01: 0x00000e03 Speed=3 Link=U0 CCS PP PED 
+--- portsc 2aa280000 port02: 0x0a0002a0 Speed=0 Link=RxDetect PP WCE WOE 
+--- dmesg
+[    0.000000] Booting Linux on physical CPU 0x0000040000 [0x611f0681]
+[    0.000000] Linux version 7.2.11-aurora-j714c-wip+ (ed@omarchy) (aarch64-linux-gnu-gcc (GCC) 16.2.0, GNU ld (GNU Binutils) 2.47) #69 SMP PREEMPT Wed Oct 28 13:32:56 CET 2026
+[    0.000000] random: crng init done
+[    0.000000] Machine model: Apple MacBook Pro (14-inch, M5 Max, 18 CPU cores)
+[    0.000000] OF: reserved mem: 0x0000011fca3fc000..0x0000011fca3fffff (16 KiB) map non-reusable flash@11fca3fc000
+[    0.000000] OF: reserved mem: 0x0000010004f38000..0x0000010004ff3fff (752 KiB) map non-reusable flash@10004f38000
+[    0.000000] Zone ranges:
+[    0.000000]   Normal   [mem 0x0000010003df0000-0x0000011fca3fffff]
+[    0.000000] Movable zone start for each node
+[    0.000000] Early memory node ranges
+[    0.000000]   node   0: [mem 0x0000010003df0000-0x0000011fca3f7fff]
+[    0.000000]   node   0: [mem 0x0000011fca3fc000-0x0000011fca3fffff]
+[    0.000000] Initmem setup node 0 [mem 0x0000010003df0000-0x0000011fca3fffff]
+[    0.000000] On node 0, zone Normal: 3964 pages in unavailable ranges
+[    0.000000] On node 0, zone Normal: 1 pages in unavailable ranges
+[    0.000000] On node 0, zone Normal: 5888 pages in unavailable ranges
+[    0.000000] percpu: Embedded 4 pages/cpu s36312 r0 d29224 u65536
+[    0.000000] pcpu-alloc: s36312 r0 d29224 u65536 alloc=4*16384
+[    0.000000] pcpu-alloc: [0] 0 
+[    0.000000] Detected PIPT I-cache on CPU0
+[    0.000000] CPU features: SYS_ID_AA64ISAR2_EL1[3:0]: forced to 0
+[    0.000000] CPU features: detected: Virtualization Host Extensions
+[    0.000000] CPU features: detected: Spectre-v4
+[    0.000000] CPU features: detected: Spectre-BHB
+[    0.000000] CPU features: kernel page table isolation disabled by kernel configuration
+[    0.000000] alternatives: applying boot alternatives
+[    0.000000] Kernel command line: maxcpus=1 console=tty0 t6050_wdt=170 pd_ignore_unused printk.time=1 phy_apple_t6050_usb2.ss_settle_ms=2000 dyndbg="file hub.c +p; file xhci-hub.c +p; func handle_port_status +p" idle=nop arm64.nowfxt
+[    0.000000] printk: log buffer data + meta data: 1048576 + 3670016 = 4718592 bytes
+[    0.000000] Dentry cache hash table entries: 8388608 (order: 12, 67108864 bytes, linear)
+[    0.000000] Inode-cache hash table entries: 4194304 (order: 11, 33554432 bytes, linear)
+[    0.000000] software IO TLB: SWIOTLB bounce buffer size adjusted to 64MB
+[    0.000000] software IO TLB: area num 1.
+[    0.000000] software IO TLB: mapped [mem 0x0000011f9c690000-0x0000011fa0690000] (64MB)
+[    0.000000] Built 1 zonelists, mobility grouping on.  Total pages: 8329603
+[    0.000000] mem auto-init: stack:all(zero), heap alloc:off, heap free:off
+[    0.000000] SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
+[    0.000000] rcu: Hierarchical RCU implementation.
+[    0.000000] rcu: 	RCU restricting CPUs from NR_CPUS=18 to nr_cpu_ids=1.
+[    0.000000] 	Trampoline variant of Tasks RCU enabled.
+[    0.000000] 	Tracing variant of Tasks RCU enabled.
+[    0.000000] rcu: RCU calculated value of scheduler-enlistment delay is 25 jiffies.
+[    0.000000] rcu: Adjusting geometry for rcu_fanout_leaf=16, nr_cpu_ids=1
+[    0.000000] RCU Tasks: Setting shift to 0 and lim to 1 rcu_task_cb_adjust=1 rcu_task_cpu_ids=1.
+[    0.000000] NR_IRQS: 64, nr_irqs: 64, preallocated irqs: 0
+[    0.000000] Root IRQ handler: aic_handle_irq
+[    0.000000] Root FIQ handler: aic_handle_fiq
+[    0.000000] irq_apple_aic: Using Fast IPIs
+[    0.000000] irq_apple_aic: Initialized with 3104/4096 IRQs * 1/4 die(s), 7 FIQs, 32 vIPIs
+[    0.000000] rcu: srcu_init: Setting srcu_struct sizes based on contention.
+[    0.000000] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 7645041785100000 ns
+[    0.000000] arch_timer: cp15 timer running at 1000.00MHz (hyp-virt).
+[    0.000000] clocksource: arch_sys_counter: mask: 0x1fffffffffffffff max_cycles: 0x1cd42e4dffb, max_idle_ns: 881590591483 ns
+[    0.000000] sched_clock: 61 bits at 1000MHz, resolution 1ns, wraps every 4398046511103ns
+[    0.000106] Console: colour dummy device 80x25
+[    0.000110] printk: legacy console [tty0] enabled
+[    0.000175] Calibrating delay loop (skipped), value calculated using timer frequency.. 2000.00 BogoMIPS (lpj=4000000)
+[    0.000179] pid_max: default: 32768 minimum: 301
+[    0.000228] Mount-cache hash table entries: 131072 (order: 6, 1048576 bytes, linear)
+[    0.000244] Mountpoint-cache hash table entries: 131072 (order: 6, 1048576 bytes, linear)
+[    0.000296] VFS: Finished mounting rootfs on nullfs
+[    0.000567] Apple: preserving registers across WFI
+[    0.000588] rcu: Hierarchical SRCU implementation.
+[    0.000589] rcu: 	Max phase no-delay instances is 1000.
+[    0.000981] smp: Bringing up secondary CPUs ...
+[    0.000982] smp: Brought up 1 node, 1 CPU
+[    0.000984] SMP: Total of 1 processors activated.
+[    0.000986] CPU: All CPU(s) started at EL2
+[    0.000988] CPU features: detected: ARMv8.4 Translation Table Level
+[    0.000990] CPU features: detected: Data cache clean to the PoU not required for I/D coherence
+[    0.000992] CPU features: detected: CRC32 instructions
+[    0.000994] CPU features: detected: Data independent timing control (DIT)
+[    0.000995] CPU features: detected: Enhanced Counter Virtualization
+[    0.000997] CPU features: detected: Enhanced Virtualization Traps
+[    0.000998] CPU features: detected: Fine Grained Traps
+[    0.001000] CPU features: detected: RCpc load-acquire (LDAPR)
+[    0.001002] CPU features: detected: LSE atomic instructions
+[    0.001003] CPU features: detected: Privileged Access Never
+[    0.001005] CPU features: detected: Speculation barrier (SB)
+[    0.001006] CPU features: detected: Stage-2 Force Write-Back
+[    0.001007] CPU features: detected: Trap EL0 IMPLEMENTATION DEFINED functionality
+[    0.001009] CPU features: detected: TLB range maintenance instructions
+[    0.001010] CPU features: detected: XNX
+[    0.001013] CPU features: detected: Scalable Matrix Extension
+[    0.001014] CPU features: detected: SME2
+[    0.001025] alternatives: applying system-wide alternatives
+[    0.002236] CPU features: detected: ACTLR virtualization (architectural?)
+[    0.002241] SME: minimum available vector length 64 bytes per vector
+[    0.002242] SME: maximum available vector length 64 bytes per vector
+[    0.002244] SME: default vector length 64 bytes per vector
+[    0.002281] Memory: 132405536K/133273648K available (9664K kernel code, 4014K rwdata, 2544K rodata, 768K init, 1201K bss, 862832K reserved, 0K cma-reserved)
+[    0.002854] devtmpfs: initialized
+[    0.004054] posixtimers hash table entries: 512 (order: 0, 8192 bytes, linear)
+[    0.004059] futex hash table entries: 256 (16384 bytes on 1 NUMA nodes, total 16 KiB, linear).
+[    0.004132] NET: Registered PF_NETLINK/PF_ROUTE protocol family
+[    0.004927] DMA: preallocated 16384 KiB GFP_KERNEL pool for atomic allocations
+[    0.005063] ASID allocator initialised with 65536 entries
+[    0.010296] raid6: using neon recovery algorithm
+[    0.076030] raid6: int64x1  gen()  4284 MB/s
+[    0.144040] raid6: int64x2  gen()  5125 MB/s
+[    0.212060] raid6: int64x4  gen()  5770 MB/s
+[    0.280067] raid6: int64x8  gen()  5907 MB/s
+[    0.348085] raid6: neonx1   gen() 13485 MB/s
+[    0.416098] raid6: neonx2   gen() 14024 MB/s
+[    0.484117] raid6: neonx4   gen() 14143 MB/s
+[    0.552131] raid6: neonx8   gen() 14135 MB/s
+[    0.552132] raid6: using algorithm neonx4 gen() 14143 MB/s
+[    0.620144] raid6: .... xor() 12038 MB/s, rmw enabled
+[    0.620176] iommu: Default domain type: Translated
+[    0.620178] iommu: DMA domain TLB invalidation policy: strict mode
+[    0.620212] SCSI subsystem initialized
+[    0.620236] usbcore: registered new interface driver usbfs
+[    0.620241] usbcore: registered new interface driver hub
+[    0.620246] usbcore: registered new device driver usb
+[    0.620400] clocksource: Switched to clocksource arch_sys_counter
+[    0.621049] NET: Registered PF_INET protocol family
+[    0.621095] IP idents hash table entries: 262144 (order: 7, 2097152 bytes, linear)
+[    0.624055] tcp_listen_portaddr_hash hash table entries: 65536 (order: 6, 1048576 bytes, linear)
+[    0.624128] Table-perturb hash table entries: 65536 (order: 4, 262144 bytes, linear)
+[    0.624134] TCP established hash table entries: 524288 (order: 8, 4194304 bytes, linear)
+[    0.624497] TCP bind hash table entries: 65536 (order: 7, 2097152 bytes, linear)
+[    0.624622] TCP: Hash tables configured (established 524288 bind 65536)
+[    0.624637] UDP hash table entries: 65536 (order: 8, 4194304 bytes, linear)
+[    0.625068] NET: Registered PF_UNIX/PF_LOCAL protocol family
+[    0.625163] Unpacking initramfs...
+[    0.628585] workingset: timestamp_bits=46 (anon: 41) max_order=23 bucket_order=0 (anon: 0)
+[    0.628730] xor: measuring software checksum speed
+[    0.628871]    eor3            : 23712 MB/sec
+[    0.629012]    32regs          : 23581 MB/sec
+[    0.629143]    8regs           : 25444 MB/sec
+[    0.629144] xor: using function: 8regs (25444 MB/sec)
+[    0.631742] apple-pmgr-pwrstate 280600000.power-management:power-controller@240: firmware-owned domain atc3_common does not read as on
+[    0.631899] apple-pmgr-pwrstate 280600000.power-management:power-controller@280: firmware-owned domain atc0_cio does not read as on
+[    0.631942] apple-pmgr-pwrstate 280600000.power-management:power-controller@290: firmware-owned domain atc1_cio does not read as on
+[    0.632157] apple-pmgr-pwrstate 280600000.power-management:power-controller@2e8: firmware-owned domain atc2_cio does not read as on
+[    0.632198] apple-pmgr-pwrstate 280600000.power-management:power-controller@2f8: firmware-owned domain atc3_cio does not read as on
+[    0.645011] apple-pmgr-pwrstate 2380600000.power-management:power-controller@658: PS b2bd_afc_0: Failed to reach power state 0xf (requested 0xf00000f, now: 0xf000300)
+[    0.645155] apple-pmgr-pwrstate 2380600000.power-management:power-controller@668: PS b2bd_afc_1: Failed to reach power state 0xf (requested 0xf00000f, now: 0xf000300)
+[    0.645300] apple-pmgr-pwrstate 2380600000.power-management:power-controller@678: PS b2bd_afr_0: Failed to reach power state 0xf (requested 0xf00000f, now: 0xf00030f)
+[    0.645425] apple-pmgr-pwrstate 2380600000.power-management:power-controller@678: PS b2bd_afr_0: Failed to reach power state 0xf (requested 0xf00000f, now: 0xf00030f)
+[    0.645572] apple-pmgr-pwrstate 2380600000.power-management:power-controller@698: PS b2bd_afr_3: Failed to reach power state 0xf (requested 0xf00000f, now: 0xf00030f)
+[    0.645696] apple-pmgr-pwrstate 2380600000.power-management:power-controller@698: PS b2bd_afr_3: Failed to reach power state 0xf (requested 0xf00000f, now: 0xf00030f)
+[    0.646867] 505200000.serial: ttySAC0 at MMIO 0x505200000 (irq = 41, base_baud = 0) is a APPLE S5L
+[    0.647471] platform 294600000.mtp: Adding to iommu group 0
+[    0.647513] platform 294b30000.input: Adding to iommu group 0
+[    0.647757] platform 2a2280000.usb: Adding to iommu group 1
+[    0.647992] platform 2aa280000.usb: Adding to iommu group 2
+[    0.648227] platform 382280000.usb: Adding to iommu group 3
+[    0.652908] Freeing initrd memory: 1120K
+[    0.653903] usbcore: registered new device driver r8152-cfgselector
+[    0.653908] usbcore: registered new interface driver r8152
+[    0.653912] usbcore: registered new interface driver asix
+[    0.653916] usbcore: registered new interface driver ax88179_178a
+[    0.653923] usbcore: registered new interface driver cdc_ether
+[    0.653927] usbcore: registered new interface driver net1080
+[    0.653930] usbcore: registered new interface driver cdc_subset
+[    0.653934] usbcore: registered new interface driver zaurus
+[    0.653937] usbcore: registered new interface driver cdc_ncm
+[    0.653941] usbcore: registered new interface driver r8153_ecm
+[    0.654269] usbcore: registered new interface driver uas
+[    0.654273] usbcore: registered new interface driver usb-storage
+[    0.654717] usbcore: registered new interface driver usbhid
+[    0.654719] usbhid: USB HID core driver
+[    0.654860] NET: Registered PF_INET6 protocol family
+[    0.655040] Segment Routing with IPv6
+[    0.655044] In-situ OAM (IOAM) with IPv6
+[    0.655052] sit: IPv6, IPv4 and MPLS over IPv4 tunneling driver
+[    0.655112] NET: Registered PF_PACKET protocol family
+[    0.656125] Btrfs loaded, zoned=no, fsverity=no
+[    0.656162] pmgr: AP watchdog armed, reset in 170 s
+[    0.657426] simple-framebuffer 11fd31e6880.framebuffer: framebuffer at 0x11fd31e6880, 0x15cd680 bytes
+[    0.657428] simple-framebuffer 11fd31e6880.framebuffer: format=x2r10g10b10, mode=3024x1890x32, linelength=12096
+[    0.658551] Console: switching to colour frame buffer device 189x59
+[    0.659642] simple-framebuffer 11fd31e6880.framebuffer: fb0: simplefb registered!
+[    0.660092] rtkit-helper 294600000.mtp: RTKit: Initializing (protocol version 12)
+[    0.661234] apple-pmgr-pwrstate 2380600000.power-management:power-controller@658: PS b2bd_afc_0: Failed to reach power state 0xf (requested 0xf00000f, now: 0xf000300)
+[    0.661405] apple-pmgr-pwrstate 2380600000.power-management:power-controller@668: PS b2bd_afc_1: Failed to reach power state 0xf (requested 0xf00000f, now: 0xf000300)
+[    0.661550] apple-pmgr-pwrstate 2380600000.power-management:power-controller@678: PS b2bd_afr_0: Failed to reach power state 0xf (requested 0xf00000f, now: 0xf00030f)
+[    0.661694] apple-pmgr-pwrstate 2380600000.power-management:power-controller@678: PS b2bd_afr_0: Failed to reach power state 0xf (requested 0xf00000f, now: 0xf00030f)
+[    0.662105] rtkit-helper 294600000.mtp: RTKit: syslog message: main.c:199: MTP Says Hello
+[    0.662136] rtkit-helper 294600000.mtp: RTKit: syslog message: main.c:199: Version: AppleMTPFirmwareMac-6310.85.7~38
+[    0.662156] rtkit-helper 294600000.mtp: RTKit: syslog message: main.c:199: Personality: MTP_SYS
+[    0.662175] rtkit-helper 294600000.mtp: RTKit: syslog message: main.c:199: SDK: 26B109
+[    0.662189] rtkit-helper 294600000.mtp: RTKit: syslog message: main.c:199: Built on: 2026-10-07__22:07:42
+[    0.662337] nvme-apple 45dcc0000.nvme: RTKit: Initializing (protocol version 12)
+[    0.663629] nvme-apple 45dcc0000.nvme: RTKit: syslog message: gc.c:9368: Restarting rebuild from lba 0
+[    0.666098] nvme-apple 45dcc0000.nvme: RTKit: syslog message: cmd.c:8550: boot: mode normal
+[    0.666654] nvme-apple 45dcc0000.nvme: RTKit: syslog message: power_budget.c:1001: PowerBudget: set on boot setByHost=1, is_warm_boot=0
+[    0.666932] nvme-apple 45dcc0000.nvme: RTKit: syslog message: power_budget.c:130: PowerBudget V5V1 bu=400 pc=1 rc=0 ppm=0 pbio=0 ess=0
+[    0.666954] nvme-apple 45dcc0000.nvme: RTKit: syslog message: power_budget.c:144: e=100 p=100/0/100 rmp=100 rsp=25/0/25 ressmp=0 ressspn=0/0 sio=0 comp=0
+[    0.666992] rtkit-helper 294600000.mtp: RTKit: syslog message: kb_transport.c:270: IPD HIDSPI attached
+[    0.667082] rtkit-helper 294600000.mtp: RTKit: syslog message: touch_pwr_mgr.c:208: [TPM] Mac Power Manager State Machine Initialized ret(0) status(0)
+[    0.667117] rtkit-helper 294600000.mtp: RTKit: syslog message: act_mgr.c:563: Called act_mgr_init()
+[    0.667137] rtkit-helper 294600000.mtp: RTKit: syslog message: comm.c:200: Initializing comm interface <0- "comm">
+[    0.667155] rtkit-helper 294600000.mtp: RTKit: syslog message: comm.c:200: Initializing comm interface <1- "multi-touch">
+[    0.667222] rtkit-helper 294600000.mtp: RTKit: syslog message: comm.c:200: Initializing comm interface <2- "keyboard">
+[    0.667257] nvme-apple 45dcc0000.nvme: RTKit: syslog message: power_budget.c:269: PowerBudget: num dies horizontal change 1 -> 1
+[    0.667273] rtkit-helper 294600000.mtp: RTKit: syslog message: comm.c:200: Initializing comm interface <3- "stm">
+[    0.667291] nvme-apple 45dcc0000.nvme: RTKit: syslog message: power_budget.c:130: PowerBudget V5V1 bu=0 pc=0 rc=0 ppm=0 pbio=0 ess=0
+[    0.667307] rtkit-helper 294600000.mtp: RTKit: syslog message: comm.c:200: Initializing comm interface <4- "actuator">
+[    0.667339] nvme-apple 45dcc0000.nvme: RTKit: syslog message: power_budget.c:144: e=0 p=0/0/0 rmp=0 rsp=0/0/0 ressmp=0 ressspn=0/0 sio=0 comp=0
+[    0.667359] rtkit-helper 294600000.mtp: RTKit: syslog message: comm.c:200: Initializing comm interface <5- "tp-accel">
+[    0.667379] nvme-apple 45dcc0000.nvme: RTKit: syslog message: rtkpmc_t6050.cpp:208: pmc_init PMC-T6050 Init die = 0 io_base 0
+[    0.667395] rtkit-helper 294600000.mtp: RTKit: syslog message: comm.c:200: Initializing comm interface <6- "mtp">
+[    0.667422] rtkit-helper 294600000.mtp: RTKit: syslog message: stm.c:75: ST IF complete enumeration: SENT (0x0)
+[    0.667469] rtkit-helper 294600000.mtp: RTKit: syslog message: touch_iface.c:171: Grape interface initializing
+[    0.667549] rtkit-helper 294600000.mtp: RTKit: syslog message: touch_iface.c:179: Grape interface initialized
+[    0.667931] nvme-apple 45dcc0000.nvme: RTKit: syslog message: push.c:2552: Push is skipping band:0687 flow:FLOW_CLOG
+[    0.668289] rtkit-helper 294600000.mtp: RTKit: syslog message: touch_mgr.c:65: Touch IF complete enumeration: SENT
+[    0.668663] nvme-apple 45dcc0000.nvme: RTKit: syslog message: band.c:6118: Push abandoning non-blank band:0687 flow:FLOW_CLOG Validity 00000000 Age 0 uncleanReboot yes
+[    0.669067] rtkit-helper 294600000.mtp: RTKit: syslog message: keyboard.c:63: Keyboard initialized
+[    0.669475] rtkit-helper 294600000.mtp: RTKit: syslog message: accel.c:57: Accel initialized
+[    0.669885] rtkit-helper 294600000.mtp: RTKit: syslog message: actuator.c:57: Actuator initialized
+[    0.670297] rtkit-helper 294600000.mtp: RTKit: syslog message: mtp_iface.c:139: MTP interface complete enumeration: SENT
+[    0.692405] phy-apple-t6050-usb2 2a2a90000.phy: USB 2.0 host mode, PORTSC 0x206e1 after 1 flip(s)
+[    0.692813] xhci-hcd 2a2280000.usb: xHCI Host Controller
+[    0.693226] xhci-hcd 2a2280000.usb: new USB bus registered, assigned bus number 1
+[    0.693754] xhci-hcd 2a2280000.usb: hcc params 0x0238ffcd hci version 0x110 quirks 0x0000000000000010
+[    0.694181] xhci-hcd 2a2280000.usb: irq 49, io mem 0x2a2280000
+[    0.694628] xhci-hcd 2a2280000.usb: xHCI Host Controller
+[    0.695047] xhci-hcd 2a2280000.usb: new USB bus registered, assigned bus number 2
+[    0.695470] xhci-hcd 2a2280000.usb: Host supports USB 3.1 Enhanced SuperSpeed
+[    0.695911] xhci-hcd 2a2280000.usb: Port change event, 1-1, id 1, portsc: 0x206e1
+[    0.695914] xhci-hcd 2a2280000.usb: handle_port_status: starting usb1 port polling.
+[    0.695932] usb usb1: udev 1, busnum 1, minor = 0
+[    0.695975] hub 1-0:1.0: USB hub found
+[    0.696404] hub 1-0:1.0: 1 port detected
+[    0.696822] hub 1-0:1.0: standalone hub
+[    0.696823] hub 1-0:1.0: individual port power switching
+[    0.696824] hub 1-0:1.0: individual port over-current protection
+[    0.696825] hub 1-0:1.0: Single TT
+[    0.696825] hub 1-0:1.0: TT requires at most 8 FS bit times (666 ns)
+[    0.696826] hub 1-0:1.0: power on to power good time: 20ms
+[    0.696828] hub 1-0:1.0: local power source is good
+[    0.696838] hub 1-0:1.0: enabling power on all ports
+[    0.696840] xhci-hcd 2a2280000.usb: set port power 1-1 ON, portsc: 0x206e1
+[    0.696864] usb usb2: We don't know the algorithms for LPM for this host, disabling LPM.
+[    0.697295] usb usb2: udev 1, busnum 2, minor = 128
+[    0.697316] hub 2-0:1.0: USB hub found
+[    0.697742] hub 2-0:1.0: 1 port detected
+[    0.698162] hub 2-0:1.0: standalone hub
+[    0.698162] hub 2-0:1.0: individual port power switching
+[    0.698162] hub 2-0:1.0: individual port over-current protection
+[    0.698163] hub 2-0:1.0: TT requires at most 8 FS bit times (666 ns)
+[    0.698163] hub 2-0:1.0: power on to power good time: 100ms
+[    0.698165] hub 2-0:1.0: local power source is good
+[    0.698170] hub 2-0:1.0: enabling power on all ports
+[    0.698172] xhci-hcd 2a2280000.usb: set port power 2-1 ON, portsc: 0x2a0
+[    0.720421] xhci-hcd 2a2280000.usb: Get port status 1-1 read: 0x206e1, return 0x10101
+[    0.720423] usb usb1-port1: status 0101 change 0001
+[    0.720427] xhci-hcd 2a2280000.usb: clear port1 connect change, portsc: 0x6e1
+[    0.727992] nvme-apple 45dcc0000.nvme: RTKit: syslog message: push.c:3427: Finished abort skip flow:FLOW_CLOG band:0687 boff 34512 pgIdx 3000 abort_band0:0687 abort_band1:0000
+[    0.728641] phy-apple-t6050-usb2 2aaa90000.phy: USB 2.0 host mode, PORTSC 0x206e1 after 1 flip(s)
+[    0.733834] nvme-apple 45dcc0000.nvme: RTKit: syslog message: bg.c:554: Unclean boot 1/1
+[    0.800420] xhci-hcd 2a2280000.usb: Get port status 2-1 read: 0x2a0, return 0x2a0
+[    0.800454] hub 2-0:1.0: state 7 ports 1 chg 0000 evt 0000
+[    0.800483] xhci-hcd 2a2280000.usb: set port remote wake mask, actual port 2-1 status  = 0xe0002a0
+[    0.800504] hub 2-0:1.0: hub_suspend
+[    0.812421] hub 2-0:1.0: hub_resume
+[    0.824419] hub 1-0:1.0: state 7 ports 1 chg 0002 evt 0000
+[    0.824430] xhci-hcd 2a2280000.usb: Get port status 1-1 read: 0x6e1, return 0x101
+[    0.824452] usb usb1-port1: status 0101, change 0000, 12 Mb/s
+[    0.824587] xhci-hcd 2a2280000.usb: set port reset, actual port 1-1 status  = 0x6f1
+[    0.828419] xhci-hcd 2a2280000.usb: xhci_hub_status_data: stopping usb1 port polling
+[    0.836417] xhci-hcd 2a2280000.usb: Get port status 2-1 read: 0x2a0, return 0x2a0
+[    0.836448] hub 2-0:1.0: state 7 ports 1 chg 0000 evt 0000
+[    0.874857] xhci-hcd 2a2280000.usb: Port change event, 1-1, id 1, portsc: 0x200e03
+[    0.874867] xhci-hcd 2a2280000.usb: handle_port_status: starting usb1 port polling.
+[    0.888417] xhci-hcd 2a2280000.usb: Get port status 1-1 read: 0x200e03, return 0x100503
+[    0.888439] xhci-hcd 2a2280000.usb: clear port1 reset change, portsc: 0xe03
+[    0.900411] xhci-hcd 2a2280000.usb: xhci_hub_status_data: stopping usb1 port polling
+[    0.944417] usb 1-1: new high-speed USB device number 2 using xhci-hcd
+[    0.951183] xhci-hcd 2a2280000.usb: set port reset, actual port 1-1 status  = 0xef1
+[    0.960431] xhci-hcd 2a2280000.usb: set port remote wake mask, actual port 2-1 status  = 0xe0002a0
+[    0.960450] hub 2-0:1.0: hub_suspend
+[    0.972421] hub 2-0:1.0: hub_resume
+[    0.996416] xhci-hcd 2a2280000.usb: Get port status 2-1 read: 0x2a0, return 0x2a0
+[    0.996443] hub 2-0:1.0: state 7 ports 1 chg 0000 evt 0000
+[    1.001480] xhci-hcd 2a2280000.usb: Port change event, 1-1, id 1, portsc: 0x200e03
+[    1.001489] xhci-hcd 2a2280000.usb: handle_port_status: starting usb1 port polling.
+[    1.012421] xhci-hcd 2a2280000.usb: Get port status 1-1 read: 0x200e03, return 0x100503
+[    1.012443] xhci-hcd 2a2280000.usb: clear port1 reset change, portsc: 0xe03
+[    1.090019] usb 1-1: udev 2, busnum 1, minor = 1
+[    1.120427] xhci-hcd 2a2280000.usb: set port remote wake mask, actual port 2-1 status  = 0xe0002a0
+[    1.120448] hub 2-0:1.0: hub_suspend
+[    1.132435] hub 2-0:1.0: hub_resume
+[    1.148412] xhci-hcd 2a2280000.usb: xhci_hub_status_data: stopping usb1 port polling
+[    1.151935] nvme-apple 45dcc0000.nvme: RTKit: syslog message: ric.c:443:  RIC update silo after SPF !! Start silo: 31 start entry: 4
+[    1.158474] xhci-hcd 2a2280000.usb: Get port status 2-1 read: 0x2a0, return 0x2a0
+[    1.158500] hub 2-0:1.0: state 7 ports 1 chg 0000 evt 0000
+[    1.169149] cdc_ncm 1-1:2.0: MAC-Address: 6c:6e:07:41:d2:14
+[    1.175617] cdc_ncm 1-1:2.0: setting rx_max = 16384
+[    1.192203] cdc_ncm 1-1:2.0: setting tx_max = 16384
+[    1.209211] cdc_ncm 1-1:2.0 eth0: register 'cdc_ncm' at usb-2a2280000.usb-1, CDC NCM (NO ZLP), 6c:6e:07:41:d2:14
+[    1.280431] xhci-hcd 2a2280000.usb: set port remote wake mask, actual port 2-1 status  = 0xe0002a0
+[    1.280453] hub 2-0:1.0: hub_suspend
+[    1.280471] xhci-hcd 2a2280000.usb: xhci_hub_status_data: stopping usb2 port polling
+[    1.325554] nvme nvme0: passthrough uses implicit buffer lengths
+[    1.334209]  nvme0n1: p1 p2 p3 p4 p5 p6
+[    1.340849] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    1.796410] phy-apple-t6050-usb2 2aaa90000.phy: SS: PHY CPU RTKit v12, endpoints 0x3, AP 0x20, IOP 0x20, 1 other message(s), last 0x1:0x10100010007df0
+[    2.038058] phy-apple-t6050-usb2 2aaa90000.phy: SS: HCRST 1 CNR 1, CIO 1, mxwrap 1, UC_TNBL_DONE 1
+[    2.044899] phy-apple-t6050-usb2 2aaa90000.phy: SS: cd28 from the write through step 16: 886 886 886 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+[    2.051832] phy-apple-t6050-usb2 2aaa90000.phy: SS: PhyStatus s1 1 rise 1 fall 1 (STATUS2 0xc4), lock 0 ack 1 unlock 1 release 1
+[    2.058760] phy-apple-t6050-usb2 2aaa90000.phy: SS: pace 0 us, settle 2000 ms
+[    3.779907] nvme-apple 45dcc0000.nvme: RTKit: syslog message: gc.c:9348: Stopping GC rebuild
+[    4.098469] phy-apple-t6050-usb2 2aaa90000.phy: SS: glue 0x0 0x0 0x0 0x0, PORTSC 0x206e1 / 0x2a0
+[    4.105443] xhci-hcd 2aa280000.usb: xHCI Host Controller
+[    4.112391] xhci-hcd 2aa280000.usb: new USB bus registered, assigned bus number 3
+[    4.119573] xhci-hcd 2aa280000.usb: hcc params 0x0238ffcd hci version 0x110 quirks 0x0000000000000010
+[    4.126464] phy-apple-t6050-usb2 2aaa90000.phy: SS: after xHCI reset: glue read 0x886 0x886 0x3c20060c 0x2000b, rewritten 0x0, now 0x886 0x886 0x3c20060c 0x2000b
+[    4.133564] phy-apple-t6050-usb2 2aaa90000.phy: SS: after xHCI reset: USBSTS 0x11, PORTSC 0x206e1 / 0x2a0
+[    4.135130] xhci-hcd 2aa280000.usb: irq 50, io mem 0x2aa280000
+[    4.136690] phy-apple-t6050-usb2 2aaa90000.phy: SS watch: PORTSC 0x206e1 / 0x2a0, GDBGLTSSM 0x9cc20024
+[    4.138336] xhci-hcd 2aa280000.usb: xHCI Host Controller
+[    4.139643] xhci-hcd 2aa280000.usb: new USB bus registered, assigned bus number 4
+[    4.140944] xhci-hcd 2aa280000.usb: Host supports USB 3.1 Enhanced SuperSpeed
+[    4.142238] xhci-hcd 2aa280000.usb: Port change event, 3-1, id 1, portsc: 0x206e1
+[    4.142241] xhci-hcd 2aa280000.usb: handle_port_status: starting usb3 port polling.
+[    4.142256] usb usb3: udev 1, busnum 3, minor = 256
+[    4.142310] hub 3-0:1.0: USB hub found
+[    4.143574] hub 3-0:1.0: 1 port detected
+[    4.144810] hub 3-0:1.0: standalone hub
+[    4.144812] hub 3-0:1.0: individual port power switching
+[    4.144812] hub 3-0:1.0: individual port over-current protection
+[    4.144813] hub 3-0:1.0: Single TT
+[    4.144814] hub 3-0:1.0: TT requires at most 8 FS bit times (666 ns)
+[    4.144815] hub 3-0:1.0: power on to power good time: 20ms
+[    4.144820] hub 3-0:1.0: local power source is good
+[    4.144832] hub 3-0:1.0: enabling power on all ports
+[    4.144836] xhci-hcd 2aa280000.usb: set port power 3-1 ON, portsc: 0x206e1
+[    4.144871] usb usb4: We don't know the algorithms for LPM for this host, disabling LPM.
+[    4.146111] usb usb4: udev 1, busnum 4, minor = 384
+[    4.146165] hub 4-0:1.0: USB hub found
+[    4.147378] hub 4-0:1.0: 1 port detected
+[    4.148566] hub 4-0:1.0: standalone hub
+[    4.148567] hub 4-0:1.0: individual port power switching
+[    4.148567] hub 4-0:1.0: individual port over-current protection
+[    4.148568] hub 4-0:1.0: TT requires at most 8 FS bit times (666 ns)
+[    4.148569] hub 4-0:1.0: power on to power good time: 100ms
+[    4.148573] hub 4-0:1.0: local power source is good
+[    4.148585] hub 4-0:1.0: enabling power on all ports
+[    4.148588] xhci-hcd 2aa280000.usb: set port power 4-1 ON, portsc: 0x2a0
+[    4.168419] xhci-hcd 2aa280000.usb: Get port status 3-1 read: 0x206e1, return 0x10101
+[    4.168441] usb usb3-port1: status 0101 change 0001
+[    4.168459] xhci-hcd 2aa280000.usb: clear port1 connect change, portsc: 0x6e1
+[    4.168482] phy-apple-t6050-usb2 2aaa90000.phy: SS watch: PORTSC 0x6e1 / 0x2a0, GDBGLTSSM 0x9cc20024
+[    4.252419] xhci-hcd 2aa280000.usb: Get port status 4-1 read: 0x2a0, return 0x2a0
+[    4.252440] hub 4-0:1.0: state 7 ports 1 chg 0000 evt 0000
+[    4.252463] xhci-hcd 2aa280000.usb: set port remote wake mask, actual port 4-1 status  = 0xe0002a0
+[    4.252484] hub 4-0:1.0: hub_suspend
+[    4.252511] phy-apple-t6050-usb2 2aaa90000.phy: SS watch: PORTSC 0x6e1 / 0xa0002a0, GDBGLTSSM 0x9cc20024
+[    4.264421] hub 4-0:1.0: hub_resume
+[    4.264446] phy-apple-t6050-usb2 2aaa90000.phy: SS watch: PORTSC 0x6e1 / 0x2a0, GDBGLTSSM 0x9cc20024
+[    4.272418] hub 3-0:1.0: state 7 ports 1 chg 0002 evt 0000
+[    4.272432] xhci-hcd 2aa280000.usb: Get port status 3-1 read: 0x6e1, return 0x101
+[    4.272449] usb usb3-port1: status 0101, change 0000, 12 Mb/s
+[    4.272582] xhci-hcd 2aa280000.usb: set port reset, actual port 3-1 status  = 0x6f1
+[    4.272699] phy-apple-t6050-usb2 2aaa90000.phy: SS watch: PORTSC 0x6f1 / 0x2a0, GDBGLTSSM 0x9cc20024
+[    4.276403] xhci-hcd 2aa280000.usb: xhci_hub_status_data: stopping usb3 port polling
+[    4.288424] xhci-hcd 2aa280000.usb: Get port status 4-1 read: 0x2a0, return 0x2a0
+[    4.288428] hub 4-0:1.0: state 7 ports 1 chg 0000 evt 0000
+[    4.322888] xhci-hcd 2aa280000.usb: Port change event, 3-1, id 1, portsc: 0x200e03
+[    4.322898] xhci-hcd 2aa280000.usb: handle_port_status: starting usb3 port polling.
+[    4.324425] phy-apple-t6050-usb2 2aaa90000.phy: SS watch: PORTSC 0x200e03 / 0x2a0, GDBGLTSSM 0x9cc20024
+[    4.336427] xhci-hcd 2aa280000.usb: Get port status 3-1 read: 0x200e03, return 0x100503
+[    4.336448] xhci-hcd 2aa280000.usb: clear port1 reset change, portsc: 0xe03
+[    4.336477] phy-apple-t6050-usb2 2aaa90000.phy: SS watch: PORTSC 0xe03 / 0x2a0, GDBGLTSSM 0x9cc20024
+[    4.372413] xhci-hcd 2aa280000.usb: xhci_hub_status_data: stopping usb3 port polling
+[    4.392417] usb 3-1: new high-speed USB device number 2 using xhci-hcd
+[    4.398778] xhci-hcd 2aa280000.usb: set port reset, actual port 3-1 status  = 0xef1
+[    4.400431] phy-apple-t6050-usb2 2aaa90000.phy: SS watch: PORTSC 0xef1 / 0x2a0, GDBGLTSSM 0x9cc20024
+[    4.412455] xhci-hcd 2aa280000.usb: set port remote wake mask, actual port 4-1 status  = 0xe0002a0
+[    4.412459] hub 4-0:1.0: hub_suspend
+[    4.412472] phy-apple-t6050-usb2 2aaa90000.phy: SS watch: PORTSC 0xef1 / 0xa0002a0, GDBGLTSSM 0x9cc20024
+[    4.424420] hub 4-0:1.0: hub_resume
+[    4.424440] phy-apple-t6050-usb2 2aaa90000.phy: SS watch: PORTSC 0xef1 / 0x2a0, GDBGLTSSM 0x9cc20024
+[    4.448419] xhci-hcd 2aa280000.usb: Get port status 4-1 read: 0x2a0, return 0x2a0
+[    4.448444] hub 4-0:1.0: state 7 ports 1 chg 0000 evt 0000
+[    4.449078] xhci-hcd 2aa280000.usb: Port change event, 3-1, id 1, portsc: 0x200e03
+[    4.449087] xhci-hcd 2aa280000.usb: handle_port_status: starting usb3 port polling.
+[    4.452427] phy-apple-t6050-usb2 2aaa90000.phy: SS watch: PORTSC 0x200e03 / 0x2a0, GDBGLTSSM 0x9cc20024
+[    4.460435] xhci-hcd 2aa280000.usb: Get port status 3-1 read: 0x200e03, return 0x100503
+[    4.460459] xhci-hcd 2aa280000.usb: clear port1 reset change, portsc: 0xe03
+[    4.464414] phy-apple-t6050-usb2 2aaa90000.phy: SS watch: PORTSC 0xe03 / 0x2a0, GDBGLTSSM 0x9cc20024
+[    4.504415] phy-apple-t6050-usb2 382a90000.phy: USB 2.0 host mode, PORTSC 0x2a0 after 3 flip(s)
+[    4.510400] xhci-hcd 382280000.usb: xHCI Host Controller
+[    4.516386] xhci-hcd 382280000.usb: new USB bus registered, assigned bus number 5
+[    4.522550] xhci-hcd 382280000.usb: hcc params 0x0238ffcd hci version 0x110 quirks 0x0000000000000010
+[    4.523901] xhci-hcd 382280000.usb: irq 51, io mem 0x382280000
+[    4.525312] xhci-hcd 382280000.usb: xHCI Host Controller
+[    4.526647] xhci-hcd 382280000.usb: new USB bus registered, assigned bus number 6
+[    4.527987] xhci-hcd 382280000.usb: Host supports USB 3.1 Enhanced SuperSpeed
+[    4.529376] usb usb5: udev 1, busnum 5, minor = 512
+[    4.529423] hub 5-0:1.0: USB hub found
+[    4.530523] hub 5-0:1.0: 1 port detected
+[    4.531602] hub 5-0:1.0: standalone hub
+[    4.531603] hub 5-0:1.0: individual port power switching
+[    4.531604] hub 5-0:1.0: individual port over-current protection
+[    4.531604] hub 5-0:1.0: Single TT
+[    4.531605] hub 5-0:1.0: TT requires at most 8 FS bit times (666 ns)
+[    4.531606] hub 5-0:1.0: power on to power good time: 20ms
+[    4.531610] hub 5-0:1.0: local power source is good
+[    4.531622] hub 5-0:1.0: enabling power on all ports
+[    4.531628] xhci-hcd 382280000.usb: set port power 5-1 ON, portsc: 0x2a0
+[    4.531660] usb usb6: We don't know the algorithms for LPM for this host, disabling LPM.
+[    4.532772] usb usb6: udev 1, busnum 6, minor = 640
+[    4.532817] hub 6-0:1.0: USB hub found
+[    4.533938] hub 6-0:1.0: 1 port detected
+[    4.534811] hub 6-0:1.0: standalone hub
+[    4.534812] hub 6-0:1.0: individual port power switching
+[    4.534812] hub 6-0:1.0: individual port over-current protection
+[    4.534813] hub 6-0:1.0: TT requires at most 8 FS bit times (666 ns)
+[    4.534814] hub 6-0:1.0: power on to power good time: 100ms
+[    4.534817] hub 6-0:1.0: local power source is good
+[    4.534824] hub 6-0:1.0: enabling power on all ports
+[    4.534830] xhci-hcd 382280000.usb: set port power 6-1 ON, portsc: 0x2a0
+[    4.535732] dockchannel-hid 294b30000.input: Interface stm is now ready
+[    4.536283] rtkit-helper 294600000.mtp: RTKit: syslog message: stm_cr.c:93: ST management interface configuration completed
+[    4.536864] rtkit-helper 294600000.mtp: RTKit: syslog message: stm.c:89: ST management ready
+[    4.538002] hid-generic 0019:0000:0000.0001: device has no listeners, quitting
+[    4.539258] apple-pmgr-pwrstate 280600000.power-management:power-controller@208: sync_state() pending due to 288300000.power-management
+[    4.539685] apple-pmgr-pwrstate 280600000.power-management:power-controller@210: sync_state() pending due to 288300000.power-management
+[    4.540109] apple-pmgr-pwrstate 280600000.power-management:power-controller@238: sync_state() pending due to 288300000.power-management
+[    4.540559] apple-pmgr-pwrstate 280600000.power-management:power-controller@240: sync_state() pending due to 288300000.power-management
+[    4.540953] apple-pmgr-pwrstate 2380600000.power-management:power-controller@658: sync_state() pending due to 2380600000.power-management:power-controller@660
+[    4.541346] apple-pmgr-pwrstate 2380600000.power-management:power-controller@668: sync_state() pending due to 2380600000.power-management:power-controller@670
+[    4.541796] apple-pmgr-pwrstate 2380600000.power-management:power-controller@678: sync_state() pending due to 2380600000.power-management:power-controller@680
+[    4.542172] apple-pmgr-pwrstate 2380600000.power-management:power-controller@678: sync_state() pending due to 2380600000.power-management:power-controller@688
+[    4.542535] apple-pmgr-pwrstate 2380600000.power-management:power-controller@698: sync_state() pending due to 2380600000.power-management:power-controller@6a0
+[    4.542889] apple-pmgr-pwrstate 2380600000.power-management:power-controller@698: sync_state() pending due to 2380600000.power-management:power-controller@6a8
+[    4.543382] clk: Disabling unused clocks
+[    4.543727] PM: genpd: Not disabling unused power domains
+[    4.545102] Freeing unused kernel memory: 768K
+[    4.545460] Run /init as init process
+[    4.545792]   with arguments:
+[    4.545793]     /init
+[    4.545793]   with environment:
+[    4.545793]     HOME=/
+[    4.545794]     TERM=linux
+[    4.546548] usb 3-1: udev 2, busnum 3, minor = 257
+[    4.546842] usb 3-1: UAS is ignored for this device, using usb-storage instead
+[    4.547182] usb 3-1: UAS is ignored for this device, using usb-storage instead
+[    4.547511] usb-storage 3-1:1.0: USB Mass Storage device detected
+[    4.547868] usb-storage 3-1:1.0: Quirks match for vid 0781 pid 55e8: 800000
+[    4.548197] scsi host0: usb-storage 3-1:1.0
+[    4.549939] input: Apple MTP multi-touch as /devices/platform/soc/294b14000.fifo/294b30000.input/0019:05AC:0359.0002/input/input0
+[    4.549949] magicmouse 0019:05AC:0359.0002: input: HOST HID v5.10 Mouse [Apple MTP multi-touch] on 294b30000.input.1 (multi-touch)
+[    4.550736] rtkit-helper 294600000.mtp: RTKit: syslog message: touch_iface.c:458: Grape interface configuration completed
+[    4.550871] dockchannel-hid 294b30000.input: Interface keyboard is now ready
+[    4.550983] input: Apple MTP keyboard as /devices/platform/soc/294b14000.fifo/294b30000.input/0019:05AC:0359.0003/input/input1
+[    4.550995] apple 0019:05AC:0359.0003: input: HOST HID v5.10 Keyboard [Apple MTP keyboard] on 294b30000.input.2 (keyboard)
+[    4.551771] rtkit-helper 294600000.mtp: RTKit: syslog message: keyboard_cr.c:73: Keyboard interface configuration completed
+[    4.551779] rtkit-helper 294600000.mtp: RTKit: syslog message: keyboard.c:77: Keyboard ready
+[    4.552176] dockchannel-hid 294b30000.input: Interface actuator is now ready
+[    4.552216] rtkit-helper 294600000.mtp: RTKit: syslog message: actuator_cr.c:84: Actuator interface configuration completed
+[    4.552240] rtkit-helper 294600000.mtp: RTKit: syslog message: actuator.c:71: Actuator ready
+[    4.552611] xhci-hcd 382280000.usb: Get port status 5-1 read: 0x2a0, return 0x100
+[    4.552613] hub 5-0:1.0: state 7 ports 1 chg 0000 evt 0000
+[    4.552615] hub 5-0:1.0: hub_suspend
+[    4.552619] xhci-hcd 382280000.usb: xhci_hub_status_data: stopping usb5 port polling
+[    4.572427] xhci-hcd 2aa280000.usb: set port remote wake mask, actual port 4-1 status  = 0xe0002a0
+[    4.572432] hub 4-0:1.0: hub_suspend
+[    4.572438] phy-apple-t6050-usb2 2aaa90000.phy: SS watch: PORTSC 0xe03 / 0xa0002a0, GDBGLTSSM 0x9cc20024
+[    4.584406] hub 4-0:1.0: hub_resume
+[    4.584409] phy-apple-t6050-usb2 2aaa90000.phy: SS watch: PORTSC 0xe03 / 0x2a0, GDBGLTSSM 0x9cc20024
+[    4.608404] xhci-hcd 2aa280000.usb: Get port status 4-1 read: 0x2a0, return 0x2a0
+[    4.608410] hub 4-0:1.0: state 7 ports 1 chg 0000 evt 0000
+[    4.620413] xhci-hcd 2aa280000.usb: xhci_hub_status_data: stopping usb3 port polling
+[    4.636419] xhci-hcd 382280000.usb: Get port status 6-1 read: 0x2a0, return 0x2a0
+[    4.636437] hub 6-0:1.0: state 7 ports 1 chg 0000 evt 0000
+[    4.636460] xhci-hcd 382280000.usb: set port remote wake mask, actual port 6-1 status  = 0xe0002a0
+[    4.636477] hub 6-0:1.0: hub_suspend
+[    4.648418] hub 6-0:1.0: hub_resume
+[    4.672417] xhci-hcd 382280000.usb: Get port status 6-1 read: 0x2a0, return 0x2a0
+[    4.672440] hub 6-0:1.0: state 7 ports 1 chg 0000 evt 0000
+[    4.732423] xhci-hcd 2aa280000.usb: set port remote wake mask, actual port 4-1 status  = 0xe0002a0
+[    4.732440] hub 4-0:1.0: hub_suspend
+[    4.732457] xhci-hcd 2aa280000.usb: xhci_hub_status_data: stopping usb4 port polling
+[    4.732470] phy-apple-t6050-usb2 2aaa90000.phy: SS watch: PORTSC 0xe03 / 0xa0002a0, GDBGLTSSM 0x9cc20024
+[    4.796426] xhci-hcd 382280000.usb: set port remote wake mask, actual port 6-1 status  = 0xe0002a0
+[    4.796443] hub 6-0:1.0: hub_suspend
+[    4.808417] hub 6-0:1.0: hub_resume
+[    4.832420] xhci-hcd 382280000.usb: Get port status 6-1 read: 0x2a0, return 0x2a0
+[    4.832447] hub 6-0:1.0: state 7 ports 1 chg 0000 evt 0000
+[    4.956425] xhci-hcd 382280000.usb: set port remote wake mask, actual port 6-1 status  = 0xe0002a0
+[    4.956442] hub 6-0:1.0: hub_suspend
+[    4.968418] hub 6-0:1.0: hub_resume
+[    4.992417] xhci-hcd 382280000.usb: Get port status 6-1 read: 0x2a0, return 0x2a0
+[    4.992440] hub 6-0:1.0: state 7 ports 1 chg 0000 evt 0000
+[    5.116425] xhci-hcd 382280000.usb: set port remote wake mask, actual port 6-1 status  = 0xe0002a0
+[    5.116443] hub 6-0:1.0: hub_suspend
+[    5.116459] xhci-hcd 382280000.usb: xhci_hub_status_data: stopping usb6 port polling
+[    5.582452] scsi 0:0:0:0: Direct-Access     SanDisk  Extreme Pro DDE1 0010 PQ: 0 ANSI: 6
+[    5.603419] sd 0:0:0:0: [sda] 1953525168 512-byte logical blocks: (1.00 TB/932 GiB)
+[    5.616597] sd 0:0:0:0: [sda] Write Protect is off
+[    5.617837] sd 0:0:0:0: [sda] Mode Sense: 3d 00 10 00
+[    5.617969] scsi 0:0:0:1: Enclosure         SanDisk  SES Device       0010 PQ: 0 ANSI: 6
+[    5.636540] sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, supports DPO and FUA
+[    5.682141]  sda: sda1
+[    5.682582] sd 0:0:0:0: [sda] Attached SCSI disk
+[    5.683320] apple_pmgr_ps_set: 32 callbacks suppressed
+[    5.683321] apple-pmgr-pwrstate 2380600000.power-management:power-controller@658: PS b2bd_afc_0: Failed to reach power state 0xf (requested 0xf00000f, now: 0xf000300)
+[    5.684755] apple-pmgr-pwrstate 2380600000.power-management:power-controller@668: PS b2bd_afc_1: Failed to reach power state 0xf (requested 0xf00000f, now: 0xf000300)
+[    5.685636] apple-pmgr-pwrstate 2380600000.power-management:power-controller@678: PS b2bd_afr_0: Failed to reach power state 0xf (requested 0xf00000f, now: 0xf00030f)
+[    5.686509] apple-pmgr-pwrstate 2380600000.power-management:power-controller@678: PS b2bd_afr_0: Failed to reach power state 0xf (requested 0xf00000f, now: 0xf00030f)
+[    5.687375] apple-pmgr-pwrstate 2380600000.power-management:power-controller@698: PS b2bd_afr_3: Failed to reach power state 0xf (requested 0xf00000f, now: 0xf00030f)
+[    5.688234] apple-pmgr-pwrstate 2380600000.power-management:power-controller@698: PS b2bd_afr_3: Failed to reach power state 0xf (requested 0xf00000f, now: 0xf00030f)

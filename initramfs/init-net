@@ -1,0 +1,51 @@
+#!/bin/sh
+# Initramfs init: the USB Ethernet adapter up over DHCP, read-only tests of the USB stick on
+# port 1, then the report and the kernel log sent one way to the Omarchy machine
+# (192.168.188.35:8000, open there for the LAN). Console shell as usual.
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev 2>/dev/null
+mkdir -p /dev/pts /run /tmp
+mount -t devpts devpts /dev/pts 2>/dev/null
+
+echo
+echo "=========================================="
+echo " T6050 (J714c) single-core Linux, network"
+echo " kernel: $(uname -a)"
+echo "=========================================="
+
+for i in $(seq 1 30); do [ -e /sys/class/net/eth0 ] && [ -b /dev/sda ] && break; sleep 1; done
+ip link set eth0 up
+udhcpc -i eth0 -n -q -t 10 -s /udhcpc.sh
+echo "net: $(ip -4 addr show eth0 | grep -o "inet [0-9./]*") link $(cat /sys/class/net/eth0/speed 2>/dev/null) Mb/s"
+
+mount -t debugfs debugfs /sys/kernel/debug 2>/dev/null
+portsc() {
+	for q in port01 port02; do
+		echo "--- portsc 2aa280000 $q: $(cat /sys/kernel/debug/usb/xhci/2aa280000.usb/ports/$q/portsc 2>&1)"
+	done
+}
+
+R=/tmp/report
+{
+	echo "=== report $(cut -d' ' -f1 /proc/uptime) s"
+	portsc
+	echo "--- net: $(ip -4 addr show eth0 | grep -o "inet [0-9./]*") link $(cat /sys/class/net/eth0/speed 2>/dev/null) Mb/s"
+	ping -c 3 -W 1 192.168.188.1 2>&1 | tail -2
+	for d in /sys/bus/usb/devices/*-*; do
+		[ -f $d/speed ] && echo "--- usb $(basename $d): speed $(cat $d/speed) version $(cat $d/version) $(cat $d/manufacturer 2>/dev/null) $(cat $d/product 2>/dev/null)"
+	done
+	echo "--- blkid"; blkid /dev/sda /dev/sda1 2>&1
+	echo "--- read 2 GiB, direct I/O"; dd if=/dev/sda of=/dev/null bs=1M count=2048 iflag=direct 2>&1
+	echo "--- sha256 of the first 256 MiB, twice"
+	dd if=/dev/sda bs=1M count=256 iflag=direct 2>/dev/null | sha256sum
+	dd if=/dev/sda bs=1M count=256 iflag=direct 2>/dev/null | sha256sum
+	echo "=== after the tests $(cut -d' ' -f1 /proc/uptime) s"
+	portsc
+	echo "--- dmesg"; dmesg
+} > $R 2>&1
+cat $R | head -n 30
+
+for i in $(seq 1 30); do nc 192.168.188.35 8000 < $R && { echo "report sent"; break; }; sleep 2; done
+
+setsid cttyhack /bin/sh
