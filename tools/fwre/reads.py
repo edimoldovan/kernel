@@ -53,6 +53,15 @@ for x in md.disasm(data[start:end], base + start):
             for r in regs:
                 track.pop(canon(r.reg), None); consts.pop(canon(r.reg), None)
         continue
+    if m in ('bl', 'b') and ops and ops[0].type == ARM64_OP_IMM:
+        # a call (or tail call) with a structure address in x0-x3: "arg" records, size from x2
+        for n in range(4):
+            r = f'x{n}'
+            if r in track and track[r][0] != 'PAGE':
+                tag, off = track[r]
+                out.add((tag, off, consts.get('x2', 0), f'arg{n}->{(ops[0].imm - base) & (2**64 - 1):#x}',
+                         x.address - base))
+        continue
     if not ops or ops[0].type != ARM64_OP_REG:
         continue
     d = canon(ops[0].reg)

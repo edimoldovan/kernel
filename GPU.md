@@ -84,20 +84,51 @@ Mesa's asahi driver), not llvmpipe.
 - Next: pin the 0x128 insertion (indexed reads of `perf_b`), then region A,
   region C, the status blocks and the channels.
 
-## Steps
+## Plan
 
-1. Firmware interface (in progress, above). Version, root and the init reads
-   of main config and HwData done, HwData tail placed (+0x128); next the
-   insertion point, then regions A and C, the status blocks and the channels,
-   each diffed against `g17/fw/` (G17P).
-2. GPU identity (done, above).
-3. m1n1: `dt_set_gpu_t6050()` from `dt_set_gpu_t8140()`.
-4. Device tree: GPU node for T6050 (`asc` and `sgx` regs, `gfx`/`gfx1` mailboxes,
-   `ps_gfx`, `ttbs`/`pagetables`/`handoff` regions, OPP table from the ADT).
-5. Kernel: `hw/t6050.rs` (G17 `Config`: chip id, identity with variant C,
-   address-space sizes, secondary root offset, crash buffers) and the
-   `apple,agx-t6050` OF entry.
-6. Mesa: the G17C (T6050) device entry, mesa-aurora rebuilt on the Mac.
-7. Boot: driver probe log, `kmscube`, then Hyprland on the GPU.
+Done when Hyprland on the J714c renders through the GPU. [x] done, [ ] open.
 
-Step 1 works on the dumped firmware and needs no Mac. Steps 3-7 need boots.
+Hardware and firmware facts
+- [x] GPU generation: G17 (macOS loads AGXG17X).
+- [x] GPU identity from the ID registers: family 0x0b, variant 0x04, 1 die,
+      4 clusters x 10 cores.
+- [x] Register, coprocessor and firmware locations from the ADT (proxy probe).
+- [x] Preloaded firmware saved; build g17c, RTKit 3514.41.1, same on GFX and GFX1.
+
+Firmware interface (g17c against the G17P definitions in `g17/fw/`)
+- [x] Interface version: `[0x04c0, 0x8728, 0x4339, 0x0c8e]`.
+- [x] Root: 0xc8 bytes, used fields at G17P's offsets.
+- [x] Main config: the fields read at init are at G17P's offsets.
+- [x] HwData up to G17P `0x1cf4`: G17P's layout.
+- [x] HwData tail: G17P's layout 0x128 bytes later (completion rings `0x273c`,
+      QoS `0x27d4`).
+- [ ] HwData: where the 0x128 bytes start (between G17P `0x1cf4` and `0x2534`)
+      and what they hold.
+- [ ] Main config: the fields read after init (channels, views, power config).
+- [ ] Secondary root and main config for GFX1.
+- [ ] Region A and region C.
+- [ ] Status blocks A and B.
+- [ ] Channel, queue and command structures (render, compute, completion).
+
+Kernel driver (linux-aurora `drivers/gpu/drm/asahi`)
+- [ ] g17c interface in `g17/`, chosen by firmware build: version constant, root
+      size, HwData offsets, and each structure that differs.
+- [ ] `hw/t6050.rs`: G17 `Config` with the identity above, address-space sizes,
+      secondary root offset, crash-buffer addresses, 13 performance states.
+- [ ] `apple,agx-t6050` in the OF table.
+- [ ] `CONFIG_DRM_ASAHI` with the G17 path in `j714c.config`.
+
+Loader and device tree
+- [ ] m1n1: `dt_set_gpu_t6050()` after `dt_set_gpu_t8140()` (handoff, memory
+      regions, firmware data from the ADT).
+- [ ] Device tree: GPU node for T6050 (`asc` and `sgx` registers, `gfx`/`gfx1`
+      mailboxes, `ps_gfx`, `ttbs`/`pagetables`/`handoff` regions, OPP table from
+      the ADT's 13 states).
+
+Userspace
+- [ ] Mesa: G17C (T6050) device entry; mesa-aurora rebuilt on the Mac.
+
+Bring-up
+- [ ] Boot: both coprocessors start and the driver probes (kernel log).
+- [ ] `kmscube` renders.
+- [ ] Hyprland on the GPU.
