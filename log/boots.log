@@ -278,3 +278,10 @@
 22:08:58 rw3: handoff ok, proxy back after 201s (offset 11, net 190s) -> unmapped
 22:13:06 rw4: handoff ok, proxy back after 151s (offset 11, net 140s) -> unmapped
 22:16:22 rw5: handoff ok, no watchdog reset in 280 s
+23:22:51 rw6: handoff ok, no watchdog reset in 280 s
+00:12:36 gpu1: handoff ok, proxy back after 160s (offset 11, net 149s) -> unmapped
+00:18:23 gpu2: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped
+00:22:43 gpu3: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped
+00:26:24 gpu4: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped
+00:30:09 gpuAB: handoff ok, proxy back after 182s (offset 11, net 171s) -> unmapped
+00:33:54 gpuAB2: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped

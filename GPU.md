@@ -116,14 +116,17 @@ Kernel driver (linux-aurora `drivers/gpu/drm/asahi`)
 - [ ] `hw/t6050.rs`: G17 `Config` with the identity above, address-space sizes,
       secondary root offset, crash-buffer addresses, 13 performance states.
 - [ ] `apple,agx-t6050` in the OF table.
-- [ ] `CONFIG_DRM_ASAHI` with the G17 path in `j714c.config`.
+- [x] `CONFIG_RUST` and `CONFIG_DRM_ASAHI` in `j714c.config` (rustc 1.99, bindgen
+      0.73.2); the kernel builds with the driver in it (#87, Image.gz 7.3 MB).
 
 Loader and device tree
-- [ ] m1n1: `dt_set_gpu_t6050()` after `dt_set_gpu_t8140()` (handoff, memory
-      regions, firmware data from the ADT).
-- [ ] Device tree: GPU node for T6050 (`asc` and `sgx` registers, `gfx`/`gfx1`
-      mailboxes, `ps_gfx`, `ttbs`/`pagetables`/`handoff` regions, OPP table from
-      the ADT's 13 states).
+- [x] m1n1: `dt_set_gpu_g17()` (was `dt_set_gpu_t8140()`) with the T6050 shape:
+      14 perf states, 13 GPU states, 4 tables; fills the OPP table and the four UAT
+      regions from the ADT. Device tree alias `gpu = &gpu`. Built, not boot-tested.
+- [x] Device tree: `t6050-gpu.dtsi` (linux-aurora): GPU node `apple,agx-t6050`,
+      `gfx`/`gfx1` mailboxes (ADT interrupts 2797-2800, 2801-2804), `ps_gfx`, UAT
+      regions for the loader, OPP table from the ADT's `perf-states` (14 entries).
+      All disabled until the loader hands the GPU over.
 
 Userspace
 - [ ] Mesa: G17C (T6050) device entry; mesa-aurora rebuilt on the Mac.
@@ -132,3 +135,86 @@ Bring-up
 - [ ] Boot: both coprocessors start and the driver probes (kernel log).
 - [ ] `kmscube` renders.
 - [ ] Hyprland on the GPU.
+
+## g17c interface — complete map (2026-10-28, workflow wf_cc83ddc2: 16 agents, all verified)
+
+Every g17c firmware structure mapped against the G17P defs in `g17/fw/`. Deltas:
+
+- **Interface version** (both coprocessors): `[0x04c0,0x8728,0x4339,0x0c8e]` (G17P `[0x04c0,0x0396,0xa322,0x0c8a]`). Checked at GFX `0x218a4`, GFX1 `0x26ce4`.
+- **Root: 0xb8 -> 0xc8**, primary AND secondary. Two fields G17P had only on `SecondaryRoot` are now on both: `power_state_va` @+0xb8, `config_va` @+0xc0. Firmware copies 0xc8 bytes and extracts +0xb8/+0xc0 in both GFX and GFX1 init.
+- **HwData: tail shifted +0x128.** Confirmed anchors: completion_rings @`0x273c` (G17P 0x2614), qos_va @`0x27d4` (G17P 0x26ac), unk_2544..2550 (=4,6,3,7) @`0x266c..0x2678`. The +0x128 insertion lives in G17P `[0x1cf4, 0x2534)` — perf_b's voltage tables / the `unk_23dc` opaque block — which the firmware **block-copies/DMAs, never field-reads**, so a 0x128 pad anywhere in that window is correct (grow `unk_23dc` 0x168 -> 0x290). perf_a is unshifted and unchanged (14 states overflow into its `unk_30` padding). GFX1 shares GFX's HwData.
+- **RegionC: tail shifted +0xe38** (a *different* shift from HwData). Head `0x0..0xa06` unchanged; a 0xe38 block is inserted in the `unk_9d4` array; size 0x1000 -> ~0x1e38. `power_assert_tally` is firmware-written. Read-width diffs at +0x54/+0x6a/+0x998 are cosmetic (same offsets).
+- **StatusBlock B: head +0x1e0 larger** (most divergent). `recovery_info` 0x40b8 -> 0x4298; the recovery/doorbell handshake relocated to the tail at +0xe71c (host pointer +0xe720); `PowerState` is NOT at the G17P offset. Needs a careful per-field remap, not a uniform shift.
+- **PERF_STATES: 11 -> 14** (perf_a.freq_mhz read to index 13; 13 active + idle). OPPS=14, sram_min_mv=775, states_a=states_b=identity[0..13]. `relative_a/relative_b` are host->fw and macOS computes them at runtime from a power model (confirmed not a static table in the kext) — bring-up placeholder = t8140's `relative_a=[0,15,22,29,42,56,74,86,90,92,100]` / `relative_b=[0,0,13,24,40,52,63,73,83,88,100]`, padded to 14 (repeat the last pre-100 value, keep final 100). DVFS tuning only, not the interface gate.
+- **Unchanged (carry over as-is):** MainConfig (every field at its G17P offset; +0x3e0 is used as a flags *byte* not u32, cosmetic), RegionA (opaque zeroed page; host must zero it), StatusBlock A (0x80 head; firmware writes a few more fields in place, no size change), Channels (byte-for-byte same ring/channel ABI), SecondaryRoot (0xc8, same as G17P).
+
+Driver implication: the firmware-ABI structs must become chip-variant for **PERF_STATES (11/14), Root (0xb8/0xc8), HwData (+0x128), RegionC (+0xe38), StatusBlock B (+0x1e0)**. The first boot only needs the version + Root to pass the version gate; the rest gate whether firmware init completes.
+
+## Bring-up fault loop (2026-10-29, increment 1 = interface-version gate)
+
+Driver: per-chip interface version threaded through RootArgs; hw/t6050.rs (identity
+real, register windows / perf curves / fixed buffers = t8140 placeholders, consumed
+only after the version gate). Booted with WDT=170 so the Mac auto-recovers.
+
+- gpu1 (WDT=0): GPU node bound, loader kept it "okay" (dt_set_gpu_g17 validated on
+  hardware). Probe failed: "GFX1 ASCWrap v6 resources do not match T8140" — the
+  mailbox driver hardcodes the T8140 wrapper/iop-vbar bases.
+  FIX: drivers/soc/apple/mailbox.c — made the 4 bases per-chip fields on
+  struct apple_mbox_hw, added apple_mbox_t6050_ascwrap_v6_hw (T6050 bases) and an
+  "apple,t6050-ascwrap-v6" match entry. t8140 unchanged.
+- gpu2 (WDT=170): big progress — driver Probes, reads GPU ID
+  0xb041100 0xb0a00 0x11040a 0x40404 0x1320311 0x400c1809 (family 0xb variant 0x4,
+  matches hw/t6050.rs), MMU init OK, RTKit init (protocol 12). New blocker, BEFORE
+  the version gate: "RTKit: failed buffer request for 0x8000 bytes (-22)" x2. The
+  g17c firmware requests its crash-log buffers at g17c-specific VAs; shmem_map
+  (g17/mod.rs:318) rejects them because they != the t8140 placeholder crash_buffers
+  va. Register windows mapped (t8140 placeholder phys) but not yet accessed.
+  INVESTIGATING: added a pr_err in shmem_map to log the firmware's requested iova,
+  so one boot reveals the T6050 crash-buffer VAs for both coprocessors.
+
+- gpu3 (crash-buffer debug): added pr_err in shmem_map; firmware requests crash
+  buffers at iova 0x10002864000 (GFX) / 0x10002920000 (GFX1), masked VAs
+  0x2864000 / 0x2920000 = the GFX/GFX1 __DATA_SHARED_RO segments.
+  FIX: hw/t6050.rs crash_buffers = {va 0x2864000, 0x8000}, {va 0x2920000, 0x8000}.
+- gpu4 (crash buffers fixed): **INTERFACE VERSION GATE PASSED.** RTKit init
+  completes on both coprocessors (crash buffers accepted), then:
+  "RTKit: co-processor has crashed", "Expected crashlog header but got a5a5a5a5"
+  (0xa5 = CRASH_BUFFER_FILL, so the fw crashed before writing a log),
+  "GPU firmware (Primary) crashed", probe -EIO. NO "interface mismatch" message
+  (the fw's version-reject path prints one), so the g17c version
+  [0x04c0,0x8728,0x4339,0x0c8e] was ACCEPTED and the firmware crashed downstream
+  reading the G17P-layout Root/HwData/RegionC/StatusB at g17c offsets (+ the
+  t8140-placeholder register map). This is the "next increment" signal: the
+  chip-variant ABI structs (Root 0xc8, HwData +0x128, RegionC +0xe38,
+  StatusBlock B +0x1e0, PERF_STATES 14) and the real register map are now needed.
+
+## Version gate PROVEN + remaining work (2026-10-29, increment 2 scope)
+
+PROOF the g17c version is accepted: gpu4 showed the firmware hard-crash ("co-processor
+has crashed", crashlog still 0xa5) while READING the init structs. Struct reads happen
+AFTER the version check; a wrong version is a clean "interface mismatched" halt, not a
+hard crash. So the firmware necessarily passed the version gate. The whole g17c
+interface map is validated on hardware.
+
+Fault-loop fixes landed (uncommitted, forks/linux-aurora):
+- g17 Config is chip-parametric (register_windows/reserved_slots/perf/opps/
+  interface_version per chip; t8140 unchanged).
+- hw/t6050.rs (OF apple,agx-t6050), board DTS enables gpu+mailboxes, t6050-gpu.dtsi,
+  m1n1 dt_set_gpu_g17 (all validated: loader keeps the node "okay").
+- mailbox.c: per-chip ascwrap-v6 bases + apple_mbox_t6050_ascwrap_v6_hw + match.
+- crash_buffers = {0x2864000, 0x2920000} (from the firmware's RTKit requests).
+
+Remaining (increment 2 — the chip-variant ABI refactor; needs care, no t8140 boot here):
+- Root: g17c primary is 0xc8 (G17P primary 0xb8) with power_state_va@0xb8,
+  config_va@0xc0 — the fields G17P has only on SecondaryRoot. OPEN: the correct
+  values for the PRIMARY (the secondary uses base+PRIVATE_CLUSTER+STATUS_B+POWER_STATE
+  and state_va+STATUS_B). Likely the first crash (firmware reads the root first).
+  This is an end-grow, safe for t8140 (it copies only 0xb8), so can be universal.
+- HwData +0x128, RegionC +0xe38, StatusBlock B +0x1e0: MIDDLE insertions that shift
+  later fields, so they need chip-variant layouts (const-generic on the delta, or
+  duplicate struct types selected by chip). These CAN break t8140 if done wrong and
+  t8140 is not boot-testable here — do carefully, keep t8140's layout byte-identical.
+- PERF_STATES 11->14: shared const in the perf arrays; same const-generic problem.
+- Register map: replace the t8140 placeholder windows with the real T6050 map
+  (GPU-t6050-dt-config.md: 10 sgx-control windows + MCC) and grow on faults. The
+  aperture `va` per window still needs deriving; fault-loop supplies the slots.
