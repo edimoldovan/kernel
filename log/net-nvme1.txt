@@ -1,0 +1,475 @@
+=== report 48.08 s
+--- portsc 2aa280000 port01: 0x00000e03 Speed=3 Link=U0 CCS PP PED 
+--- portsc 2aa280000 port02: 0x0a0002a0 Speed=0 Link=RxDetect PP WCE WOE 
+--- net: inet 192.168.188.39/24 link 1000 Mb/s
+3 packets transmitted, 3 packets received, 0% packet loss
+round-trip min/avg/max = 12.493/19.149/32.345 ms
+--- usb 1-1: speed 480 version  2.10 ASIX AX88179B
+--- usb 3-1: speed 480 version  2.10 SanDisk SanDisk 3.2 Gen2
+--- partitions
+major minor  #blocks  name
+
+ 259        0 1954210120 nvme0n1
+ 259        1     563200 nvme0n1p1
+ 259        2 1757812500 nvme0n1p2
+ 259        3     512000 nvme0n1p3
+ 259        4    5242836 nvme0n1p4
+ 259        5    2097152 nvme0n1p5
+ 259        6  187981824 nvme0n1p6
+ 259        7       3072 nvme0n2
+ 259        8     131072 nvme0n3
+   8        0  976762584 sda
+   8        1  976760536 sda1
+/dev/nvme0n1p3: TYPE="vfat"
+/dev/nvme0n1p5: LABEL="OMARCHY-BOOT" UUID="1efa3e2d-542c-4bc1-ab79-1d996cd53c5d" TYPE="ext4"
+/dev/nvme0n1p6: LABEL="OMARCHY-ROOT" UUID="487d9a90-6fd6-43ae-abce-fc7f8c7c5455" TYPE="btrfs"
+--- blkid
+/dev/sda1: LABEL="USB" UUID="5A10-6053" TYPE="exfat"
+--- read 2 GiB, direct I/O
+2048+0 records in
+2048+0 records out
+2147483648 bytes (2.0GB) copied, 51.268928 seconds, 39.9MB/s
+--- sha256 of the first 256 MiB, twice
+af73c42158fd1441e0e18a4c994cd64a03c4f2af7c06fa33482bab63c1c19a38  -
+af73c42158fd1441e0e18a4c994cd64a03c4f2af7c06fa33482bab63c1c19a38  -
+=== after the tests 117.43 s
+--- portsc 2aa280000 port01: 0x00000e03 Speed=3 Link=U0 CCS PP PED 
+--- portsc 2aa280000 port02: 0x0a0002a0 Speed=0 Link=RxDetect PP WCE WOE 
+--- clk_summary
+                                 enable  prepare  protect                                duty  hardware                            connection
+   clock                          count    count    count        rate   accuracy phase  cycle    enable   consumer                         id
+---------------------------------------------------------------------------------------------------------------------------------------------
+ clk_200m                            0       0        0        200000000   0          0     50000      Y   deviceless                      no_connection_id         
+ clkref                              1       1        0        24000000    0          0     50000      Y   28836c000.watchdog              no_connection_id         
+                                                                                                           505200000.serial                clk_uart_baud0           
+                                                                                                           505200000.serial                uart                     
+                                                                                                           deviceless                      no_connection_id         
+--- dmesg
+[    0.000000] Booting Linux on physical CPU 0x0000040000 [0x611f0681]
+[    0.000000] Linux version 7.2.11-aurora-j714c-wip+ (ed@omarchy) (aarch64-linux-gnu-gcc (GCC) 16.2.0, GNU ld (GNU Binutils) 2.47) #85 SMP PREEMPT Wed Oct 28 18:51:23 CET 2026
+[    0.000000] random: crng init done
+[    0.000000] Machine model: Apple MacBook Pro (14-inch, M5 Max, 18 CPU cores)
+[    0.000000] OF: reserved mem: 0x0000011fca3fc000..0x0000011fca3fffff (16 KiB) map non-reusable flash@11fca3fc000
+[    0.000000] OF: reserved mem: 0x0000010004750000..0x000001000480bfff (752 KiB) map non-reusable flash@10004750000
+[    0.000000] Zone ranges:
+[    0.000000]   Normal   [mem 0x0000010003df0000-0x0000011fca3fffff]
+[    0.000000] Movable zone start for each node
+[    0.000000] Early memory node ranges
+[    0.000000]   node   0: [mem 0x0000010003df0000-0x0000011fca3f7fff]
+[    0.000000]   node   0: [mem 0x0000011fca3fc000-0x0000011fca3fffff]
+[    0.000000] Initmem setup node 0 [mem 0x0000010003df0000-0x0000011fca3fffff]
+[    0.000000] On node 0, zone Normal: 3964 pages in unavailable ranges
+[    0.000000] On node 0, zone Normal: 1 pages in unavailable ranges
+[    0.000000] On node 0, zone Normal: 5888 pages in unavailable ranges
+[    0.000000] percpu: Embedded 4 pages/cpu s36312 r0 d29224 u65536
+[    0.000000] pcpu-alloc: s36312 r0 d29224 u65536 alloc=4*16384
+[    0.000000] pcpu-alloc: [0] 0 
+[    0.000000] Detected PIPT I-cache on CPU0
+[    0.000000] CPU features: SYS_ID_AA64ISAR2_EL1[3:0]: forced to 0
+[    0.000000] CPU features: detected: Virtualization Host Extensions
+[    0.000000] CPU features: detected: Spectre-v4
+[    0.000000] CPU features: detected: Spectre-BHB
+[    0.000000] CPU features: kernel page table isolation disabled by kernel configuration
+[    0.000000] alternatives: applying boot alternatives
+[    0.000000] Kernel command line: maxcpus=1 console=tty0 t6050_wdt=170 pd_ignore_unused printk.time=1 idle=nop arm64.nowfxt
+[    0.000000] printk: log buffer data + meta data: 1048576 + 3670016 = 4718592 bytes
+[    0.000000] Dentry cache hash table entries: 8388608 (order: 12, 67108864 bytes, linear)
+[    0.000000] Inode-cache hash table entries: 4194304 (order: 11, 33554432 bytes, linear)
+[    0.000000] software IO TLB: SWIOTLB bounce buffer size adjusted to 64MB
+[    0.000000] software IO TLB: area num 1.
+[    0.000000] software IO TLB: mapped [mem 0x0000011f9c688000-0x0000011fa0688000] (64MB)
+[    0.000000] Built 1 zonelists, mobility grouping on.  Total pages: 8329603
+[    0.000000] mem auto-init: stack:all(zero), heap alloc:off, heap free:off
+[    0.000000] SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
+[    0.000000] rcu: Hierarchical RCU implementation.
+[    0.000000] rcu: 	RCU restricting CPUs from NR_CPUS=18 to nr_cpu_ids=1.
+[    0.000000] 	Trampoline variant of Tasks RCU enabled.
+[    0.000000] 	Tracing variant of Tasks RCU enabled.
+[    0.000000] rcu: RCU calculated value of scheduler-enlistment delay is 25 jiffies.
+[    0.000000] rcu: Adjusting geometry for rcu_fanout_leaf=16, nr_cpu_ids=1
+[    0.000000] RCU Tasks: Setting shift to 0 and lim to 1 rcu_task_cb_adjust=1 rcu_task_cpu_ids=1.
+[    0.000000] NR_IRQS: 64, nr_irqs: 64, preallocated irqs: 0
+[    0.000000] Root IRQ handler: aic_handle_irq
+[    0.000000] Root FIQ handler: aic_handle_fiq
+[    0.000000] irq_apple_aic: Using Fast IPIs
+[    0.000000] irq_apple_aic: Initialized with 3104/4096 IRQs * 1/4 die(s), 7 FIQs, 32 vIPIs
+[    0.000000] rcu: srcu_init: Setting srcu_struct sizes based on contention.
+[    0.000000] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 7645041785100000 ns
+[    0.000000] arch_timer: cp15 timer running at 1000.00MHz (hyp-virt).
+[    0.000000] clocksource: arch_sys_counter: mask: 0x1fffffffffffffff max_cycles: 0x1cd42e4dffb, max_idle_ns: 881590591483 ns
+[    0.000000] sched_clock: 61 bits at 1000MHz, resolution 1ns, wraps every 4398046511103ns
+[    0.000103] Console: colour dummy device 80x25
+[    0.000107] printk: legacy console [tty0] enabled
+[    0.000169] Calibrating delay loop (skipped), value calculated using timer frequency.. 2000.00 BogoMIPS (lpj=4000000)
+[    0.000174] pid_max: default: 32768 minimum: 301
+[    0.000222] Mount-cache hash table entries: 131072 (order: 6, 1048576 bytes, linear)
+[    0.000238] Mountpoint-cache hash table entries: 131072 (order: 6, 1048576 bytes, linear)
+[    0.000291] VFS: Finished mounting rootfs on nullfs
+[    0.000562] Apple: preserving registers across WFI
+[    0.000582] rcu: Hierarchical SRCU implementation.
+[    0.000583] rcu: 	Max phase no-delay instances is 1000.
+[    0.000685] smp: Bringing up secondary CPUs ...
+[    0.000687] smp: Brought up 1 node, 1 CPU
+[    0.000689] SMP: Total of 1 processors activated.
+[    0.000691] CPU: All CPU(s) started at EL2
+[    0.000693] CPU features: detected: ARMv8.4 Translation Table Level
+[    0.000695] CPU features: detected: Data cache clean to the PoU not required for I/D coherence
+[    0.000697] CPU features: detected: CRC32 instructions
+[    0.000699] CPU features: detected: Data independent timing control (DIT)
+[    0.000700] CPU features: detected: Enhanced Counter Virtualization
+[    0.000702] CPU features: detected: Enhanced Virtualization Traps
+[    0.000703] CPU features: detected: Fine Grained Traps
+[    0.000705] CPU features: detected: RCpc load-acquire (LDAPR)
+[    0.000706] CPU features: detected: LSE atomic instructions
+[    0.000708] CPU features: detected: Privileged Access Never
+[    0.000709] CPU features: detected: Speculation barrier (SB)
+[    0.000710] CPU features: detected: Stage-2 Force Write-Back
+[    0.000712] CPU features: detected: Trap EL0 IMPLEMENTATION DEFINED functionality
+[    0.000713] CPU features: detected: TLB range maintenance instructions
+[    0.000715] CPU features: detected: XNX
+[    0.000716] CPU features: detected: Scalable Matrix Extension
+[    0.000718] CPU features: detected: SME2
+[    0.000725] alternatives: applying system-wide alternatives
+[    0.001963] CPU features: detected: ACTLR virtualization (architectural?)
+[    0.001968] SME: minimum available vector length 64 bytes per vector
+[    0.001969] SME: maximum available vector length 64 bytes per vector
+[    0.001971] SME: default vector length 64 bytes per vector
+[    0.002008] Memory: 132405504K/133273648K available (9664K kernel code, 4014K rwdata, 2544K rodata, 768K init, 1201K bss, 862864K reserved, 0K cma-reserved)
+[    0.002577] devtmpfs: initialized
+[    0.003875] posixtimers hash table entries: 512 (order: 0, 8192 bytes, linear)
+[    0.003881] futex hash table entries: 256 (16384 bytes on 1 NUMA nodes, total 16 KiB, linear).
+[    0.003954] NET: Registered PF_NETLINK/PF_ROUTE protocol family
+[    0.004765] DMA: preallocated 16384 KiB GFP_KERNEL pool for atomic allocations
+[    0.004907] ASID allocator initialised with 65536 entries
+[    0.010299] raid6: using neon recovery algorithm
+[    0.076026] raid6: int64x1  gen()  4291 MB/s
+[    0.144044] raid6: int64x2  gen()  5125 MB/s
+[    0.212059] raid6: int64x4  gen()  5761 MB/s
+[    0.280062] raid6: int64x8  gen()  5915 MB/s
+[    0.348082] raid6: neonx1   gen() 13441 MB/s
+[    0.416098] raid6: neonx2   gen() 14099 MB/s
+[    0.484110] raid6: neonx4   gen() 14150 MB/s
+[    0.552128] raid6: neonx8   gen() 14075 MB/s
+[    0.552130] raid6: using algorithm neonx4 gen() 14150 MB/s
+[    0.620144] raid6: .... xor() 12040 MB/s, rmw enabled
+[    0.620175] iommu: Default domain type: Translated
+[    0.620177] iommu: DMA domain TLB invalidation policy: strict mode
+[    0.620208] SCSI subsystem initialized
+[    0.620232] usbcore: registered new interface driver usbfs
+[    0.620237] usbcore: registered new interface driver hub
+[    0.620241] usbcore: registered new device driver usb
+[    0.620397] clocksource: Switched to clocksource arch_sys_counter
+[    0.621052] NET: Registered PF_INET protocol family
+[    0.621094] IP idents hash table entries: 262144 (order: 7, 2097152 bytes, linear)
+[    0.624055] tcp_listen_portaddr_hash hash table entries: 65536 (order: 6, 1048576 bytes, linear)
+[    0.624128] Table-perturb hash table entries: 65536 (order: 4, 262144 bytes, linear)
+[    0.624133] TCP established hash table entries: 524288 (order: 8, 4194304 bytes, linear)
+[    0.624496] TCP bind hash table entries: 65536 (order: 7, 2097152 bytes, linear)
+[    0.624621] TCP: Hash tables configured (established 524288 bind 65536)
+[    0.624638] UDP hash table entries: 65536 (order: 8, 4194304 bytes, linear)
+[    0.625067] NET: Registered PF_UNIX/PF_LOCAL protocol family
+[    0.625165] Unpacking initramfs...
+[    0.628588] workingset: timestamp_bits=46 (anon: 41) max_order=23 bucket_order=0 (anon: 0)
+[    0.628724] xor: measuring software checksum speed
+[    0.628865]    eor3            : 23737 MB/sec
+[    0.629005]    32regs          : 23709 MB/sec
+[    0.629135]    8regs           : 25493 MB/sec
+[    0.629136] xor: using function: 8regs (25493 MB/sec)
+[    0.631354] apple-pmgr-pwrstate 280600000.power-management:power-controller@138: firmware-owned domain pmgr_soc_ocla does not read as on
+[    0.631476] apple-pmgr-pwrstate 280600000.power-management:power-controller@170: firmware-owned domain b2bc_afc_0_dfx does not read as on
+[    0.631517] apple-pmgr-pwrstate 280600000.power-management:power-controller@180: firmware-owned domain b2bc_afc_1_dfx does not read as on
+[    0.631711] apple-pmgr-pwrstate 280600000.power-management:power-controller@240: firmware-owned domain atc3_common does not read as on
+[    0.631734] apple-pmgr-pwrstate 280600000.power-management:power-controller@248: firmware-owned domain auss does not read as on
+[    0.631828] apple-pmgr-pwrstate 280600000.power-management:power-controller@270: firmware-owned domain dispext0_adma does not read as on
+[    0.631866] apple-pmgr-pwrstate 280600000.power-management:power-controller@280: firmware-owned domain atc0_cio does not read as on
+[    0.631886] apple-pmgr-pwrstate 280600000.power-management:power-controller@288: firmware-owned domain atc0_pcie does not read as on
+[    0.631910] apple-pmgr-pwrstate 280600000.power-management:power-controller@290: firmware-owned domain atc1_cio does not read as on
+[    0.631935] apple-pmgr-pwrstate 280600000.power-management:power-controller@298: firmware-owned domain atc1_pcie does not read as on
+[    0.631974] apple-pmgr-pwrstate 280600000.power-management:power-controller@2a8: firmware-owned domain dispext2_adma does not read as on
+[    0.632035] apple-pmgr-pwrstate 280600000.power-management:power-controller@2c0: firmware-owned domain dispext3_adma does not read as on
+[    0.632096] apple-pmgr-pwrstate 280600000.power-management:power-controller@2d8: firmware-owned domain dispext1_adma does not read as on
+[    0.632135] apple-pmgr-pwrstate 280600000.power-management:power-controller@2e8: firmware-owned domain atc2_cio does not read as on
+[    0.632155] apple-pmgr-pwrstate 280600000.power-management:power-controller@2f0: firmware-owned domain atc2_pcie does not read as on
+[    0.632176] apple-pmgr-pwrstate 280600000.power-management:power-controller@2f8: firmware-owned domain atc3_cio does not read as on
+[    0.632199] apple-pmgr-pwrstate 280600000.power-management:power-controller@300: firmware-owned domain atc3_pcie does not read as on
+[    0.632222] apple-pmgr-pwrstate 280600000.power-management:power-controller@338: firmware-owned domain atc0_cio_pcie does not read as on
+[    0.632242] apple-pmgr-pwrstate 280600000.power-management:power-controller@340: firmware-owned domain atc0_cio_usb does not read as on
+[    0.632261] apple-pmgr-pwrstate 280600000.power-management:power-controller@348: firmware-owned domain atc0_cio_auss does not read as on
+[    0.632281] apple-pmgr-pwrstate 280600000.power-management:power-controller@350: firmware-owned domain atc1_cio_pcie does not read as on
+[    0.632301] apple-pmgr-pwrstate 280600000.power-management:power-controller@358: firmware-owned domain atc1_cio_usb does not read as on
+[    0.632323] apple-pmgr-pwrstate 280600000.power-management:power-controller@360: firmware-owned domain atc1_cio_auss does not read as on
+[    0.632345] apple-pmgr-pwrstate 280600000.power-management:power-controller@3f8: firmware-owned domain atc2_cio_pcie does not read as on
+[    0.632368] apple-pmgr-pwrstate 280600000.power-management:power-controller@400: firmware-owned domain atc2_cio_usb does not read as on
+[    0.632388] apple-pmgr-pwrstate 280600000.power-management:power-controller@408: firmware-owned domain atc2_cio_auss does not read as on
+[    0.640412] apple-pmgr-pwrstate 280600000.power-management:power-controller@410: firmware-owned domain atc3_cio_pcie does not read as on
+[    0.640434] apple-pmgr-pwrstate 280600000.power-management:power-controller@418: firmware-owned domain atc3_cio_usb does not read as on
+[    0.640455] apple-pmgr-pwrstate 280600000.power-management:power-controller@420: firmware-owned domain atc3_cio_auss does not read as on
+[    0.640492] apple-pmgr-pwrstate 280600000.power-management:power-controller@458: firmware-owned domain b2bc_dft does not read as on
+[    0.640514] apple-pmgr-pwrstate 280600000.power-management:power-controller@460: firmware-owned domain b2bc_cntl_dfx does not read as on
+[    0.640533] apple-pmgr-pwrstate 280600000.power-management:power-controller@468: firmware-owned domain b2bc_dbg_0 does not read as on
+[    0.640554] apple-pmgr-pwrstate 280600000.power-management:power-controller@470: firmware-owned domain b2bc_dbg_1 does not read as on
+[    0.640572] apple-pmgr-pwrstate 280600000.power-management:power-controller@478: firmware-owned domain b2bc_dbg_2 does not read as on
+[    0.640605] apple-pmgr-pwrstate 280900000.power-management:power-controller@100: firmware-owned domain ispsens0 does not read as on
+[    0.640625] apple-pmgr-pwrstate 280900000.power-management:power-controller@108: firmware-owned domain global_aux_hpd_0 does not read as on
+[    0.640646] apple-pmgr-pwrstate 280900000.power-management:power-controller@110: firmware-owned domain global_aux_hpd_1 does not read as on
+[    0.640821] apple-pmgr-pwrstate 280900000.power-management:power-controller@160: firmware-owned domain apcie_sys_gp_oc does not read as on
+[    0.640845] apple-pmgr-pwrstate 280900000.power-management:power-controller@168: firmware-owned domain apcie_sys_st0_o does not read as on
+[    0.640865] apple-pmgr-pwrstate 280900000.power-management:power-controller@170: firmware-owned domain apcie_sys_st1_o does not read as on
+[    0.640927] apple-pmgr-pwrstate 280900000.power-management:power-controller@190: firmware-owned domain scodec does not read as on
+[    0.640970] apple-pmgr-pwrstate 280900000.power-management:power-controller@1a0: firmware-owned domain disp_adma does not read as on
+[    0.641031] apple-pmgr-pwrstate 280900000.power-management:power-controller@1c0: firmware-owned domain scodec_streaming does not read as on
+[    0.641251] apple-pmgr-pwrstate 280900000.power-management:power-controller@2a8: firmware-owned domain fpwm0 does not read as on
+[    0.641272] apple-pmgr-pwrstate 280900000.power-management:power-controller@2b8: firmware-owned domain fpwm2 does not read as on
+[    0.641408] apple-pmgr-pwrstate 280900000.power-management:power-controller@2f0: firmware-owned domain i2c6 does not read as on
+[    0.641432] apple-pmgr-pwrstate 280900000.power-management:power-controller@2f8: firmware-owned domain i2c7 does not read as on
+[    0.641859] apple-pmgr-pwrstate 280900000.power-management:power-controller@3a8: firmware-owned domain ane_sys does not read as on
+[    0.641885] apple-pmgr-pwrstate 280900000.power-management:power-controller@3c0: firmware-owned domain ane_mpm does not read as on
+[    0.641906] apple-pmgr-pwrstate 280900000.power-management:power-controller@3c8: firmware-owned domain ane_cpu does not read as on
+[    0.641928] apple-pmgr-pwrstate 280900000.power-management:power-controller@3d0: firmware-owned domain ane_tdbase does not read as on
+[    0.642031] apple-pmgr-pwrstate 288300000.power-management:power-controller@70: firmware-owned domain nub_spmi_a2 does not read as on
+[    0.642367] apple-pmgr-pwrstate 288300000.power-management:power-controller@f8: firmware-owned domain atc3_common_dp_0 does not read as on
+[    0.642391] apple-pmgr-pwrstate 288300000.power-management:power-controller@100: firmware-owned domain atc3_common_dp_1 does not read as on
+[    0.642416] apple-pmgr-pwrstate 288300000.power-management:power-controller@108: firmware-owned domain atc3_common_dp_2 does not read as on
+[    0.642440] apple-pmgr-pwrstate 288300000.power-management:power-controller@110: firmware-owned domain atc3_common_dp_3 does not read as on
+[    0.642847] apple-pmgr-pwrstate 288300000.power-management:power-controller@198: firmware-owned domain atc3_usb does not read as on
+[    0.642876] apple-pmgr-pwrstate 288300000.power-management:power-controller@1a0: firmware-owned domain atc3_phymxwrap does not read as on
+[    0.643037] apple-pmgr-pwrstate 288300000.power-management:power-controller@8058: firmware-owned domain smc_i2cm6 does not read as on
+[    0.643095] apple-pmgr-pwrstate 2300e80000.power-management:power-controller@100: firmware-owned domain afr does not read as on
+[    0.643123] apple-pmgr-pwrstate 2300e80000.power-management:power-controller@108: firmware-owned domain cs does not read as on
+[    0.643150] apple-pmgr-pwrstate 2300e80000.power-management:power-controller@110: firmware-owned domain gfx does not read as on
+[    0.643248] apple-pmgr-pwrstate 2380600000.power-management:power-controller@120: firmware-owned domain pmgr_soc_ocla_g does not read as on
+[    0.643316] apple-pmgr-pwrstate 2380600000.power-management:power-controller@138: firmware-owned domain b2bg_afc_0_dfx does not read as on
+[    0.643360] apple-pmgr-pwrstate 2380600000.power-management:power-controller@148: firmware-owned domain b2bg_afc_1_dfx does not read as on
+[    0.643385] apple-pmgr-pwrstate 2380600000.power-management:power-controller@188: firmware-owned domain b2bg_afi_1_dfx does not read as on
+[    0.643472] apple-pmgr-pwrstate 2380600000.power-management:power-controller@1c0: firmware-owned domain venc0_sys does not read as on
+[    0.643498] apple-pmgr-pwrstate 2380600000.power-management:power-controller@1c8: firmware-owned domain msr0 does not read as on
+[    0.643522] apple-pmgr-pwrstate 2380600000.power-management:power-controller@1d0: firmware-owned domain jpg does not read as on
+[    0.643549] apple-pmgr-pwrstate 2380600000.power-management:power-controller@1d8: firmware-owned domain avd_sys does not read as on
+[    0.643574] apple-pmgr-pwrstate 2380600000.power-management:power-controller@1e0: firmware-owned domain prores does not read as on
+[    0.643599] apple-pmgr-pwrstate 2380600000.power-management:power-controller@1f0: firmware-owned domain venc1_sys does not read as on
+[    0.643623] apple-pmgr-pwrstate 2380600000.power-management:power-controller@1f8: firmware-owned domain msr1 does not read as on
+[    0.643646] apple-pmgr-pwrstate 2380600000.power-management:power-controller@200: firmware-owned domain msr0_ase_core does not read as on
+[    0.643671] apple-pmgr-pwrstate 2380600000.power-management:power-controller@208: firmware-owned domain msr1_ase_core does not read as on
+[    0.644824] apple-pmgr-pwrstate 2380600000.power-management:power-controller@648: firmware-owned domain fab_b2bd_afc_0 does not read as on
+[    0.644847] apple-pmgr-pwrstate 2380600000.power-management:power-controller@650: firmware-owned domain fab_b2bd_afc_1 does not read as on
+[    0.644874] apple-pmgr-pwrstate 2380600000.power-management:power-controller@658: firmware-owned domain b2bd_afc_0 does not read as on
+[    0.644898] apple-pmgr-pwrstate 2380600000.power-management:power-controller@660: firmware-owned domain b2bd_afc_0_dfx does not read as on
+[    0.644920] apple-pmgr-pwrstate 2380600000.power-management:power-controller@668: firmware-owned domain b2bd_afc_1 does not read as on
+[    0.644944] apple-pmgr-pwrstate 2380600000.power-management:power-controller@670: firmware-owned domain b2bd_afc_1_dfx does not read as on
+[    0.644968] apple-pmgr-pwrstate 2380600000.power-management:power-controller@678: firmware-owned domain b2bd_afr_0 does not read as on
+[    0.644994] apple-pmgr-pwrstate 2380600000.power-management:power-controller@680: firmware-owned domain b2bd_afr_1 does not read as on
+[    0.645018] apple-pmgr-pwrstate 2380600000.power-management:power-controller@688: firmware-owned domain b2bd_afr_dfx_0 does not read as on
+[    0.645045] apple-pmgr-pwrstate 2380600000.power-management:power-controller@690: firmware-owned domain b2bd_afr_dfx_1 does not read as on
+[    0.645068] apple-pmgr-pwrstate 2380600000.power-management:power-controller@698: firmware-owned domain b2bd_afr_3 does not read as on
+[    0.645093] apple-pmgr-pwrstate 2380600000.power-management:power-controller@6a0: firmware-owned domain b2bd_afr_2 does not read as on
+[    0.645116] apple-pmgr-pwrstate 2380600000.power-management:power-controller@6a8: firmware-owned domain b2bd_afr_dfx_3 does not read as on
+[    0.645140] apple-pmgr-pwrstate 2380600000.power-management:power-controller@6b0: firmware-owned domain b2bd_afr_dfx_2 does not read as on
+[    0.645163] apple-pmgr-pwrstate 2380600000.power-management:power-controller@6b8: firmware-owned domain b2bg_dft does not read as on
+[    0.645187] apple-pmgr-pwrstate 2380600000.power-management:power-controller@6c0: firmware-owned domain b2bg_cntl_dfx does not read as on
+[    0.645210] apple-pmgr-pwrstate 2380600000.power-management:power-controller@6c8: firmware-owned domain b2bg_dbg_0 does not read as on
+[    0.645232] apple-pmgr-pwrstate 2380600000.power-management:power-controller@6d0: firmware-owned domain b2bg_dbg_1 does not read as on
+[    0.645257] apple-pmgr-pwrstate 2380600000.power-management:power-controller@6d8: firmware-owned domain b2bg_dbg_2 does not read as on
+[    0.645282] apple-pmgr-pwrstate 2380600000.power-management:power-controller@6e0: firmware-owned domain b2bd_cntl_dfx_0 does not read as on
+[    0.645303] apple-pmgr-pwrstate 2380600000.power-management:power-controller@6e8: firmware-owned domain b2bd_cntl_dfx_1 does not read as on
+[    0.645328] apple-pmgr-pwrstate 2380600000.power-management:power-controller@6f0: firmware-owned domain b2bd_dbg_0 does not read as on
+[    0.645351] apple-pmgr-pwrstate 2380600000.power-management:power-controller@6f8: firmware-owned domain b2bd_dbg_1 does not read as on
+[    0.645376] apple-pmgr-pwrstate 2380600000.power-management:power-controller@700: firmware-owned domain b2bd_dbg_2 does not read as on
+[    0.645400] apple-pmgr-pwrstate 2380600000.power-management:power-controller@708: firmware-owned domain b2bd_dbg_3 does not read as on
+[    0.645422] apple-pmgr-pwrstate 2380600000.power-management:power-controller@710: firmware-owned domain b2bd_dbg_4 does not read as on
+[    0.645447] apple-pmgr-pwrstate 2380600000.power-management:power-controller@8000: firmware-owned domain venc0_dma does not read as on
+[    0.645474] apple-pmgr-pwrstate 2380600000.power-management:power-controller@8008: firmware-owned domain venc0_pipe4 does not read as on
+[    0.645501] apple-pmgr-pwrstate 2380600000.power-management:power-controller@8010: firmware-owned domain venc0_pipe5 does not read as on
+[    0.645526] apple-pmgr-pwrstate 2380600000.power-management:power-controller@8018: firmware-owned domain venc0_me0 does not read as on
+[    0.645560] apple-pmgr-pwrstate 2380600000.power-management:power-controller@8020: firmware-owned domain venc0_me1 does not read as on
+[    0.645587] apple-pmgr-pwrstate 2380600000.power-management:power-controller@8028: firmware-owned domain venc1_dma does not read as on
+[    0.645611] apple-pmgr-pwrstate 2380600000.power-management:power-controller@8030: firmware-owned domain venc1_pipe4 does not read as on
+[    0.645636] apple-pmgr-pwrstate 2380600000.power-management:power-controller@8038: firmware-owned domain venc1_pipe5 does not read as on
+[    0.645661] apple-pmgr-pwrstate 2380600000.power-management:power-controller@8040: firmware-owned domain venc1_me0 does not read as on
+[    0.645686] apple-pmgr-pwrstate 2380600000.power-management:power-controller@8048: firmware-owned domain venc1_me1 does not read as on
+[    0.646294] 505200000.serial: ttySAC0 at MMIO 0x505200000 (irq = 41, base_baud = 0) is a APPLE S5L
+[    0.646869] platform 294600000.mtp: Adding to iommu group 0
+[    0.646911] platform 294b30000.input: Adding to iommu group 0
+[    0.647149] platform 2a2280000.usb: Adding to iommu group 1
+[    0.647373] platform 2aa280000.usb: Adding to iommu group 2
+[    0.647592] platform 382280000.usb: Adding to iommu group 3
+[    0.652963] usbcore: registered new device driver r8152-cfgselector
+[    0.652969] usbcore: registered new interface driver r8152
+[    0.652973] usbcore: registered new interface driver asix
+[    0.652978] usbcore: registered new interface driver ax88179_178a
+[    0.652984] usbcore: registered new interface driver cdc_ether
+[    0.652988] usbcore: registered new interface driver net1080
+[    0.652992] usbcore: registered new interface driver cdc_subset
+[    0.652996] usbcore: registered new interface driver zaurus
+[    0.653000] usbcore: registered new interface driver cdc_ncm
+[    0.653004] usbcore: registered new interface driver r8153_ecm
+[    0.653319] usbcore: registered new interface driver uas
+[    0.653325] usbcore: registered new interface driver usb-storage
+[    0.653642] Freeing initrd memory: 1120K
+[    0.764410] sn201202x 0-0a: Unable to find the interrupt, switching to polling
+[    0.764888] usbcore: registered new interface driver usbhid
+[    0.764889] usbhid: USB HID core driver
+[    0.765029] NET: Registered PF_INET6 protocol family
+[    0.765553] Segment Routing with IPv6
+[    0.765584] In-situ OAM (IOAM) with IPv6
+[    0.765658] sit: IPv6, IPv4 and MPLS over IPv4 tunneling driver
+[    0.766032] NET: Registered PF_PACKET protocol family
+[    0.769318] Btrfs loaded, zoned=no, fsverity=no
+[    0.769354] pmgr: AP watchdog armed, reset in 170 s
+[    0.770628] simple-framebuffer 11fd31e6880.framebuffer: framebuffer at 0x11fd31e6880, 0x15cd680 bytes
+[    0.770629] simple-framebuffer 11fd31e6880.framebuffer: format=x2r10g10b10, mode=3024x1890x32, linelength=12096
+[    0.771755] Console: switching to colour frame buffer device 189x59
+[    0.773664] simple-framebuffer 11fd31e6880.framebuffer: fb0: simplefb registered!
+[    0.774187] rtkit-helper 294600000.mtp: RTKit: Initializing (protocol version 12)
+[    0.775579] rtkit-helper 294600000.mtp: RTKit: syslog message: main.c:199: MTP Says Hello
+[    0.775627] rtkit-helper 294600000.mtp: RTKit: syslog message: main.c:199: Version: AppleMTPFirmwareMac-6310.85.7~38
+[    0.775663] rtkit-helper 294600000.mtp: RTKit: syslog message: main.c:199: Personality: MTP_SYS
+[    0.775699] rtkit-helper 294600000.mtp: RTKit: syslog message: main.c:199: SDK: 26B109
+[    0.775731] rtkit-helper 294600000.mtp: RTKit: syslog message: main.c:199: Built on: 2026-10-07__22:07:42
+[    0.775948] nvme-apple 45dcc0000.nvme: RTKit: Initializing (protocol version 12)
+[    0.777374] nvme-apple 45dcc0000.nvme: RTKit: syslog message: gc.c:9368: Restarting rebuild from lba 0
+[    0.779841] nvme-apple 45dcc0000.nvme: RTKit: syslog message: cmd.c:8550: boot: mode normal
+[    0.780386] nvme-apple 45dcc0000.nvme: RTKit: syslog message: power_budget.c:1001: PowerBudget: set on boot setByHost=1, is_warm_boot=0
+[    0.780591] rtkit-helper 294600000.mtp: RTKit: syslog message: kb_transport.c:270: IPD HIDSPI attached
+[    0.780680] rtkit-helper 294600000.mtp: RTKit: syslog message: touch_pwr_mgr.c:208: [TPM] Mac Power Manager State Machine Initialized ret(0) status(0)
+[    0.780749] nvme-apple 45dcc0000.nvme: RTKit: syslog message: power_budget.c:130: PowerBudget V5V1 bu=400 pc=1 rc=0 ppm=0 pbio=0 ess=0
+[    0.780805] rtkit-helper 294600000.mtp: RTKit: syslog message: act_mgr.c:563: Called act_mgr_init()
+[    0.780837] nvme-apple 45dcc0000.nvme: RTKit: syslog message: power_budget.c:144: e=100 p=100/0/100 rmp=100 rsp=25/0/25 ressmp=0 ressspn=0/0 sio=0 comp=0
+[    0.780882] rtkit-helper 294600000.mtp: RTKit: syslog message: comm.c:200: Initializing comm interface <0- "comm">
+[    0.780940] rtkit-helper 294600000.mtp: RTKit: syslog message: comm.c:200: Initializing comm interface <1- "multi-touch">
+[    0.780995] rtkit-helper 294600000.mtp: RTKit: syslog message: comm.c:200: Initializing comm interface <2- "keyboard">
+[    0.781053] nvme-apple 45dcc0000.nvme: RTKit: syslog message: power_budget.c:269: PowerBudget: num dies horizontal change 1 -> 1
+[    0.781097] rtkit-helper 294600000.mtp: RTKit: syslog message: comm.c:200: Initializing comm interface <3- "stm">
+[    0.781149] nvme-apple 45dcc0000.nvme: RTKit: syslog message: power_budget.c:130: PowerBudget V5V1 bu=0 pc=0 rc=0 ppm=0 pbio=0 ess=0
+[    0.781198] rtkit-helper 294600000.mtp: RTKit: syslog message: comm.c:200: Initializing comm interface <4- "actuator">
+[    0.781252] nvme-apple 45dcc0000.nvme: RTKit: syslog message: power_budget.c:144: e=0 p=0/0/0 rmp=0 rsp=0/0/0 ressmp=0 ressspn=0/0 sio=0 comp=0
+[    0.781306] rtkit-helper 294600000.mtp: RTKit: syslog message: comm.c:200: Initializing comm interface <5- "tp-accel">
+[    0.781359] nvme-apple 45dcc0000.nvme: RTKit: syslog message: rtkpmc_t6050.cpp:208: pmc_init PMC-T6050 Init die = 0 io_base 0
+[    0.781397] rtkit-helper 294600000.mtp: RTKit: syslog message: comm.c:200: Initializing comm interface <6- "mtp">
+[    0.781449] rtkit-helper 294600000.mtp: RTKit: syslog message: stm.c:75: ST IF complete enumeration: SENT (0x0)
+[    0.781489] rtkit-helper 294600000.mtp: RTKit: syslog message: touch_iface.c:171: Grape interface initializing
+[    0.781534] rtkit-helper 294600000.mtp: RTKit: syslog message: touch_iface.c:179: Grape interface initialized
+[    0.781576] rtkit-helper 294600000.mtp: RTKit: syslog message: touch_mgr.c:65: Touch IF complete enumeration: SENT
+[    0.781616] rtkit-helper 294600000.mtp: RTKit: syslog message: keyboard.c:63: Keyboard initialized
+[    0.781653] rtkit-helper 294600000.mtp: RTKit: syslog message: accel.c:57: Accel initialized
+[    0.781707] nvme-apple 45dcc0000.nvme: RTKit: syslog message: push.c:2552: Push is skipping band:0692 flow:FLOW_CLOG
+[    0.782733] rtkit-helper 294600000.mtp: RTKit: syslog message: actuator.c:57: Actuator initialized
+[    0.783786] nvme-apple 45dcc0000.nvme: RTKit: syslog message: band.c:6118: Push abandoning non-blank band:0692 flow:FLOW_CLOG Validity 00000000 Age 0 uncleanReboot yes
+[    0.784901] rtkit-helper 294600000.mtp: RTKit: syslog message: mtp_iface.c:139: MTP interface complete enumeration: SENT
+[    0.804405] phy-apple-t6050-usb2 2a2a90000.phy: USB 2.0 host mode, PORTSC 0x206e1 after 1 flip(s)
+[    0.805781] xhci-hcd 2a2280000.usb: xHCI Host Controller
+[    0.807168] xhci-hcd 2a2280000.usb: new USB bus registered, assigned bus number 1
+[    0.808728] xhci-hcd 2a2280000.usb: hcc params 0x0238ffcd hci version 0x110 quirks 0x0000000000000010
+[    0.809900] xhci-hcd 2a2280000.usb: irq 49, io mem 0x2a2280000
+[    0.811096] xhci-hcd 2a2280000.usb: xHCI Host Controller
+[    0.812243] xhci-hcd 2a2280000.usb: new USB bus registered, assigned bus number 2
+[    0.813428] xhci-hcd 2a2280000.usb: Host supports USB 3.1 Enhanced SuperSpeed
+[    0.814482] hub 1-0:1.0: USB hub found
+[    0.815429] hub 1-0:1.0: 1 port detected
+[    0.816440] usb usb2: We don't know the algorithms for LPM for this host, disabling LPM.
+[    0.817444] hub 2-0:1.0: USB hub found
+[    0.818400] hub 2-0:1.0: 1 port detected
+[    0.819461] phy-apple-t6050-usb2 2aaa90000.phy: SS: inherited pipehandler +0x0 0x0 +0x4 0x16 +0xc 0x22 +0x1c 0x1 +0x20 0x9332
+[    0.820506] phy-apple-t6050-usb2 2aaa90000.phy: SS: inherited GCTL 0x30c12004, GUSB2PHYCFG 0x102400, GUSB3PIPECTL 0x1021102, glue 0x886 / 0x3c20060c, PORTSC 0x280 / 0x280
+[    0.841730] nvme-apple 45dcc0000.nvme: RTKit: syslog message: push.c:3427: Finished abort skip flow:FLOW_CLOG band:0692 boff 34512 pgIdx 3000 abort_band0:0692 abort_band1:0000
+[    0.847239] nvme-apple 45dcc0000.nvme: RTKit: syslog message: bg.c:554: Unclean boot 1/1
+[    1.064417] usb 1-1: new high-speed USB device number 2 using xhci-hcd
+[    1.251511] nvme-apple 45dcc0000.nvme: RTKit: syslog message: ric.c:443:  RIC update silo after SPF !! Start silo: 7 start entry: 4
+[    1.278635] cdc_ncm 1-1:2.0: MAC-Address: 6c:6e:07:41:d2:14
+[    1.285496] cdc_ncm 1-1:2.0: setting rx_max = 16384
+[    1.302572] cdc_ncm 1-1:2.0: setting tx_max = 16384
+[    1.319959] cdc_ncm 1-1:2.0 eth0: register 'cdc_ncm' at usb-2a2280000.usb-1, CDC NCM (NO ZLP), 6c:6e:07:41:d2:14
+[    1.425285] nvme nvme0: passthrough uses implicit buffer lengths
+[    1.434437]  nvme0n1: p1 p2 p3 p4 p5 p6
+[    1.440921] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    1.888408] phy-apple-t6050-usb2 2aaa90000.phy: SS: PHY CPU RTKit v12, endpoints 0x3, AP 0x20, IOP 0x20, 1 other message(s), last 0x1:0x10100010007df0
+[    2.580492] phy-apple-t6050-usb2 2aaa90000.phy: SS: HCRST 1 CNR 1, CIO 1, mxwrap 1, UC_TNBL_DONE 1
+[    2.587738] phy-apple-t6050-usb2 2aaa90000.phy: SS: SS PORTSC from the write through step 16: 280 280 280 280 280 280 280 280 280 280 2b0 2b0 2b0 2802a0 2802a0 2802a0 2802a0
+[    2.595121] phy-apple-t6050-usb2 2aaa90000.phy: SS: PhyStatus s1 1 rise 1 fall 1 (STATUS2 0xc4), lock 1 ack 1 unlock 1 release 1
+[    2.602522] phy-apple-t6050-usb2 2aaa90000.phy: SS: warm reset in step 13 done 1 after 544000 us
+[    2.609924] phy-apple-t6050-usb2 2aaa90000.phy: SS: pace 0 us, settle 0 ms, susphy 1, flip 0
+[    2.617421] phy-apple-t6050-usb2 2aaa90000.phy: SS: glue 0x886 0x886 0x3c20060c 0x2000b, PORTSC 0x206e1 / 0x2802a0
+[    2.619050] xhci-hcd 2aa280000.usb: xHCI Host Controller
+[    2.620667] xhci-hcd 2aa280000.usb: new USB bus registered, assigned bus number 3
+[    2.622409] xhci-hcd 2aa280000.usb: hcc params 0x0238ffcd hci version 0x110 quirks 0x0000000000000010
+[    2.623999] phy-apple-t6050-usb2 2aaa90000.phy: SS: after xHCI reset: glue read 0x886 0x886 0x3c20060c 0x2000b, rewritten 0x0, now 0x886 0x886 0x3c20060c 0x2000b
+[    2.625633] phy-apple-t6050-usb2 2aaa90000.phy: SS: after xHCI reset: USBSTS 0x11, PORTSC 0x206e1 / 0x2a0, GUSB2PHYCFG 0x2102500, GUSB3PIPECTL 0x1021102
+[    2.626942] xhci-hcd 2aa280000.usb: irq 50, io mem 0x2aa280000
+[    2.628287] xhci-hcd 2aa280000.usb: xHCI Host Controller
+[    2.629600] phy-apple-t6050-usb2 2aaa90000.phy: SS watch: PORTSC 0x206e1 / 0x2a0, GDBGLTSSM 0x9cc20024
+[    2.630917] xhci-hcd 2aa280000.usb: new USB bus registered, assigned bus number 4
+[    2.632221] xhci-hcd 2aa280000.usb: Host supports USB 3.1 Enhanced SuperSpeed
+[    2.633598] hub 3-0:1.0: USB hub found
+[    2.634643] hub 3-0:1.0: 1 port detected
+[    2.635700] usb usb4: We don't know the algorithms for LPM for this host, disabling LPM.
+[    2.636780] hub 4-0:1.0: USB hub found
+[    2.637784] hub 4-0:1.0: 1 port detected
+[    2.656442] phy-apple-t6050-usb2 2aaa90000.phy: SS watch: PORTSC 0x6e1 / 0x2a0, GDBGLTSSM 0x9cc20024
+[    2.740466] phy-apple-t6050-usb2 2aaa90000.phy: SS watch: PORTSC 0x6e1 / 0xa0002a0, GDBGLTSSM 0x9cc20024
+[    2.752429] phy-apple-t6050-usb2 2aaa90000.phy: SS watch: PORTSC 0x6e1 / 0x2a0, GDBGLTSSM 0x9cc20024
+[    2.764558] phy-apple-t6050-usb2 2aaa90000.phy: SS watch: PORTSC 0x6f1 / 0x2a0, GDBGLTSSM 0x9cc20024
+[    2.816411] phy-apple-t6050-usb2 2aaa90000.phy: SS watch: PORTSC 0x200e03 / 0x2a0, GDBGLTSSM 0x9cc20024
+[    2.828444] phy-apple-t6050-usb2 2aaa90000.phy: SS watch: PORTSC 0xe03 / 0x2a0, GDBGLTSSM 0x9cc20024
+[    2.884415] usb 3-1: new high-speed USB device number 2 using xhci-hcd
+[    2.892415] phy-apple-t6050-usb2 2aaa90000.phy: SS watch: PORTSC 0xef1 / 0x2a0, GDBGLTSSM 0x9cc20024
+[    2.900454] phy-apple-t6050-usb2 2aaa90000.phy: SS watch: PORTSC 0xef1 / 0xa0002a0, GDBGLTSSM 0x9cc20024
+[    2.912424] phy-apple-t6050-usb2 2aaa90000.phy: SS watch: PORTSC 0xef1 / 0x2a0, GDBGLTSSM 0x9cc20024
+[    2.944416] phy-apple-t6050-usb2 2aaa90000.phy: SS watch: PORTSC 0x200e03 / 0x2a0, GDBGLTSSM 0x9cc20024
+[    2.952446] phy-apple-t6050-usb2 2aaa90000.phy: SS watch: PORTSC 0xe03 / 0x2a0, GDBGLTSSM 0x9cc20024
+[    2.992409] phy-apple-t6050-usb2 382a90000.phy: USB 2.0 host mode, PORTSC 0x2a0 after 3 flip(s)
+[    2.998529] xhci-hcd 382280000.usb: xHCI Host Controller
+[    3.004622] xhci-hcd 382280000.usb: new USB bus registered, assigned bus number 5
+[    3.010959] xhci-hcd 382280000.usb: hcc params 0x0238ffcd hci version 0x110 quirks 0x0000000000000010
+[    3.017185] xhci-hcd 382280000.usb: irq 51, io mem 0x382280000
+[    3.018349] xhci-hcd 382280000.usb: xHCI Host Controller
+[    3.019463] xhci-hcd 382280000.usb: new USB bus registered, assigned bus number 6
+[    3.020586] xhci-hcd 382280000.usb: Host supports USB 3.1 Enhanced SuperSpeed
+[    3.021771] hub 5-0:1.0: USB hub found
+[    3.022885] hub 5-0:1.0: 1 port detected
+[    3.024023] usb usb6: We don't know the algorithms for LPM for this host, disabling LPM.
+[    3.025218] hub 6-0:1.0: USB hub found
+[    3.026131] hub 6-0:1.0: 1 port detected
+[    3.027766] apple-pmgr-pwrstate 280600000.power-management:power-controller@208: sync_state() pending due to 288300000.power-management
+[    3.028341] rtkit-helper 294600000.mtp: RTKit: syslog message: stm_cr.c:93: ST management interface configuration completed
+[    3.028810] rtkit-helper 294600000.mtp: RTKit: syslog message: stm.c:89: ST management ready
+[    3.029287] dockchannel-hid 294b30000.input: Interface stm is now ready
+[    3.029714] apple-pmgr-pwrstate 280600000.power-management:power-controller@210: sync_state() pending due to 288300000.power-management
+[    3.030128] apple-pmgr-pwrstate 280600000.power-management:power-controller@238: sync_state() pending due to 288300000.power-management
+[    3.030540] apple-pmgr-pwrstate 280600000.power-management:power-controller@240: sync_state() pending due to 288300000.power-management
+[    3.031107] clk: Disabling unused clocks
+[    3.031515] PM: genpd: Not disabling unused power domains
+[    3.032415] hid-generic 0019:0000:0000.0001: device has no listeners, quitting
+[    3.032990] Freeing unused kernel memory: 768K
+[    3.033406] Run /init as init process
+[    3.033790]   with arguments:
+[    3.033791]     /init
+[    3.033792]   with environment:
+[    3.033792]     HOME=/
+[    3.033792]     TERM=linux
+[    3.037701] usb 3-1: UAS is ignored for this device, using usb-storage instead
+[    3.038256] usb 3-1: UAS is ignored for this device, using usb-storage instead
+[    3.038789] usb-storage 3-1:1.0: USB Mass Storage device detected
+[    3.039364] usb-storage 3-1:1.0: Quirks match for vid 0781 pid 55e8: 800000
+[    3.039907] scsi host0: usb-storage 3-1:1.0
+[    3.041283] rtkit-helper 294600000.mtp: RTKit: syslog message: touch_iface.c:458: Grape interface configuration completed
+[    3.041753] input: Apple MTP multi-touch as /devices/platform/soc/294b14000.fifo/294b30000.input/0019:05AC:0359.0002/input/input0
+[    3.042127] magicmouse 0019:05AC:0359.0002: input: HOST HID v5.10 Mouse [Apple MTP multi-touch] on 294b30000.input.1 (multi-touch)
+[    3.042589] rtkit-helper 294600000.mtp: RTKit: syslog message: keyboard_cr.c:73: Keyboard interface configuration completed
+[    3.043102] dockchannel-hid 294b30000.input: Interface keyboard is now ready
+[    3.043689] input: Apple MTP keyboard as /devices/platform/soc/294b14000.fifo/294b30000.input/0019:05AC:0359.0003/input/input1
+[    3.044233] rtkit-helper 294600000.mtp: RTKit: syslog message: keyboard.c:77: Keyboard ready
+[    3.044802] apple 0019:05AC:0359.0003: input: HOST HID v5.10 Keyboard [Apple MTP keyboard] on 294b30000.input.2 (keyboard)
+[    3.045377] rtkit-helper 294600000.mtp: RTKit: syslog message: actuator_cr.c:84: Actuator interface configuration completed
+[    3.045913] dockchannel-hid 294b30000.input: Interface actuator is now ready
+[    3.046536] rtkit-helper 294600000.mtp: RTKit: syslog message: actuator.c:71: Actuator ready
+[    3.064418] phy-apple-t6050-usb2 2aaa90000.phy: SS watch: PORTSC 0xe03 / 0xa0002a0, GDBGLTSSM 0x9cc20024
+[    3.072426] phy-apple-t6050-usb2 2aaa90000.phy: SS watch: PORTSC 0xe03 / 0x2a0, GDBGLTSSM 0x9cc20024
+[    3.220449] phy-apple-t6050-usb2 2aaa90000.phy: SS watch: PORTSC 0xe03 / 0xa0002a0, GDBGLTSSM 0x9cc20024
+[    3.893432] nvme-apple 45dcc0000.nvme: RTKit: syslog message: gc.c:9348: Stopping GC rebuild
+[    4.082282] scsi 0:0:0:0: Direct-Access     SanDisk  Extreme Pro DDE1 0010 PQ: 0 ANSI: 6
+[    4.103547] sd 0:0:0:0: [sda] 1953525168 512-byte logical blocks: (1.00 TB/932 GiB)
+[    4.116512] sd 0:0:0:0: [sda] Write Protect is off
+[    4.117916] sd 0:0:0:0: [sda] Mode Sense: 3d 00 10 00
+[    4.118023] scsi 0:0:0:1: Enclosure         SanDisk  SES Device       0010 PQ: 0 ANSI: 6
+[    4.136523] sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, supports DPO and FUA
+[    4.190488]  sda: sda1
+[    4.191422] sd 0:0:0:0: [sda] Attached SCSI disk

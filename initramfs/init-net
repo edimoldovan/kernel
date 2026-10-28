@@ -38,6 +38,7 @@ R=/tmp/report
 	for d in /sys/bus/usb/devices/*-*; do
 		[ -f $d/speed ] && echo "--- usb $(basename $d): speed $(cat $d/speed) version $(cat $d/version) $(cat $d/manufacturer 2>/dev/null) $(cat $d/product 2>/dev/null)"
 	done
+	echo "--- partitions"; cat /proc/partitions; blkid /dev/nvme0n1* 2>&1
 	echo "--- blkid"; blkid /dev/sda /dev/sda1 2>&1
 	echo "--- read 2 GiB, direct I/O"; dd if=/dev/sda of=/dev/null bs=1M count=2048 iflag=direct 2>&1
 	echo "--- sha256 of the first 256 MiB, twice"
