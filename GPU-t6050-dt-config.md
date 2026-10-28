@@ -110,46 +110,45 @@ From `dt_set_gpu_t8140()` (the template), changed for T6050:
 - [ ] `relative_a` / `relative_b`, `sram_min_mv`: from the ADT.
 
 `REGISTER_WINDOWS` / `RESERVED_REGISTER_SLOTS`:
-- The firmware's MMIO register map, 18 windows (`hw/t8140.rs`). It is not an ADT
-  property (the macOS sgx node has only its two `reg` ranges, no window list) and
-  the sgx-relative offsets are not stored in the kernelcache (the AGX kext forms
-  them at runtime as sgx-base + offset). The asahi values were traced from macOS.
-- [x] 12 of 18 are sgx-relative: `phys - 0x4_8000_0000` (t8140 sgx) is in
-      `[0, 0x400_0000)`, and for those `unk_18` is that offset. They rebase to
-      the T6050 sgx base `0x23_0000_0000`. GPU-internal, same generation, so the
-      offsets carry over; all land inside the sgx window (size `0x3fdc000`), and
-      slot 26 (`+0xd04000`, ID_VERSION) was read live in the probe.
+- The firmware's MMIO register map (18 windows + 17 reserved slots in
+  `hw/t8140.rs`). It is not an ADT property (the macOS sgx node has only its two
+  `reg` ranges). The asahi values were traced from macOS.
+- Static extraction, done (`kernelcache.mac17j.bin`): the AGX kext holds one
+  register-table at file `0x153040` (`__PRELINK_TEXT`), 0x20-byte entries
+  (`+0x08` slot, `+0x0c` sgx offset or `0xffffffff`, `+0x10` size, `+0x18`
+  `0xdadadada` poison). It is the only such table in the kext (16 poison markers,
+  all here). It holds the GPU sgx-control group only, with **T6050-specific**
+  offsets, sizes and slot numbers — the rebase of t8140 is **not** safe:
 
-      | slot | T6050 phys       | size     | unk_18    | unk_20 |
-      |------|------------------|----------|-----------|--------|
-      | 17   | `0x23_0000_0000` | `0x21400`| 0         | 2 |
-      | 22   | `0x23_0100_0000` | `0x8000` | 0         | 2 |
-      | 26   | `0x23_00d0_4000` | `0x8000` | `0xd04000`| 2 |
-      | 27   | `0x23_00d0_d000` | `0x1000` | `0xd0d000`| 2 |
-      | 28   | `0x23_00d5_8000` | `0x8000` | `0xd58000`| 2 |
-      | 29   | `0x23_00d1_0000` | `0x4000` | `0xd10000`| 2 |
-      | 31   | `0x23_00d4_0000` | `0x4000` | `0xd40000`| 2 |
-      | 32   | `0x23_00d6_0000` | `0x4000` | `0xd60000`| 2 |
-      | 35   | `0x23_00e0_0000` | `0x4000` | `0xe00000`| 2 |
-      | 39   | `0x23_00e0_8000` | `0x8000` | 0         | 2 |
-      | 40   | `0x23_00e1_c000` | `0x4000` | `0xe1c000`| 2 |
-      | 41   | `0x23_00e1_f800` | `0x4000` | 0         | 2 |
+      | slot  | sgx offset | size     | T6050 phys       | vs t8140 |
+      |-------|------------|----------|------------------|----------|
+      | 0x1f  | `0xd04000` | `0x8000` | `0x23_00d0_4000` | same off |
+      | 0x22  | `0xd10000` | `0x4000` | `0x23_00d1_0000` | same off |
+      | 0x24  | `0xd40000` | `0x4000` | `0x23_00d4_0000` | same off |
+      | 0x26  | `0xd44000` | `0x4000` | `0x23_00d4_4000` | NEW |
+      | 0x27  | `0xd4c000` | `0x200`  | `0x23_00d4_c000` | NEW |
+      | 0x21  | `0xd50000` | `0x10000`| `0x23_00d5_0000` | NEW |
+      | 0x25  | `0xd60000` | `0x20000`| `0x23_00d6_0000` | off same, size 0x20000 (t8140 0x4000) |
+      | 0x28  | `0xe00000` | `0x4000` | `0x23_00e0_0000` | same off |
+      | 0x2a  | `0xe40000` | `0x4000` | `0x23_00e4_0000` | NEW |
+      | 0x30  | `0xe60000` | `0x58`   | `0x23_00e6_0000` | NEW |
 
-      The aperture offset (`va`) and `size` are unchanged from t8140.
-- [ ] 6 windows are other SoC blocks (not sgx-relative), t8140:
-      slot 0 `0x3_0101_4000`, 3 `0x2_2010_4000`, 9 `0x3_003d_0000`,
-      10 `0x3_003c_0000`, 12 `0x4_0165_c000`, 14 `0x3_0028_0000`. These are
-      fabric / PMGR / MCC blocks around the GPU (the sgx node names an MCC via
-      `function-mcc_dataset` -> `/arm-io/mcc`; PMGR holds clock/power-gates
-      614/615/616). Their T6050 addresses differ and are not derivable by rebase.
-- [ ] Get all 18 definitively by tracing macOS GPU init under the m1n1
-      hypervisor (`hv.trace_range` on the sgx/gfx MMIO during AGXG17X startup) —
-      the method the asahi values came from. This also confirms the 12 above and
-      the window sizes. The AGX register-map builder is near kernelcache offset
-      `0x151000` (it references the sgx offsets `0xd04000`, `0xd40000`,
-      `0xd60000`), if a static extraction is preferred over a trace.
-- `RESERVED_REGISTER_SLOTS` (t8140: 17 slots): re-derive from the T6050 trace;
-  the slot numbering may differ.
+      Reserved slots in this table: `0x12, 0x13, 0x14, 0x15, 0x18`
+      (`off = 0xffffffff`). t8140 sgx offsets absent on T6050:
+      `0xd0d000, 0xd58000, 0xe08000, 0xe1c000, 0xe1f800`. So both the slot
+      numbering and the offset/size set differ from t8140; do not carry t8140's
+      `REGISTER_WINDOWS` over.
+- Not in any static table (so not statically recoverable): the sgx base window
+  (`+0`) and the `+0x1000000` window, the low slots (`0..0x11`), and the 6
+  non-sgx external blocks (fabric / PMGR / MCC — the sgx node names an MCC via
+  `function-mcc_dataset` -> `/arm-io/mcc`; PMGR holds clock/power-gates
+  614/615/616). The kext resolves those at runtime from other ADT nodes.
+- [ ] **Conclusion: an hv MMIO trace is required** for the complete, correct map.
+      Trace macOS GPU init under the m1n1 hypervisor (`hv.trace_range` on the
+      sgx/gfx MMIO during AGXG17X startup) — the method the asahi values came
+      from. The table above gives the sgx-control group to cross-check the trace;
+      the trace supplies the external windows, the base windows and the final
+      slot numbering.
 
 `kernel_window` / `dynamic` / `low` (GPU-VA layout):
 - [ ] Likely unchanged from t8140 (same firmware generation); confirm the g17c
@@ -163,7 +162,8 @@ From `dt_set_gpu_t8140()` (the template), changed for T6050:
 - [ ] Device-tree node committed to `t6050*.dtsi` (+ `ps_gfx` always-on, OPP
       placeholders, reserved-memory).
 - [ ] `dt_set_gpu_t6050()` in m1n1 (14 states, 4 SRAM tables, regions).
-- [~] `hw/t6050.rs` register windows: 12 of 18 rebased (above); 6 non-sgx and
-      the slot reservations need a macOS MMIO trace.
+- [~] `hw/t6050.rs` register windows: the sgx-control group recovered from the
+      kext (above, T6050-specific, rebase shown unsafe); the base windows, low
+      slots and 6 external blocks need a macOS MMIO trace.
 - [ ] `hw/t6050.rs`: perf tables, fixed buffers; `apple,agx-t6050` in the OF table.
 - [ ] `CONFIG_DRM_ASAHI` + the G17 path in `j714c.config`.
