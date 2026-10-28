@@ -1,0 +1,223 @@
+TTY> Initialized dockchannel UART channel 1 at 0x288e38000
+TTY> Device info:
+TTY>   Model: Mac17,7
+TTY>   Target: J714c
+TTY>   Board-ID: 0xa
+TTY>   Chip-ID: 0x6050
+TTY> 
+TTY> CPU init (MIDR: 0x611f0681 smp_id:0x0)...
+TTY>   CPU part: 0x68 rev: 0x11
+TTY>   CPU: M5 Max Sotra C (M core)
+TTY> 
+TTY> boot_args at 0x10005570000
+TTY>   revision:     3
+TTY>   version:      2
+TTY>   virt_base:    0x9df0000
+TTY>   phys_base:    0x10003df0000
+TTY>   mem_size:     0x1fc6610000
+TTY>   top_of_kdata: 0x10007bf8000
+TTY>   video:
+TTY>     base:       0x11fd310c000
+TTY>     display:    0x1
+TTY>     stride:     0x2f40
+TTY>     width:      3024
+TTY>     height:     1964
+TTY>     depth:      30bpp
+TTY>     density:    1
+TTY>   machine_type: 0
+TTY>   devtree:      0xa894000
+TTY>   devtree_size: 0xbc000
+TTY>   cmdline:      
+TTY>   boot_flags:   0x0
+TTY>   mem_size_act: 0x2000000000
+TTY> 
+TTY> 
+TTY> 
+TTY> m1n1 4849f761-dirty
+TTY> Copyright The Asahi Linux Contributors
+TTY> Licensed under the MIT license
+TTY> 
+TTY> Running in EL2
+TTY> 
+TTY> OS FW version: unknown (mBoot-20457.41.3)
+TTY> System FW version: unknown (mBoot-20457.41.3)
+TTY> Heap base: 0x10007bf8000
+TTY> MCC: Unsupported version:mcc,t6050
+TTY> MMU: Initializing...
+TTY> MMU: RAM base: 0x10000000000
+TTY> MMU: Top of normal RAM: 0x11fca400000
+TTY> MMU: Adding Device-nGnRE mapping at 0xbc0000000 (0x20000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0xb80000000 (0x40000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1cb0000000 (0x1c000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1800000000 (0x400000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1700000000 (0x100000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1c40000000 (0x4000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x800000000 (0x200000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0xa00000000 (0x80000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1c50000000 (0x4000)
+TTY> MMU: Adding Device-nGnRE mapping at 0xc00000000 (0x200000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0xe00000000 (0x80000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1c60000000 (0x4000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1000000000 (0x200000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1200000000 (0x80000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1c70000000 (0x4000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1400000000 (0x200000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1600000000 (0x80000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1c80000000 (0x4000)
+TTY> MMU: SCTLR_EL1: 30900180 -> 30901085
+TTY> MMU: running with MMU and caches enabled!
+TTY> AIC: Version 3 @ 0x280400000
+TTY> AIC: AIC3 with 1/4 dies, 3104/4096 IRQs, reg_size:40004, config:10000, extintrcfg_stride:04a00, intmaskset_stride:04a00, intmaskclear_stride:04a00
+TTY> AIC: Configuring 1 external interrupts
+TTY> Primary WDT register @ 0x28836c000
+TTY> Primary WDT disabled
+TTY> Secondary WDT register @ 0x288330008
+TTY> Secondary WDT disabled
+TTY> pmgr: Cleaning up device states...
+TTY> pmgr: initialized, 661 devices on 1 dies found.
+TTY> display: Display is internal
+TTY> display: Display is already initialized (3024x1964)
+TTY> fb init: 3024x1964 (30) [s=3024] @0x11fd310c000
+TTY> fb console: max rows 57, max cols 78
+TTY> fb: display logo
+TTY> Initialization complete.
+TTY> Checking for payloads...
+TTY> Devicetree compatible value: apple,j714c
+TTY> No more payloads at 0x10004de4000
+TTY> No valid payload found
+TTY> dart: dart /arm-io/dart-usb0 at 0x2a2f80000 is a t8110
+TTY> USB0: initialized at 0x10007bfc080
+TTY> dart: dart /arm-io/dart-usb1 at 0x2aaf80000 is a t8110
+TTY> USB1: initialized at 0x10007bfc630
+TTY> dart: dart /arm-io/dart-usb2 at 0x382f80000 is a t8110
+TTY> USB2: initialized at 0x10007bfcbb0
+TTY> Running proxy...
+TTY> Heap limit: 0x10012238000 (128 MiB)
+m1n1 base: 0x100049c4000
+Fetching ADT (0x000BC000 bytes)...
+Setting boot args: "maxcpus=1 console=tty0 fbcon=font:TER16x32 t6050_wdt=170 t6050_peek=0x2a2280420,0x2a2280024,0x382280420,0x382280024 dyndbg="file drivers/usb/host/xhci-hub.c +p""
+Loading 6477426 bytes to 0x10012348240..0x100129758b2...
+.......................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................................
+Loading DTB to 0x100129758c0...
+Kernel_base: 0x10012a00000
+Loading 2302473 initramfs bytes to 0x10032a00000...
+..........................................................................................................................................................................................................................................................................................
+TTY> cpufreq: Initializing clusters
+TTY> Starting secondary CPUs...
+TTY> SMP: RVBAR 0x100049c4000 differs from vector 0x100049d4000; refusing start
+TTY> SMP: boot CPU RVBAR check failed
+smp_start_secondaries failed (ProxyRemoteError); continuing with the boot CPU only
+TTY> isp: disabled: revision 0x0 firmware unknown aligned end 0x0: unsupported SoC
+TTY> FDT: retained heap [0x10004de4000, 0x1000a264000)
+TTY> FDT: set chosen.bootargs
+TTY> FDT: initrd at 0x10032a00000 size 0x232209
+TTY> display: Hiding notch, 3024x1964 -> 3024x1890 (+74, 16:10)
+TTY> FDT: framebuffer@11fd31e6880 base 0x11fd31e6880 size 0x15cd680
+TTY> FDT: apfs-preboot-uuid = '3A31C7DB-DE69-4370-9CEA-23DEAAE16158'
+TTY> SEP: Preserving iBoot warm registration; seeding RNG from ADT
+TTY> ADT: 256 bytes of random seed available
+TTY> FDT: KASLR seed initialized
+TTY> FDT: Passing 256 bytes of random seed
+TTY> FDT: appending to bootargs: idle=nop arm64.nowfxt
+TTY> FDT: reporting device serial number: V5DP2WQH52
+TTY> FDT: CPU 1 is not alive, disabling...
+TTY> FDT: CPU 2 is not alive, disabling...
+TTY> FDT: CPU 3 is not alive, disabling...
+TTY> FDT: CPU 4 is not alive, disabling...
+TTY> FDT: CPU 5 is not alive, disabling...
+TTY> FDT: CPU 6 is not alive, disabling...
+TTY> FDT: CPU 7 is not alive, disabling...
+TTY> FDT: CPU 8 is not alive, disabling...
+TTY> FDT: CPU 9 is not alive, disabling...
+TTY> FDT: CPU 10 is not alive, disabling...
+TTY> FDT: CPU 11 is not alive, disabling...
+TTY> FDT: CPU 12 is not alive, disabling...
+TTY> FDT: CPU 13 is not alive, disabling...
+TTY> FDT: CPU 14 is not alive, disabling...
+TTY> FDT: CPU 15 is not alive, disabling...
+TTY> FDT: CPU 16 is not alive, disabling...
+TTY> FDT: CPU 17 is not alive, disabling...
+TTY> FDT: Failed to find AIC affinities node, ignoring...
+TTY> FDT: Pruning /cpus/cpu-map/cluster0/core1
+TTY> FDT: Pruning /cpus/cpu-map/cluster0/core2
+TTY> FDT: Pruning /cpus/cpu-map/cluster0/core3
+TTY> FDT: Pruning /cpus/cpu-map/cluster0/core4
+TTY> FDT: Pruning /cpus/cpu-map/cluster0/core5
+TTY> FDT: Pruning /cpus/cpu-map/cluster1/core0
+TTY> FDT: Pruning /cpus/cpu-map/cluster1/core1
+TTY> FDT: Pruning /cpus/cpu-map/cluster1/core2
+TTY> FDT: Pruning /cpus/cpu-map/cluster1/core3
+TTY> FDT: Pruning /cpus/cpu-map/cluster1/core4
+TTY> FDT: Pruning /cpus/cpu-map/cluster1/core5
+TTY> FDT: Pruning /cpus/cpu-map/cluster1
+TTY> FDT: Pruning /cpus/cpu-map/cluster2/core0
+TTY> FDT: Pruning /cpus/cpu-map/cluster2/core1
+TTY> FDT: Pruning /cpus/cpu-map/cluster2/core2
+TTY> FDT: Pruning /cpus/cpu-map/cluster2/core3
+TTY> FDT: Pruning /cpus/cpu-map/cluster2/core4
+TTY> FDT: Pruning /cpus/cpu-map/cluster2/core5
+TTY> FDT: Pruning /cpus/cpu-map/cluster2
+TTY> ADT: /arm-io/wlan not found
+TTY> FDT: Unable to find alias atcphy0
+TTY> FDT: Unable to find alias atcphy1
+TTY> FDT: Unable to find alias atcphy2
+TTY> FDT: Unable to find alias atcphy3
+TTY> FDT: Unable to find alias atcphy4
+TTY> FDT: Unable to find alias atcphy5
+TTY> FDT: Unable to find alias atcphy6
+TTY> FDT: Unable to find alias atcphy7
+TTY> FDT: Unable to find alias usb4-0-acio
+TTY> FDT: Unable to find alias usb4-0-pcie-adapter
+TTY> FDT: Unable to find alias usb4-0-nhi
+TTY> FDT: Unable to find alias usb4-0-nhi
+TTY> FDT: Unable to find alias usb4-1-acio
+TTY> FDT: Unable to find alias usb4-1-pcie-adapter
+TTY> FDT: Unable to find alias usb4-1-nhi
+TTY> FDT: Unable to find alias usb4-1-nhi
+TTY> FDT: Unable to find alias usb4-2-acio
+TTY> FDT: Unable to find alias usb4-2-pcie-adapter
+TTY> FDT: Unable to find alias usb4-2-nhi
+TTY> FDT: Unable to find alias usb4-2-nhi
+TTY> FDT: Unable to find alias usb4_0_pcie
+TTY> FDT: Unable to find alias usb4_1_pcie
+TTY> FDT: Unable to find alias usb4_2_pcie
+TTY> FDT: unknown compatible, skip display reserved-memory setup
+TTY> FDT: GPU: Initializing GPU info
+TTY> ADT: GPU: unsupported chip!
+TTY> FDT: sep alias not found in devtree
+TTY> FDT: pmp not found in devtree
+TTY> ADT: nvram partition not found
+TTY> FDT: 'isp' not found
+TTY> FDT: 'isp' not found
+TTY> FDT: DRAM at 0x10000000000 size 0x2000000000
+TTY> FDT: Usable memory is 0x10003df0000..0x11fca3f8000 (0x1fc6608000)
+TTY> FDT: Adding reserved-memory node flash@11fca3fc000 (11fca3fc000..11fca400000) to RAM map
+TTY> FDT prepared at 0x1000a238000
+Uncompressing gz ...
+17545224
+Decompress OK...
+Ready to boot
+DAIF: c0
+TTY> mca-switch node not found!
+TTY> pcie: Error getting node /arm-io/apcie
+TTY> pcie: Unsupported compatible
+TTY> pcie: Error getting node /arm-io/apcie-ge0
+TTY> pcie: Error getting node /arm-io/apcie-ge1
+TTY> dapf: /arm-io/dart-mtp uses dapf-instance-0
+TTY> dapf: Initialized /arm-io/dart-mtp
+TTY> kboot: MTP DAPF programmed on T6050
+TTY> Setting SMP mode to WFE...
+TTY> Preparing to boot kernel at 0x10012a00000 with fdt at 0x1000a238000
+Traceback (most recent call last):
+  File "/home/ed/dev/omarchy/forks/omacom-m1n1/proxyclient/tools/linux.py", line 171, in <module>
+    iface.ttymode(tty_dev)
+    ~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/ed/dev/omarchy/forks/omacom-m1n1/proxyclient/m1n1/proxy.py", line 244, in ttymode
+    term = Miniterm(dev, eol='cr')
+  File "/home/ed/dev/omarchy/forks/omacom-m1n1/.venv/lib/python3.14/site-packages/serial/tools/miniterm.py", line 395, in __init__
+    self.console = Console()
+                   ~~~~~~~^^
+  File "/home/ed/dev/omarchy/forks/omacom-m1n1/.venv/lib/python3.14/site-packages/serial/tools/miniterm.py", line 198, in __init__
+    self.old = termios.tcgetattr(self.fd)
+               ~~~~~~~~~~~~~~~~~^^^^^^^^^
+termios.error: (25, 'Inappropriate ioctl for device')

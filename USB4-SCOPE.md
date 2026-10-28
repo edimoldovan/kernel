@@ -153,3 +153,37 @@ steps, 0x20000, 0x28000, 0x28400, 0x29000, 0x40000 (0x20000), 0xc0000
 
 Next: the tunable-to-window map and the PHY bring-up sequence from the macOS
 driver (`AppleT6050TypeCPhy`, in the kernelcache).
+
+## What to disassemble in AppleT6050TypeCPhy (targeting the SuperSpeed gap)
+
+The kext has ~150 methods, but only a handful decide our open questions. Names
+are from the kernelcache symbol table (`kernelcache.mac17j.bin`).
+
+### Tier 1 - needed for USB3 SuperSpeed (and to finish the m1n1 tunable table)
+- `applyTunables` / `aciophy_apply_tunables` and the group appliers
+  `aciophy_apply_usb_tunables`, `aciophy_apply_cio_tunables` - these show which
+  register window + base each tunable group is written to. This RESOLVES the
+  three tunables the m1n1 table left out (ATC0AXI2AF_LIOA, RX_CFG_TX_OF_RXCLK,
+  ATC_COMMON_CFG) and confirms the AUSPLL/CIO4PLL/fabric bases.
+- `start` - maps the device-memory windows; gives the window-index -> ADT-reg
+  mapping so every offset above is absolute and correct.
+- `aciophy_phy_init` + `aciophy_phy_init_partA/B/C` - the SuperSpeed bring-up
+  sequence itself (PLL enable, lock poll, ordering). This is the CIO4PLL
+  sequence atc.c does not have.
+- `aciophy_cmn_init` - common block (AUS40CMN) bring-up.
+- `adjust_lane_mode` + `aciophy_xbar_config` - lane mode + crossbar for USB3.
+- `overrideUSBControllerSignals` - the dwc3<->PHY pipe handshake (un-dummy the
+  SS pipe; the pipehandler equivalent).
+- base-class register helpers (rmw32 / poll) - to read the read/modify/write
+  and poll templates the above use.
+
+### Tier 2 - only for USB4 / Thunderbolt
+- `runFirmware` + `aciophy_assert_fw_reset` / `aciophy_deassert_fw_reset` +
+  `aciophy_uc_idle` - the CIO80 microcontroller / mailbox (firmware load).
+- `aciophy_apply_cio80_tunables` - CIO80-specific tunables.
+- `cioClientSetACIO` - CIO lane ownership.
+
+### Skip (not USB)
+All `aciophy_dptx_*`, `aciophy_dp_tunneling_*`, `initDPTX`, `initAUX`,
+`aciophy_aux_*` (DisplayPort/AUX) and every `aciophy_s2r_*`, `saveS2RState`,
+`loadS2RSave*`, `*_s2r_*` (suspend-to-RAM). Roughly two-thirds of the methods.

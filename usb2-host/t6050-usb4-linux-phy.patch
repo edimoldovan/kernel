@@ -1,0 +1,45 @@
+T6050: wire the SuperSpeed PHY into Linux - region windows + optional lpdptx.
+
+The T6050 PHY register layout does not fit the driver's 5-region model as the
+committed device tree assumed. The tunables target the 0x2a0000000 window (not
+0x2a2800000) for AXI2AF, and FABRIC/COMMON_CFG sit above the old 0x4c000 "core"
+span. This repoints "axi2af" to 0x2a0000000 and extends "core" to 0x254000;
+that core span would overlap "lpdptx" (0x2a3050000), so lpdptx is dropped for
+the USB-only port and the driver is taught to treat it as optional. DisplayPort
+is not wired here. Pairs with the m1n1 tunable-table patch.
+
+Apply from the linux-aurora root:  git apply <this file>
+
+--- a/drivers/phy/apple/atc.c
++++ b/drivers/phy/apple/atc.c
+@@ -5170,7 +5170,8 @@
+ 
+ 	for (int i = 0; i < ARRAY_SIZE(resources); i++) {
+ 		res = platform_get_resource_byname(pdev, IORESOURCE_MEM, resources[i].name);
+-		if (!res && atcphy->dp_only && i)
++		/* lpdptx (index 1) is DisplayPort-only; absent on a USB-only T6050 port */
++		if (!res && (i == 1 || (atcphy->dp_only && i)))
+ 			continue;
+ 		addr = devm_ioremap_resource(&pdev->dev, res);
+ 		if (IS_ERR(addr))
+--- a/arch/arm64/boot/dts/apple/t6050-j714c-usb.dtsi
++++ b/arch/arm64/boot/dts/apple/t6050-j714c-usb.dtsi
+@@ -114,12 +114,14 @@
+ 
+ 	atcphy0: phy@2a3000000 {
+ 		compatible = "apple,t6050-atcphy", "apple,t8142-atcphy";
+-		reg = <0x2 0xa3000000 0x0 0x4c000>,
+-		      <0x2 0xa3050000 0x0 0x8000>,
+-		      <0x2 0xa2800000 0x0 0x8000>,
++		/* T6050: core extended to 0x254000 to cover FABRIC (+0x244000) and
++		 * COMMON_CFG (+0x250000); axi2af is the 0x2a0000000 window (AXI2AF +
++		 * LIOA); lpdptx dropped - DisplayPort is not wired for USB bring-up. */
++		reg = <0x2 0xa3000000 0x0 0x254000>,
++		      <0x2 0xa0000000 0x0 0x28000>,
+ 		      <0x2 0xa2a90000 0x0 0x4000>,
+ 		      <0x2 0xa2a84000 0x0 0x4000>;
+-		reg-names = "core", "lpdptx", "axi2af", "usb2phy", "pipehandler";
++		reg-names = "core", "axi2af", "usb2phy", "pipehandler";
+ 		#phy-cells = <1>;
+ 		#reset-cells = <0>;
+ 		orientation-switch;

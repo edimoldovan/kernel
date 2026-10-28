@@ -1,0 +1,197 @@
+T6050 atc-phy0 tunable register map - authoritative, from AppleT6050TypeCPhy + ADT
+tunable -> window idx -> absolute base (core=0x2a3000000); then (abs_reg mask value) triples
+
+tunable_USB2PHY_DFLT: idx 0 base 0x2a2a90000 (ABS 0x2a2a90000 (outside linux core!)) - 2 triples
+    reg 0x002a2a90008  mask 0x00007003  val 0x00000003
+    reg 0x002a2a90018  mask 0x00000703  val 0x00000103
+tunable_USB2PHY_HOST: idx 0 base 0x2a2a90000 (ABS 0x2a2a90000 (outside linux core!)) - 1 triples
+    reg 0x002a2a90008  mask 0x00007003  val 0x00007003
+tunable_USB2PHY_DEV: idx 0 base 0x2a2a90000 (ABS 0x2a2a90000 (outside linux core!)) - 1 triples
+    reg 0x002a2a90008  mask 0x00007003  val 0x00000003
+tunable_ATC0AXI2AF: idx 41 base 0x2a0000000 (ABS 0x2a0000000 (outside linux core!)) - 75 triples
+    reg 0x002a0000000  mask 0x800000ff  val 0x80000024
+    reg 0x002a0000004  mask 0x80ff00ff  val 0x80240002
+    reg 0x002a0000008  mask 0x80ff00ff  val 0x80240002
+    reg 0x002a000000c  mask 0x80ff00ff  val 0x80240006
+    reg 0x002a0000010  mask 0x80ff00ff  val 0x80240002
+    reg 0x002a0000014  mask 0x80ff00ff  val 0x80220004
+    reg 0x002a0000018  mask 0x80ff00ff  val 0x80240002
+    reg 0x002a000001c  mask 0x80ff00ff  val 0x80240002
+    reg 0x002a0000020  mask 0x80ff00ff  val 0x80240002
+    reg 0x002a0000024  mask 0x800000ff  val 0x8000001b
+    reg 0x002a0000028  mask 0x800000ff  val 0x80000048
+    reg 0x002a000002c  mask 0x80ff00ff  val 0x80480004
+    reg 0x002a0000030  mask 0x80ff00ff  val 0x80480004
+    reg 0x002a0000034  mask 0x80ff00ff  val 0x80440008
+    reg 0x002a0000038  mask 0x80ff00ff  val 0x80480004
+    reg 0x002a000003c  mask 0x80ff00ff  val 0x80480004
+    reg 0x002a0000040  mask 0x800000ff  val 0x8000001b
+    reg 0x002a0000044  mask 0x800000ff  val 0x8000001b
+    reg 0x002a0000048  mask 0x800000ff  val 0x8000001e
+    reg 0x002a0000100  mask 0x000000ff  val 0x000000ff
+    reg 0x002a0000104  mask 0x00000003  val 0x00000003
+    reg 0x002a0000300  mask 0x00000003  val 0x00000001
+    reg 0x002a0000304  mask 0x3f3f0000  val 0x04040000
+    reg 0x002a0000308  mask 0x000003ff  val 0x0000000d
+    reg 0x002a000030c  mask 0x700003ff  val 0x0000000c
+    reg 0x002a0000310  mask 0x0080001f  val 0x00800001
+    reg 0x002a0000314  mask 0x8080001f  val 0x80800001
+    reg 0x002a0000318  mask 0x0080001f  val 0x00800001
+    reg 0x002a000031c  mask 0x8080001f  val 0x80800001
+    reg 0x002a0000320  mask 0x0080001f  val 0x00800003
+    reg 0x002a0000324  mask 0x8080001f  val 0x80800003
+    reg 0x002a0000328  mask 0x0080001f  val 0x00800003
+    reg 0x002a000032c  mask 0x8080001f  val 0x80800003
+    reg 0x002a0000330  mask 0x0080001f  val 0x00800003
+    reg 0x002a0000334  mask 0x8080001f  val 0x80800003
+    reg 0x002a0000338  mask 0x0080001f  val 0x00800003
+    reg 0x002a000033c  mask 0x0080001f  val 0x00800003
+    reg 0x002a0000340  mask 0x0080001f  val 0x00800003
+    reg 0x002a0000344  mask 0x0080001f  val 0x00800003
+    reg 0x002a0000348  mask 0x0080001f  val 0x00800003
+    reg 0x002a000034c  mask 0x0080001f  val 0x00800003
+    reg 0x002a0000350  mask 0x0080001f  val 0x00800003
+    reg 0x002a0000404  mask 0xffff0023  val 0x001e0021
+    reg 0x002a0000408  mask 0x000003ff  val 0x0000000d
+    reg 0x002a000040c  mask 0x700003ff  val 0x0000000c
+    reg 0x002a0000410  mask 0x8000001f  val 0x80000001
+    reg 0x002a0000414  mask 0x8000001f  val 0x80000001
+    reg 0x002a0000418  mask 0x8000001f  val 0x80000001
+    reg 0x002a000041c  mask 0x8000001f  val 0x80000001
+    reg 0x002a0000420  mask 0x8000001f  val 0x80000003
+    reg 0x002a0000424  mask 0x8000001f  val 0x80000003
+    reg 0x002a0000428  mask 0x8000001f  val 0x80000003
+    reg 0x002a000042c  mask 0x8000001f  val 0x80000003
+    reg 0x002a0000430  mask 0x8000001f  val 0x80000003
+    reg 0x002a0000434  mask 0x8000001f  val 0x80000003
+    reg 0x002a0000438  mask 0x8000001f  val 0x80000003
+    reg 0x002a000043c  mask 0x8000001f  val 0x80000003
+    reg 0x002a0000440  mask 0x8000001f  val 0x80000003
+    reg 0x002a0000444  mask 0x8000001f  val 0x80000003
+    reg 0x002a0000448  mask 0x8000001f  val 0x80000003
+    reg 0x002a000044c  mask 0x8000001f  val 0x80000003
+    reg 0x002a0000450  mask 0x8000001f  val 0x80000003
+    reg 0x002a0000948  mask 0x07ff07ff  val 0x00280000
+    reg 0x002a0000a48  mask 0x07ff07ff  val 0x00400040
+    reg 0x002a0000b48  mask 0x07ff07ff  val 0x00b8010e
+    reg 0x002a0000c48  mask 0x07ff07ff  val 0x00400020
+    reg 0x002a0000d48  mask 0x07ff07ff  val 0x008a008a
+    reg 0x002a0001000  mask 0xffffffff  val 0x7fffffff
+    reg 0x002a0001004  mask 0x00000100  val 0x00000100
+    reg 0x002a0004008  mask 0x00000001  val 0x00000001
+    reg 0x002a000400c  mask 0x00000001  val 0x00000001
+    reg 0x002a0004014  mask 0x00000001  val 0x00000001
+    reg 0x002a0004018  mask 0x00000001  val 0x00000000
+    reg 0x002a000401c  mask 0x00000001  val 0x00000001
+    reg 0x002a0000108  mask 0xffff0007  val 0x00100001
+tunable_ATC0AXI2AF_LIOA: idx 42 base 0x2a0020000 (ABS 0x2a0020000 (outside linux core!)) - 5 triples
+    reg 0x002a0020028  mask 0x0000fc2f  val 0x00000000
+    reg 0x002a002002c  mask 0x00000007  val 0x00000000
+    reg 0x002a0020030  mask 0x000000ff  val 0x00000000
+    reg 0x002a0020034  mask 0x000003ff  val 0x00000000
+    reg 0x002a0020058  mask 0x0000030b  val 0x00000000
+tunable_ATC_FABRIC: idx 40 base 0x2a3244000 (ABS 0x2a3244000 (outside linux core!)) - 65 triples
+    reg 0x002a3244004  mask 0x003f003f  val 0x00200020
+    reg 0x002a324400c  mask 0x000000f1  val 0x000000a1
+    reg 0x002a3244010  mask 0x0000801f  val 0x00000004
+    reg 0x002a3244018  mask 0x003f003f  val 0x00200020
+    reg 0x002a3244020  mask 0x000000f1  val 0x000000a1
+    reg 0x002a3244024  mask 0x0000801f  val 0x00000004
+    reg 0x002a324402c  mask 0x00ff00ff  val 0x00960096
+    reg 0x002a3244034  mask 0x000000f1  val 0x00000071
+    reg 0x002a3244038  mask 0x0000801f  val 0x00000004
+    reg 0x002a3244040  mask 0x0000003f  val 0x00000020
+    reg 0x002a3244048  mask 0x0000801f  val 0x00000004
+    reg 0x002a3244050  mask 0x007f007f  val 0x00450045
+    reg 0x002a3244058  mask 0x0000801f  val 0x00000004
+    reg 0x002a3244060  mask 0x0000003f  val 0x00000020
+    reg 0x002a3244068  mask 0x0000801f  val 0x00000004
+    reg 0x002a3244070  mask 0x00000001  val 0x00000001
+    reg 0x002a3244074  mask 0x0000801f  val 0x00000004
+    reg 0x002a324407c  mask 0x007f007f  val 0x00400040
+    reg 0x002a3244080  mask 0x000000f1  val 0x00000011
+    reg 0x002a3244084  mask 0x00000001  val 0x00000001
+    reg 0x002a3244088  mask 0x00000001  val 0x00000001
+    reg 0x002a324408c  mask 0x0000801f  val 0x00000004
+    reg 0x002a3244094  mask 0x003f003f  val 0x00240024
+    reg 0x002a3244098  mask 0x000000f1  val 0x00000011
+    reg 0x002a324409c  mask 0x0000801f  val 0x00000004
+    reg 0x002a32440a4  mask 0x000001ff  val 0x000001e0
+    reg 0x002a32440a8  mask 0x0000801f  val 0x00000004
+    reg 0x002a32440b0  mask 0x0000003f  val 0x00000020
+    reg 0x002a32440b8  mask 0x0000801f  val 0x00000004
+    reg 0x002a32440c0  mask 0x0000003f  val 0x00000020
+    reg 0x002a32440c8  mask 0x0000801f  val 0x00000004
+    reg 0x002a32440d0  mask 0x001f001f  val 0x00100010
+    reg 0x002a32440d8  mask 0x00000001  val 0x00000001
+    reg 0x002a32440dc  mask 0x00000001  val 0x00000001
+    reg 0x002a32440e0  mask 0x0000801f  val 0x00000004
+    reg 0x002a32440e8  mask 0x0000000f  val 0x00000008
+    reg 0x002a32440ec  mask 0x0000801f  val 0x00000004
+    reg 0x002a32440f4  mask 0xffffffff  val 0x01010101
+    reg 0x002a32440f8  mask 0x0000801f  val 0x00000004
+    reg 0x002a3244100  mask 0x00000001  val 0x00000001
+    reg 0x002a3244104  mask 0x00000001  val 0x00000001
+    reg 0x002a3244108  mask 0x0000801f  val 0x00000004
+    reg 0x002a3244110  mask 0x0000801f  val 0x00000004
+    reg 0x002a3244118  mask 0x0000801f  val 0x00000004
+    reg 0x002a3244120  mask 0x00000001  val 0x00000001
+    reg 0x002a3244124  mask 0x00000001  val 0x00000001
+    reg 0x002a3244128  mask 0x0000801f  val 0x00000004
+    reg 0x002a3244130  mask 0xffffffff  val 0x01010101
+    reg 0x002a3244134  mask 0x0000801f  val 0x00000004
+    reg 0x002a324413c  mask 0x00000001  val 0x00000001
+    reg 0x002a3244140  mask 0x00000001  val 0x00000001
+    reg 0x002a3244144  mask 0x0000801f  val 0x00000004
+    reg 0x002a324414c  mask 0x00000001  val 0x00000001
+    reg 0x002a3244150  mask 0x00000001  val 0x00000001
+    reg 0x002a3244154  mask 0x0000801f  val 0x00000004
+    reg 0x002a324415c  mask 0x0000801f  val 0x00000004
+    reg 0x002a3244164  mask 0xffffffff  val 0x01010101
+    reg 0x002a3244168  mask 0x0000ffff  val 0x00000101
+    reg 0x002a324416c  mask 0x0000801f  val 0x00000004
+    reg 0x002a3244174  mask 0x00000001  val 0x00000001
+    reg 0x002a3244178  mask 0x00000001  val 0x00000001
+    reg 0x002a324417c  mask 0x0000801f  val 0x00000004
+    reg 0x002a3244184  mask 0x00000001  val 0x00000001
+    reg 0x002a3244188  mask 0x00000001  val 0x00000001
+    reg 0x002a324418c  mask 0x0000801f  val 0x00000004
+tunable_ATC_COMMON_CFG: idx 43 base 0x2a3250000 (ABS 0x2a3250000 (outside linux core!)) - 1 triples
+    reg 0x002a3250008  mask 0x00000001  val 0x00000001
+tunable_AUS40CMN_SHM: idx 5 base 0x2a3000a00 (core+0xa00) - 1 triples
+    reg 0x002a3000a04  mask 0x0000007c  val 0x00000054
+tunable_AUSPLL_CORE: idx 8 base 0x2a3003200 (core+0x3200) - 6 triples
+    reg 0x002a3003224  mask 0x00000c00  val 0x00000800
+    reg 0x002a3003230  mask 0x0000001f  val 0x0000000f
+    reg 0x002a3003240  mask 0x07d8007f  val 0x04000029
+    reg 0x002a30032b0  mask 0x0b800000  val 0x01800000
+    reg 0x002a30032e8  mask 0x00060001  val 0x00040001
+    reg 0x002a3003338  mask 0x0f800000  val 0x07800000
+tunable_CIO4PLL_CORE: idx 10 base 0x2a3003a00 (core+0x3a00) - 4 triples
+    reg 0x002a3003a30  mask 0x0000001f  val 0x0000000f
+    reg 0x002a3003a4c  mask 0x0000fe7f  val 0x00004e1e
+    reg 0x002a3003ab0  mask 0x00700000  val 0x00300000
+    reg 0x002a3003ae8  mask 0x00060000  val 0x00020000
+tunable_LN0_RX_TOP_CIO_DFLT: idx 16 base 0x2a3009000 (core+0x9000) - 1 triples
+    reg 0x002a300935c  mask 0x00000e00  val 0x00000200
+tunable_LN0_RX_EQ_DFLT: idx 18 base 0x2a300b000 (core+0xb000) - 3 triples
+    reg 0x002a300b698  mask 0x07e00000  val 0x04400000
+    reg 0x002a300b69c  mask 0x07e00000  val 0x03800000
+    reg 0x002a300b6a0  mask 0x07e00000  val 0x03800000
+tunable_LN0_RX_CFG_TX_OF_RXCLK: idx 20 base 0x2a300d000 (core+0xd000) - 4 triples
+    reg 0x002a300d094  mask 0x00080000  val 0x00080000
+    reg 0x002a300d098  mask 0x00080000  val 0x00080000
+    reg 0x002a300d0a4  mask 0x00800000  val 0x00800000
+    reg 0x002a300d0a8  mask 0x00200000  val 0x00200000
+tunable_LN1_RX_TOP_CIO_DFLT: idx 25 base 0x2a3019000 (core+0x19000) - 1 triples
+    reg 0x002a301935c  mask 0x00000e00  val 0x00000200
+tunable_LN1_RX_EQ_DFLT: idx 27 base 0x2a301b000 (core+0x1b000) - 3 triples
+    reg 0x002a301b698  mask 0x07e00000  val 0x04400000
+    reg 0x002a301b69c  mask 0x07e00000  val 0x03800000
+    reg 0x002a301b6a0  mask 0x07e00000  val 0x03800000
+tunable_LN1_RX_CFG_TX_OF_RXCLK: idx 29 base 0x2a301d000 (core+0x1d000) - 4 triples
+    reg 0x002a301d094  mask 0x00080000  val 0x00080000
+    reg 0x002a301d098  mask 0x00080000  val 0x00080000
+    reg 0x002a301d0a4  mask 0x00800000  val 0x00800000
+    reg 0x002a301d0a8  mask 0x00200000  val 0x00200000
+tunable_UC_REGS_CIO_DFLT: idx 3 base 0x2a3000400 (core+0x400) - 0 triples
