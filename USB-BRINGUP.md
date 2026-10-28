@@ -1348,3 +1348,222 @@ output the pipe3 clock -> the SS LTSSM never runs (GDBGLTSSM frozen) and nothing
 register-poking over the m1n1 proxy with current sources; needs the exact (not-in-these-sources)
 T8122/T6050 pipe-clock generation/handoff, or the full OS dwc3+xHCI+PHY+clock driver doing the
 dummy-pipe -> real-pipe handoff.
+
+## Controller side: tunables, TXDETRX lock, lock-ACK test (2026-10-28 09:30-09:44)
+
+Logs: `u3run-31..35` in the session scratchpad. Harness steps added: `ackprobe`, `tunread`,
+`tunapply`, `txdeton`.
+
+- PIPE lock ACK is not a clock probe. Before u3bist the ACK follows LOCK_REQ under every mux
+  value, clock OFF (0x00) included; after u3bist (xHCI R/S=1) it never sets, dummy mux (0x22)
+  included. It tracks the controller's run state, not the selected PIPE clock.
+- drd+0xc164 is writable: `tunable_DRD_USB31_GBL_DEFAULT` clears its bit 1 and the read-back
+  changes 0x9cc20026 -> 0x9cc20024. Port 2 reads the same 0x9cc20026. The "frozen GDBGLTSSM"
+  value is the reset/parked value of a register that is not a pure status readout; it is not
+  evidence about the pipe3 clock.
+- Controller tunables (usb-drd1, never applied before). Windows from
+  `AppleT8150USBXHCI::applyAllTunables` (vfunc +0xd78, slot = ADT reg index):
+  BULK_FABRIC reg[6], PIPE_HANDLER reg[3], PWR_CTRL reg[5], DRD_USB31_GBL/DBG slot 0
+  (read at the dwc3 globals, core+0xc100), DRD_USB31_CFG_HOST reg[1], LINK_REGS reg[7]
+  (core+0xd000), AUSBC_DEBUG reg[8]; DRD_CIO_REGS at the Apple glue core+0xcd00.
+  Ports 1 and 2 read identical values, and 19 of 22 entries differ from the tunables. Applying
+  them all on port 1 (after xhcirst) keeps the controller alive and USB2 working
+  (PORTSC0 0x206e1); SS unchanged (PORTSC1 0x2b0, PR=1, PLS=5).
+- `atcusbClkCfg` / `atcusbPipeClkCfg` maps (AppleT8150USBXDCI::start, provider reg 11/12) are
+  optional sleep-DDR registers; usb-drd1 has only reg[0..9]. Not a lead.
+- `AppleT8150USBXHCI::setUSB3Mode` (0xfffffe000b30502c) dummy -> USB3 order, register calls
+  vfunc +0xd10 read / +0xd20 write (map, offset, value):
+  1. PWR_CTRL (reg[5], 0x2aaa80000) +0x18 |= 1 (TXDETRX_LOCK_REQ)
+  2. PHY setPowerLevel (AppleTypeCPhy)
+  3. PIPE +0x4 &= ~0xe; +0x0 |= 1; +0x0 |= 4
+  4. PIPE +0x10 |= 1, wait +0x14 bit 0
+  5. wait PWR_CTRL +0x1c bit 0 (TXDETRX_LOCK_ACK)
+  6. PIPE +0x20 NATIVE_POWER_DOWN, +0x20 &= ~0x1000; +0xc clock off (&= ~0x70), PIPE_MODE,
+     clock on
+  7. PIPE +0x0 &= ~1, &= ~4; +0x10 &= ~1, wait +0x14 clear
+  8. PWR_CTRL +0x18 &= ~1, wait +0x1c clear
+- PWR_CTRL reads the same on ports 1 and 2 (+0x0 0x101, +0x20/+0x24 1, +0x28 0x101,
+  +0x2c/+0x30 0xffffffff, TXDETRX REQ/ACK 0).
+- Run 35 with the TXDETRX lock taken before the PHY bring-up: the TXDETRX ACK never sets
+  (at request time and again after the PIPE lock); release clears normally. SS unchanged.
+
+Open: what answers TXDETRX_LOCK_ACK. In macOS the PHY's setPowerLevel runs between the request
+and the wait, so the ACK most likely comes from the PHY side once it is in USB3 power level.
+
+## macOS PHY USB3 bring-up re-decoded: BIST bits wrong, PHY CPU firmware step missing (2026-10-28 ~10:30)
+
+Correction to all earlier call-sequence decodes: `vseq.py` read the AppleT6050TypeCPhy vtable
+from the `__ZTV` symbol, not the address point (`__ZTV` + 0x10), so every virtual call it named
+was two slots off. With the address point (`seq3.py` in the session scratchpad):
+
+- AppleTypeCPhyInterface::setPowerLevel -> AppleT6050TypeCPhy::usbClientSetACIO; "Powering On
+  ACIO" calls initACIO(mode 4) -> aciophy_phy_init(mode, flipped = orientation == 2):
+  partA(), partB(mode, flipped) = aciophy_apply_tunables + aciophy_xbar_config,
+  partC(mode, flipped).
+- partC, BIST block core+0x29000 (register helpers 0xfffffe0009f4063c read / ...064c write),
+  for mode 1 or 4:
+  1. +0x4 |= 0x1 (CLOCK_EN)
+  2. +0x10c: &= 0xe1efffff, |= 0x4000000 (PWR_DOWN_OV [28:25] = 2, bit 20 clear)
+  3. +0x4 |= 0x8, then &= ~0x8 (USB_EN = bit 3 of +0x4)
+  4. +0x110: &= ~0x660, |= 0x220
+  5. +0x4 USB_EN toggle
+  6. reg[39] (0x2ab200000) +0x8: bit 1 = flipped (CFG_S2R_USB_LN_SWAP); the harness used bit 2
+  7. wait 10; if mode != 3: wait 10, runFirmware(), wait 5000, poll core+0x260 bit 10
+     (ACIOPHY_TOP_BLK_UC_CTRL_REG.UC_TNBL_DONE), timeout 1 s
+  8. aciophy_phy_deassert_aciophy_reset
+  9. +0x10c |= 0x100000; +0x4 USB_EN toggle; poll +0x104 bit 8 clear (USBPHY_MAC_LN0_PHY_STATUS_2)
+  10. +0x10c PWR_DOWN_OV = 3 (&= 0xe1ffffff, |= 0x6000000); +0x4 USB_EN toggle; poll +0x104
+      bit 8 set, then clear
+  11. +0x110 &= ~0x660; +0x4 USB_EN toggle
+  The harness dance used CFG1 at +0x0 with USB_EN bit 2 and STATUS2 bit 7: it toggled the wrong
+  bits, and its status polls passed without the PHY answering.
+- runFirmware: reg[38] (0x2ab140000, MXWRAP) +0x40 |= 1 (MXWRAP_BLK_IDLE_CTRL; the "mgmt core
+  start" bit), wait 10, then the embedded CPU service (AppleTypeCPhyCIO80PhyMBI, ADT
+  `acio-phy-cpu` phandle 166 = `iop-aciophy1-nub`, `iop-nub,rtbuddy-v2`) method +0x818 (1, this);
+  "couldn't power up embedded CPU" on failure.
+- PHY CPU: ADT `acio-phy-cpu1`, `iop,mxwrap`, reg 0x2ab148000 (mailbox, ASC layout +0x8000) and
+  0x2ab140000 (MXWRAP); segments __TEXT core+0x40000, __DATA core+0xc0000; nub `pre-loaded = 1`,
+  `running = 1`, `user-power-managed`, `dont-power-on`. Linux drivers/thunderbolt/apple.c runs an
+  MxWrap CPU with CPU_CTRL +0x28 |= RUN (bit 4), then apple_rtkit_boot.
+- Live (port 1, after a u3bist run): core+0x260 = 0x881 (UC_TNBL_DONE clear), MXWRAP +0x28 = 0x2
+  (RUN clear), +0x40 = 0xa0003, +0x44 = 0x6c. Reading core+0x40000 (PHY CPU __TEXT) hung the SoC
+  (watchdog reset).
+- AppleT8150USBXHCI (host controller) does not map atcusbClkCfg/atcusbPipeClkCfg; only the device
+  driver does, as optional sleep registers.
+
+## Corrected dance live; PHY CPU does not answer (2026-10-28 10:50-10:55, runs 36-40)
+
+Harness: `MACBIST=1` runs the macOS partC dance above (BIST+0x4 CLOCK_EN/USB_EN b3, STATUS2 +0x104
+bit 8, OV1/OV2 values, reg[39]+0x8 bit 1 lane swap, UC_TNBL_DONE poll, reg[39] bit 4 release);
+`NORESET=1` holds reg[39] bit 4 until that point; `FWRUN=1` sets MxWrap +0x28 bit 4; `FWWAKE=1` /
+step `fwstart` run `phy_cpu_wake()` (MxWrap +0x40 bit 0, +0x28 bit 4, RTKit SetIOPPower 0x220 over
+the mailbox at MxWrap+0x8000 with m1n1 StandardASC); `MBOX=1` prints the mailbox state last.
+
+- Run 36 (MACBIST, NORESET): RCAL and AUSPLL lock time out with the PHY reset held. STATUS2
+  reads 0x104: bit 8 stays 1 through every USB_EN toggle (clear polls time out).
+- Run 37 (MACBIST, reset released early): RCAL done, PLL locked; STATUS2 still 0x104, bit 8
+  stuck at 1. UC_TNBL_DONE clear (core+0x260 0x881). SS unchanged (PORTSC1 0x2b0).
+  In PIPE terms the PHY holds PhyStatus high until PCLK is stable: first direct reading from
+  the PHY that its pipe clock does not come up.
+- Run 38 (+FWRUN): MxWrap ctrl 0x2 -> 0x12, status 0x6c unchanged, UC_TNBL_DONE clear;
+  mailbox INBOX_CTRL / OUTBOX_CTRL 0x20001 (enabled, empty).
+- Run 39 (`fwstart` after cio/tunables/wake/pllstart2): SetIOPPower 0x220 sent, inbox drained,
+  no reply in 3 s; MxWrap status 0x6c -> 0x48; UC_TNBL_DONE clear.
+- Run 40 (`fwstart` straight after reboot): the first MxWrap read (+0x40) faults (SYNC) and the
+  proxy hangs: the PHY CPU block is unpowered at handoff (reg[39] reads 0x4 there: clamped, both
+  sleep bits clear).
+- iBoot (`iBoot.j714c.RELEASE.bin`) has the `acio-phy-cpu%d/iop-aciophy%d-nub` property code and
+  image-type tags (`rkosftab`), no embedded PHY CPU image (no Mach-O inside). It loads the PHY
+  firmware from disk at boot. No local copy.
+
+## PHY CPU firmware boots over RTKit; UC_TNBL_DONE set; PhyStatus still high (2026-10-28 10:59-11:01, runs 41-44)
+
+macOS MxWrap driver (com.apple.driver.AppleA7IOP-MXWrap-v1): `AppleMxWrap::_runCPU` writes
++0x28 = 0x10 outright (not RMW; clears the bit 1 that reads 0x2 at rest); `_isIdle` = +0x44
+bit 1; mailbox inbox +0x800, outbox +0x830, control +0x110 (bit 16 full, 17 empty).
+`AppleMxWrapACIO::_runCPU` raises the `function-reconfig_req_interrupt` platform function instead,
+falling back to the generic write when the property is absent (it is absent on acio-phy-cpu1);
+`_apInitializesMailboxes` returns false.
+
+- Run 41: +0x28 = 0x10 -> the PHY CPU sends RTKit HELLO (version 12) at once and answers Ping
+  with Pong. The firmware iBoot loaded is still in place after m1n1 powers the PHY up.
+- Run 42 (`fwstart` = `phy_cpu_wake()`, m1n1 StandardASC handlers, no DART, physical buffers):
+  HELLO/ack, endpoint map 0x0, 0x1 (crashlog, buffer prealloc at 0x10007df0), 0x20, 0x21, 0x22;
+  AP power 0x20, IOP power 0x20; MxWrap status 0x16e. core+0x260 0x881 -> 0xc81:
+  UC_TNBL_DONE set for the first time.
+- Run 43 (full sequence, MACBIST + FWWAKE at the partC firmware point, PHY reset released at
+  power-on): firmware boots and UC_TNBL_DONE sets; it rewrites core+0x120 (0x155500f3 ->
+  0x155300f3) and core+0x6c (0x70000ea -> 0x70010ea). STATUS2 stays 0x104 (bit 8 high); SS
+  unchanged (PORTSC1 0x2b0).
+- Run 44 (as 43 with NORESET: PHY reset released after the firmware, the macOS order):
+  firmware boots, UC_TNBL_DONE sets, AUSPLL not locked (the harness PLL start runs before the
+  release), STATUS2 bit 8 high.
+
+Open: the macOS AUSPLL/common bring-up order relative to the reset release and the firmware
+(setDevicePowerState / setPhyMxwrapPowerState / partA-B), and whether the application endpoints
+0x20-0x22 (AppleTypeCPhyCIO80PhyMBI) take a mode message.
+
+## SUPERSPEED LINK UP on port 1: U0 at SuperSpeedPlus (10 Gbps) (2026-10-28 ~11:20, runs 45-52)
+
+Port 1 (left-front), USB3 stick, over the stage-1 proxy. Final PORTSC1 = 0x00021603: CCS 1,
+PED 1, PLS 0 (U0), speed 5 (SuperSpeedPlus, Gen 2). The USB2 port drops its connection at the
+same time (PORTSC0 0x206f1 -> 0x2202a0): the stick moved to SuperSpeed.
+
+Command (from forks/omacom-m1n1, after `usb3-usb4/mac_ctl.py`):
+```
+MACBIST=1 FWWAKE=1 NOPHYPWR=1 NORESET=1 NOLANES=1 HCRST_AFTER=1 MACORDER=1 MACXBAR=1 U2RESET=1 \
+  .venv/bin/python kernel/tools/t6050_phy_power_test.py \
+  xhcirst tunapply txdeton cio tunables tunx u3bist
+```
+What each piece contributed (each was tested on its own, runs 45-52):
+- `NOLANES` (macOS aciophy_slpctrl_init for mode 4: core+0xc &= ~0x2a, then the active lane's
+  override bits only; no tx/rx_powerup, no TX SHM clock writes - those are DisplayPort-only):
+  STATUS2 bit 8 (PhyStatus) finally drops (0x104 -> 0x84). The old lane block kept the PHY stuck.
+- `HCRST_AFTER`: xHCI reset with CIO on and the PIPE on USB3 now completes (HCRST and CNR
+  clear, glue kept); the SS warm reset completes (PORTSC1 0x2b0 -> 0x2802a0, WRC/PRC). The
+  controller runs on the USB3 PHY's PIPE clock.
+- `MACORDER` (PHY dance + firmware before the PIPE overrides/lock): the TXDETRX ack now sets
+  (0x1); the SS port starts clean (PORTSC1 0x2a0, PR 0).
+- `MACXBAR` (aciophy_xbar_config, mode 4): normal orientation = lane mode lane0 1 / lane1 2
+  (core+0x6c |= 0x44, clear bits 23/25), crossbar 0x110; flipped = 0x28 (clear 22/24), 0x111;
+  core+0x6c [1:0] = 2. The link trained with it (normal orientation); a U2RESET run without it
+  has not been done.
+- `U2RESET`: the stick had run USB2 since boot, so its SS side was in SS.Disabled with the
+  receiver terminations off. A USB2 port reset (PORTSC0 PR) sends it back to Rx.Detect; the host
+  SS port then goes RxDetect -> Polling (PLS 7) -> U0.
+- `FWWAKE`: PHY CPU RTKit firmware booted at the partC firmware point (UC_TNBL_DONE set).
+- `NORESET`: PHY reset (reg[39] bit 4) released after the firmware, as macOS does.
+- `MACBIST`: the macOS partC dance with the T6050 bits.
+- `tunapply` + `txdeton`: controller tunables and the TXDETRX lock (setUSB3Mode order).
+- Not used: the harness `wake` (t8122 common wake / RCAL) and `pllstart2` (t8122 AUSPLL start).
+  macOS starts the AUSPLL from the AP only in the DisplayPort paths; core+0x7034 stays 0.
+
+Not done: xHCI rings / device enumeration over SS (needs the full host driver: path 2).
+
+Ablations (2026-10-28 ~11:30), same command with one flag removed:
+- Without `FWWAKE` (run 54): UC_TNBL_DONE clear, STATUS2 stuck at 0x104, HCRST times out and
+  the controller reads all zeros. The PHY CPU firmware is required.
+- Without `MACXBAR` (run 55, Linux t8122 lane values 0x70000ea): after U2RESET the SS port goes
+  RxDetect -> Polling (PLS 7) and back to RxDetect, no U0. The macOS lane mode is required.
+- Repeat of the full command (run 53): U0, speed ID 5 again.
+(Speed ID 5 = SuperSpeedPlus under the default xHCI protocol speed-ID map.)
+
+### Port 1 SuperSpeed host sequence (the spec for the kernel driver)
+
+Addresses for port 1; port 0 = -0x8000000, port 2 = +0xd8000000 on the usb-drd / atc-phy windows.
+DRD = 0x2aa280000 (dwc3), PIPE = 0x2aaa84000 (usb-drd reg[3]), PCTL = 0x2aaa80000 (reg[5]),
+CORE = 0x2ab000000 (atc-phy reg[2]), BB = CORE+0x29000, PWR = 0x2ab200000 (reg[39]),
+MXW = 0x2ab140000 (reg[38], mailbox at MXW+0x8000).
+
+1. xHCI reset with CIO off (USBCMD |= HCRST, wait HCRST and CNR clear); glue cd28 0x886 stays.
+2. Controller tunables (usb-drd1 ADT, windows per applyAllTunables; GBL/DBG at DRD+0xc100,
+   CIO_REGS at DRD+0xcd00).
+3. PCTL+0x18 |= 1 (TXDETRX lock request).
+4. Power domains atc1_common, auss, atc1_cio, atc1_cio_usb, atc1_cio_auss on; PWR: sleep small
+   (b0, ack PWR+4 b0), sleep big (b1, ack b1), clamp off (b2), APB reset release (b3). PHY reset
+   (b4) stays asserted.
+5. PHY tunables: ATC_COMMON_CFG reg[43], ATC_FABRIC reg[40], ATC0AXI2AF reg[41], AUS40CMN_SHM
+   reg[5], AUSPLL_CORE reg[8], ATC0AXI2AF_LIOA reg[42], LN0/1_RX_EQ_DFLT reg[18]/[27],
+   LN0/1_RX_CFG_TX_OF_RXCLK reg[20]/[29].
+6. GCTL prtcap host (DRD+0xc110 [13:12] = 1), no core soft reset.
+7. slpctrl (mode 4): CORE+0xc &= ~0x2a; for the active lane L (0 normal, 1 flipped):
+   CORE+0x10 &= ~(1<<(2+L) | 1<<(6+L)); CORE+0xc &= ~(1<<(16+L) | 1<<(8+L) | 1<<(12+L));
+   CORE+0x120 &= ~(1<<(6+L) | 1<<(2+L) | 1<<(10+L)).
+8. MXW+0x40 |= 1 (MxWrap IDLE_CTRL).
+9. xbar: normal CORE+0x6c = (v & ~(0xfc|1<<23|1<<25)) | 0x44, CORE+0x78 [16:0] = 0x110;
+   flipped (v & ~(0xfc|1<<22|1<<24)) | 0x28, 0x111; then CORE+0x6c [1:0] = 2.
+10. BIST first half: BB+0x4 |= 1; BB+0x10c = (v & ~0x1e100000) | 2<<25; BB+0x4 bit 3 toggle;
+    BB+0x110 = (v & ~0x660) | 0x220; BB+0x4 bit 3 toggle; PWR+0x8 bit 1 = flipped.
+11. PHY CPU: MXW+0x28 = 0x10; RTKit boot over the mailbox (HELLO -> ack v12, EPMAP -> ack,
+    start EP 1 crashlog, AP power 0x20, IOP power 0x220; wait IOP and AP power 0x20);
+    wait CORE+0x260 bit 10 (UC_TNBL_DONE), 1 s.
+12. PWR |= 1<<4 (PHY reset release); wait 100 ms.
+13. BIST second half: BB+0x10c |= 1<<20; toggle; wait BB+0x104 bit 8 clear; BB+0x10c PWR_DOWN_OV
+    = 3; toggle; BB+0x110 &= ~0x660; toggle; PIPE+0x20: [3:0] = 3, bit 12 clear.
+14. PIPE: +0x4 &= ~0x6; +0x0 |= 1, |= 4; +0x10 |= 1, wait +0x14 bit 0; wait PCTL+0x1c bit 0.
+15. PIPE+0xc: clock field [6:4] = 0, data [1:0] = 0 (USB3), clock [6:4] = 1; +0x0 &= ~5;
+    +0x10 &= ~1, wait +0x14 clear.
+16. PCTL+0x18 &= ~1, wait PCTL+0x1c clear.
+17. xHCI reset (completes now on the USB3 PIPE clock); restore glue cd28/cd2c/cd40/cd44 if
+    changed; prtcap host; run; port power.
+18. USB2 port reset on the HS port of the same connector: the device retries SS and trains to U0.

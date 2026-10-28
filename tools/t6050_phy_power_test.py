@@ -23,6 +23,8 @@ WATCH = [("atc1_pcie", PMGR0 + 0x298), ("atc1_cio_pcie", PMGR0 + 0x350),
 # port 1 (left-front): ADT usb-drd1, atc-phy1 reg[0], pipe handler, reg[2], reg[39]
 DRD, USB2PHY, PIPE = 0x2aa280000, 0x2aaa90000, 0x2aaa84000
 CORE, PWR = 0x2ab000000, 0x2ab200000
+PCTL = 0x2aaa80000                 # usb-drd1 reg[5], AUSBC_PWR_CTRL (TXDETRX lock)
+MXW = 0x2ab140000                  # atc-phy1 reg[38], MxWrap of the PHY CPU (mailbox at +0x8000)
 PORTS_PROXY_CHECK = {1: DRD, 2: 0x382280000}
 
 def pet():
@@ -59,6 +61,43 @@ def poll(a, mask, want, ms):
         if time.time() > end:
             return "timeout", v
         time.sleep(0.001)
+
+def phy_cpu_wake(secs=3):
+    # AppleT6050TypeCPhy::runFirmware: MxWrap IDLE_CTRL (+0x40) bit 0, then power the PHY CPU up.
+    # iBoot pre-loads its RTKit firmware; wake it as m1n1 StandardASC.start() does (SetIOPPower
+    # 0x220, then HELLO / EPMAP), with the MxWrap run bit (+0x28 bit 4) in place of ASC +0x44.
+    # AppleMxWrap::_runCPU writes +0x28 = 0x10 (no RMW); AppleMxWrapACIO::_runCPU uses the
+    # function-reconfig_req_interrupt platform function instead, absent on acio-phy-cpu1.
+    # +0x44 bit 1 = idle (_isIdle). The firmware initialises the mailboxes itself.
+    from m1n1.fw.asc import StandardASC
+    from m1n1.fw.asc.mgmt import Mgmt_SetIOPPower, Mgmt_Ping
+    rmw(MXW + 0x40, 0, 1)
+    time.sleep(0.01)
+    cpu = StandardASC(u, MXW)
+    cpu.verbose = 3
+    cpu.allow_phys = True
+    print(f"  PHY CPU before: ctrl {rd(MXW + 0x28)[0]:#x} stat {rd(MXW + 0x44)[0]:#x} "
+          f"outbox {rd(MXW + 0x8114)[0]:#x}", flush=True)
+    # Run 41: after +0x28 = 0x10 the firmware sends HELLO (v12) and answers Ping. Boot it the
+    # m1n1 way: HELLO -> ack, EPMAP -> ack + start system endpoints + AP power on, then IOP power.
+    wr(MXW + 0x28, 0x10)
+    def pump(cond, t):
+        end = time.time() + t
+        while not cond() and time.time() < end:
+            if cpu.work():
+                time.sleep(0.002)
+        return cond()
+    try:
+        ap = pump(lambda: cpu.mgmt.ap_power_state == 0x20, secs)
+        cpu.mgmt.send(Mgmt_SetIOPPower(STATE=0x220))
+        iop = pump(lambda: cpu.mgmt.iop_power_state == 0x20, secs)
+        res = f"ap {'on' if ap else 'TIMEOUT'} iop {'on' if iop else 'TIMEOUT'}"
+    except Exception as e:
+        res = f"{type(e).__name__}: {e}"
+    pump(lambda: False, 1)                      # print whatever else it sends
+    print(f"  PHY CPU boot: {res}; eps {[hex(e) for e in cpu.eps]} iop {cpu.mgmt.iop_power_state:#x} "
+          f"ap {cpu.mgmt.ap_power_state:#x} stat {rd(MXW + 0x44)[0]:#x}", flush=True)
+    return cpu
 
 def is_proxy(drd):
     gctl, _ = rd(drd + 0xc110); dsts, _ = rd(drd + 0xc70c)
@@ -143,7 +182,8 @@ def step_cio():
         print(f"  set {name}: stat {st} ({v:#010x})")
     rmw(PWR, 1 << 2, 0)
     rmw(PWR, 0, 1 << 3)
-    rmw(PWR, 0, 1 << 4)
+    if not os.environ.get("NORESET"):    # macOS releases PHY reset (bit 4) later, in partC
+        rmw(PWR, 0, 1 << 4)
     for label, off in (("ctrl", 0), ("stat", 4), ("misc", 8)):
         v, f = rd(PWR + off)
         print(f"  power {label} = {v:#010x}{' FAULT' if f else ''}")
@@ -789,25 +829,34 @@ try:
                 while time.time() < t:
                     s.add(rd(DRD + 0xc164)[0]); time.sleep(0.003)
                 return len(s)
-            for TXSHM in (CORE + 0xd000, CORE + 0x1d000):   # both lanes' TX SHM clock
-                rmw(TXSHM + 0x24, 0, (1 << 13) | (1 << 12) | (1 << 15) | (1 << 14))
-                rmw(TXSHM + 0x24, (1 << 9) | (1 << 8) | (1 << 11) | (1 << 10), 0)
-                rmw(TXSHM + 0x00, 0, (1 << 6) | (1 << 3) | (1 << 2))
-                rmw(TXSHM + 0x00, 1 << 5, 1 << 4)
-                rmw(TXSHM + 0x04, 0, (1 << 9) | (1 << 8) | (1 << 23) | (1 << 22))
-                rmw(TXSHM + 0x04, 1 << 11, 1 << 10)
-            # Lane TX/RX power-up on c120/c10. BOTH lanes are BIT FIELDS of the SAME reg (not
-            # a +0x10000 stride). aciophy_tx_powerup/rx_powerup: step1 = OR bit(4+lane),
-            # step2 = OR bit(6+lane); no poll (seqdec "bit0 wait" was a logging-gate misread).
-            # Both lanes -> bits 4-7. First unclamp the low override bits + release the common
-            # block (CFG0 core+0xc) to the FSM; u3bist was MISSING step2 (bits 6,7).
-            rmw(CORE + 0x120, 0xfff, 0xcff)   # TX unclamp/awake (low override bits)
-            rmw(CORE + 0x10, 0xfff, 0xcff)    # RX unclamp/awake
-            rmw(CORE + 0xc, (1 << 1) | (1 << 3) | (1 << 5), 0)  # cmn rm_ovrd -> FSM
-            rmw(CORE + 0x120, 0xccc, 0); rmw(CORE + 0x10, 0xccc, 0)   # tx/rx rm_ovrd -> FSM
-            for lane in (0, 1):               # tx/rx_powerup: step1 bit(4+lane), step2 bit(6+lane)
-                rmw(CORE + 0x120, 0, 1 << (4 + lane)); rmw(CORE + 0x120, 0, 1 << (6 + lane))
-                rmw(CORE + 0x10, 0, 1 << (4 + lane)); rmw(CORE + 0x10, 0, 1 << (6 + lane))
+            if os.environ.get("NOLANES"):
+                # macOS USB3 (aciophy_slpctrl_init, mode 4): cmn_rm_ovrd, then txrx_rm_ovrd on the
+                # active lane only; tx/rx_powerup and the TX SHM clocks are DisplayPort-only.
+                ln = 1 if os.environ.get("SWAP") else 0
+                rmw(CORE + 0xc, (1 << 1) | (1 << 3) | (1 << 5), 0)
+                for reg, bits in ((0x10, (2, 6)), (0xc, (16, 8, 12)), (0x120, (6, 2, 10))):
+                    for b in bits:
+                        rmw(CORE + reg, 1 << (b + ln), 0)
+            else:
+                for TXSHM in (CORE + 0xd000, CORE + 0x1d000):   # both lanes' TX SHM clock
+                    rmw(TXSHM + 0x24, 0, (1 << 13) | (1 << 12) | (1 << 15) | (1 << 14))
+                    rmw(TXSHM + 0x24, (1 << 9) | (1 << 8) | (1 << 11) | (1 << 10), 0)
+                    rmw(TXSHM + 0x00, 0, (1 << 6) | (1 << 3) | (1 << 2))
+                    rmw(TXSHM + 0x00, 1 << 5, 1 << 4)
+                    rmw(TXSHM + 0x04, 0, (1 << 9) | (1 << 8) | (1 << 23) | (1 << 22))
+                    rmw(TXSHM + 0x04, 1 << 11, 1 << 10)
+                # Lane TX/RX power-up on c120/c10. BOTH lanes are BIT FIELDS of the SAME reg (not
+                # a +0x10000 stride). aciophy_tx_powerup/rx_powerup: step1 = OR bit(4+lane),
+                # step2 = OR bit(6+lane); no poll (seqdec "bit0 wait" was a logging-gate misread).
+                # Both lanes -> bits 4-7. First unclamp the low override bits + release the common
+                # block (CFG0 core+0xc) to the FSM; u3bist was MISSING step2 (bits 6,7).
+                rmw(CORE + 0x120, 0xfff, 0xcff)   # TX unclamp/awake (low override bits)
+                rmw(CORE + 0x10, 0xfff, 0xcff)    # RX unclamp/awake
+                rmw(CORE + 0xc, (1 << 1) | (1 << 3) | (1 << 5), 0)  # cmn rm_ovrd -> FSM
+                rmw(CORE + 0x120, 0xccc, 0); rmw(CORE + 0x10, 0xccc, 0)   # tx/rx rm_ovrd -> FSM
+                for lane in (0, 1):               # tx/rx_powerup: step1 bit(4+lane), step2 bit(6+lane)
+                    rmw(CORE + 0x120, 0, 1 << (4 + lane)); rmw(CORE + 0x120, 0, 1 << (6 + lane))
+                    rmw(CORE + 0x10, 0, 1 << (4 + lane)); rmw(CORE + 0x10, 0, 1 << (6 + lane))
             print(f"  lanes up: c120 {rd(CORE + 0x120)[0]:#x} c10 {rd(CORE + 0x10)[0]:#x} "
                   f"PLL {rd(CORE + 0x7034)[0] & 8:#x}")
             chk("lanes up")
@@ -833,43 +882,101 @@ try:
             # crossbar PROTOCOL[4:0] = 0x10 (USB3_DP) / 0x11 swapped, DP_SINGLE_PMA[16:5] =
             # 0x008. MISC LANE_SWAP = core+0x20008 bit2. SWAP env flips orientation.
             SWAP = os.environ.get("SWAP")
-            lm = ((7 << 2) | (2 << 5)) if SWAP else ((2 << 2) | (7 << 5))  # [4:2]=lane0,[7:5]=lane1
-            rmw(CORE + 0x6c, 0xfc, lm)
-            rmw(CORE + 0x78, 0x1ffff, (0x11 if SWAP else 0x10) | (0x008 << 5))
-            sw = (1 << 2) if SWAP else 0
-            rmw(CORE + 0x20008, 1 << 2, sw)      # ATCPHY_MISC LANE_SWAP (atc.c offset)
-            rmw(PWR + 0x8, 1 << 2, sw)           # harness lanes: step's LANE_SWAP location
+            if os.environ.get("MACXBAR"):
+                # AppleT6050TypeCPhy::aciophy_xbar_config, mode 4: normal = lane0 1 / lane1 2
+                # (0x44), clear bits 23, 25; flipped = lane0 2 / lane1 1 (0x28), clear bits 22, 24;
+                # [1:0] = 2. The lane swap itself is reg[39]+0x8 bit 1 (partC).
+                if SWAP:
+                    rmw(CORE + 0x6c, 0xfc | (1 << 22) | (1 << 24), 0x28)
+                else:
+                    rmw(CORE + 0x6c, 0xfc | (1 << 23) | (1 << 25), 0x44)
+                rmw(CORE + 0x78, 0x1ffff, 0x111 if SWAP else 0x110)
+                rmw(CORE + 0x6c, 3, 2)
+            else:
+                lm = ((7 << 2) | (2 << 5)) if SWAP else ((2 << 2) | (7 << 5))  # [4:2]=lane0,[7:5]=lane1
+                rmw(CORE + 0x6c, 0xfc, lm)
+                rmw(CORE + 0x78, 0x1ffff, (0x11 if SWAP else 0x10) | (0x008 << 5))
+                sw = (1 << 2) if SWAP else 0
+                rmw(CORE + 0x20008, 1 << 2, sw)      # ATCPHY_MISC LANE_SWAP (atc.c offset)
+                rmw(PWR + 0x8, 1 << 2, sw)           # harness lanes: step's LANE_SWAP location
             print(f"  route: 6c {rd(CORE + 0x6c)[0]:#x} 78 {rd(CORE + 0x78)[0]:#x} "
                   f"misc20008 {rd(CORE + 0x20008)[0]:#x} pwr8 {rd(PWR + 0x8)[0]:#x}")
-            # host USB3 pipehandler: disable link detection, then lock
-            rmw(PIPE + 0x4, (1 << 1) | (1 << 2), 0)
-            rmw(PIPE + 0x0, 0, 1 << 0)
-            rmw(PIPE + 0x0, 0, 1 << 2)
-            rmw(PIPE + 0x10, 0, 1)
-            lk, _ = poll(PIPE + 0x14, 1, 1, 10)
-            chk(f"lock {lk}")
+            def pipe_lock():
+                # host USB3 pipehandler: disable link detection, then lock
+                rmw(PIPE + 0x4, (1 << 1) | (1 << 2), 0)
+                rmw(PIPE + 0x0, 0, 1 << 0)
+                rmw(PIPE + 0x0, 0, 1 << 2)
+                rmw(PIPE + 0x10, 0, 1)
+                lk, _ = poll(PIPE + 0x14, 1, 1, 10)
+                chk(f"lock {lk}")
+                if rd(PCTL + 0x18)[0] & 1:   # txdeton ran: macOS waits for the TXDETRX ack here
+                    ta, tv = poll(PCTL + 0x1c, 1, 1, 50)
+                    print(f"  TXDETRX ack {ta} ({tv:#x})")
+            # MACORDER: setUSB3Mode runs the whole PHY setPowerLevel (BIST + firmware) before the
+            # PIPE overrides/lock; Linux does the BIST under the lock.
+            MACORDER = os.environ.get("MACORDER")
+            if not MACORDER:
+                pipe_lock()
             # --- BIST MAC dance, T6050 offsets: CFG1 +0x4 (CLOCK_EN b0, USB_EN b3),
             # CFG2 +0x8 (PHY_STATUS_RE b5), STATUS2 +0x104 (b7, probe-confirmed), CFG_OV1
             # +0x10c, CFG_OV2 +0x110. Follows atcphy_configure_pipehandler_usb3_host_t8122.
-            C1, C2, ST2, OV1, OV2 = BB + 0x0, BB + 0x4, BB + 0x104, BB + 0x10c, BB + 0x110
-            CLKEN, USBEN, STRE, ST2B = 1 << 0, 1 << 2, 1 << 2, 1 << 7
-            rmw(C1, 0, CLKEN)
-            wr(OV1, 0x100000 | (2 << 25))               # CFG_OV1 PIPE_RESET_N_OV | PWR_DOWN_OV=2
-            wr(OV2, 0x200 | 0x20)                       # CFG_OV2 RESET_N_OV | PWR_DOWN_OV
-            rmw(C1, 0, USBEN); e1, _ = poll(C1, USBEN, USBEN, 10); snap("en1")
-            rmw(C1, USBEN, 0); s1, _ = poll(ST2, ST2B, 0, 10)
-            rmw(C2, 0, STRE); time.sleep(0.01); rmw(C2, STRE, 0)
-            rmw(OV1, 3 << 25, 3 << 25)                  # CFG_OV1 PWR_DOWN_OV = 3
-            time.sleep(0.01)
-            rmw(C1, 0, USBEN); e2, _ = poll(C1, USBEN, USBEN, 10); snap("en2")
-            rmw(C1, USBEN, 0); s2, _ = poll(ST2, ST2B, 0, 10)
-            rmw(C2, 0, STRE); time.sleep(0.01); rmw(C2, STRE, 0)
-            rmw(PIPE + 0x20, 0xf, 3); rmw(PIPE + 0x20, 1 << 12, 0)   # clear_nonselected
-            rmw(OV2, 0x200 | 0x20, 0)                    # release CFG_OV2 RESET_N_OV | PWR_DOWN_OV
-            rmw(C1, 0, USBEN); e3, _ = poll(C1, USBEN, USBEN, 10); snap("en3")
-            rmw(C1, USBEN, 0); rmw(C1, CLKEN, 0)
-            print(f"  BIST polls: USB_EN e1 {e1} e2 {e2} e3 {e3}; STATUS2 s1 {s1} s2 {s2}")
+            if os.environ.get("MACBIST"):
+                # AppleT6050TypeCPhy::aciophy_phy_init_partC (mode 4) with its T6050 bits: CFG1 =
+                # BIST+0x4 (CLOCK_EN b0, USB_EN b3), STATUS2 = +0x104 bit 8, OV1 +0x10c (PWR_DOWN_OV
+                # [28:25], PIPE_RESET_N_OV b20), OV2 +0x110. runFirmware + UC_TNBL_DONE and the PHY
+                # reset release (reg[39] bit 4, run with NORESET) sit between the two halves.
+                C1, ST2, OV1, OV2 = BB + 0x4, BB + 0x104, BB + 0x10c, BB + 0x110
+                def usben():
+                    rmw(C1, 0, 1 << 3); rmw(C1, 1 << 3, 0)
+                def st2(tag, want):
+                    st, v = poll(ST2, 1 << 8, want << 8, 1000)
+                    print(f"  [{tag}] STATUS2 bit8 -> {want}: {st} ({v:#x})")
+                    return st
+                rmw(C1, 0, 1)
+                rmw(OV1, 0x1e100000, 2 << 25)
+                usben()
+                rmw(OV2, 0x660, 0x220)
+                usben()
+                rmw(PWR + 0x8, 1 << 1, (1 << 1) if SWAP else 0)      # CFG_S2R_USB_LN_SWAP
+                time.sleep(0.01)
+                if os.environ.get("FWWAKE"):
+                    phy_cpu_wake()
+                elif os.environ.get("FWRUN"):
+                    rmw(MXW + 0x28, 0, 1 << 4)                       # MxWrap CPU_CTRL RUN
+                time.sleep(0.005)
+                tn, tv = poll(CORE + 0x260, 1 << 10, 1 << 10, 1000)
+                print(f"  UC_TNBL_DONE {tn} ({tv:#x}) mxwrap ctrl {rd(MXW + 0x28)[0]:#x} "
+                      f"stat {rd(MXW + 0x44)[0]:#x}")
+                rmw(PWR, 0, 1 << 4)                                  # deassert_aciophy_reset
+                time.sleep(0.1)
+                rmw(OV1, 0, 1 << 20); usben(); s1 = st2("s1", 0)
+                rmw(OV1, 0x1e000000, 3 << 25); usben(); s2 = st2("s2 rise", 1); s3 = st2("s2 fall", 0)
+                rmw(OV2, 0x660, 0); usben()
+                rmw(PIPE + 0x20, 0xf, 3); rmw(PIPE + 0x20, 1 << 12, 0)   # clear_nonselected
+                print(f"  BIST(mac): s1 {s1} rise {s2} fall {s3}; C1 {rd(C1)[0]:#x} OV1 {rd(OV1)[0]:#x} "
+                      f"OV2 {rd(OV2)[0]:#x} PWR {rd(PWR)[0]:#x}")
+            else:
+                C1, C2, ST2, OV1, OV2 = BB + 0x0, BB + 0x4, BB + 0x104, BB + 0x10c, BB + 0x110
+                CLKEN, USBEN, STRE, ST2B = 1 << 0, 1 << 2, 1 << 2, 1 << 7
+                rmw(C1, 0, CLKEN)
+                wr(OV1, 0x100000 | (2 << 25))               # CFG_OV1 PIPE_RESET_N_OV | PWR_DOWN_OV=2
+                wr(OV2, 0x200 | 0x20)                       # CFG_OV2 RESET_N_OV | PWR_DOWN_OV
+                rmw(C1, 0, USBEN); e1, _ = poll(C1, USBEN, USBEN, 10); snap("en1")
+                rmw(C1, USBEN, 0); s1, _ = poll(ST2, ST2B, 0, 10)
+                rmw(C2, 0, STRE); time.sleep(0.01); rmw(C2, STRE, 0)
+                rmw(OV1, 3 << 25, 3 << 25)                  # CFG_OV1 PWR_DOWN_OV = 3
+                time.sleep(0.01)
+                rmw(C1, 0, USBEN); e2, _ = poll(C1, USBEN, USBEN, 10); snap("en2")
+                rmw(C1, USBEN, 0); s2, _ = poll(ST2, ST2B, 0, 10)
+                rmw(C2, 0, STRE); time.sleep(0.01); rmw(C2, STRE, 0)
+                rmw(PIPE + 0x20, 0xf, 3); rmw(PIPE + 0x20, 1 << 12, 0)   # clear_nonselected
+                rmw(OV2, 0x200 | 0x20, 0)                    # release CFG_OV2 RESET_N_OV | PWR_DOWN_OV
+                rmw(C1, 0, USBEN); e3, _ = poll(C1, USBEN, USBEN, 10); snap("en3")
+                rmw(C1, USBEN, 0); rmw(C1, CLKEN, 0)
+                print(f"  BIST polls: USB_EN e1 {e1} e2 {e2} e3 {e3}; STATUS2 s1 {s1} s2 {s2}")
             chk("after BIST")
+            if MACORDER:
+                pipe_lock()
             # mux to USB3 (T8142: clk [6:4]=1, data [1:0]=0). NOSWITCH=1 leaves it at 0x22 (the
             # USB2-working "dummy" clock) so the controller stays clocked while the PHY comes up.
             if not os.environ.get("NOSWITCH"):
@@ -878,6 +985,9 @@ try:
             rmw(PIPE + 0x0, 1 << 0, 0); rmw(PIPE + 0x0, 1 << 2, 0)
             rmw(PIPE + 0x10, 1, 0); ul, _ = poll(PIPE + 0x14, 1, 0, 10)
             chk(f"mux {mux:#x} ul {ul}")
+            if rd(PCTL + 0x18)[0] & 1:   # macOS releases the TXDETRX lock after the PIPE unlock
+                rmw(PCTL + 0x18, 1, 0); tr, tv = poll(PCTL + 0x1c, 1, 0, 50)
+                print(f"  TXDETRX release {tr} ({tv:#x})")
             # Start the controller, then drive a DIRECTED link-state change to
             # RxDetect (PLS=5 + LWS) - NO WPR. A warm reset pins PR=1 and holds the
             # SS LTSSM in reset, masking the real state; a directed PLS keeps the
@@ -889,6 +999,19 @@ try:
             def gdbg():  # GDBGLTSSM: LTSSM state [25:22], RXELECIDLE b17, TXDETRXLOOPBACK b24
                 g, _ = rd(DRD + 0xc164)
                 return f"{g:#010x} ltssm {(g>>22)&0xf:#x} rxei {(g>>17)&1} txdet {(g>>24)&1}"
+            if os.environ.get("HCRST_AFTER"):
+                # xHCI reset with CIO on and the PIPE on USB3. Earlier (no pipe clock) this wedged in
+                # CNR; completing now means the controller runs on the USB3 PHY's clock.
+                g0 = [rd(DRD + o)[0] for o in (0xcd28, 0xcd2c, 0xcd40, 0xcd44)]
+                wr(op, rd(op)[0] | 2)
+                hr, hv = poll(op, 2, 0, 2000); cr, cv = poll(op + 4, 1 << 11, 0, 2000)
+                g1 = [rd(DRD + o)[0] for o in (0xcd28, 0xcd2c, 0xcd40, 0xcd44)]
+                print(f"  HCRST after PHY: HCRST {hr} ({hv:#x}) CNR {cr} ({cv:#x}) glue {[hex(v) for v in g1]}", flush=True)
+                if g1 != g0:
+                    for o, v in zip((0xcd28, 0xcd2c, 0xcd40, 0xcd44), g0):
+                        wr(DRD + o, v)
+                    print(f"  glue restored -> {[hex(rd(DRD + o)[0]) for o in (0xcd28, 0xcd2c, 0xcd40, 0xcd44)]}")
+                rmw(DRD + 0xc110, 3 << 12, 1 << 12)   # host prtcap
             cmd, _ = rd(op); wr(op, cmd | 1)                     # Run/Stop
             for pa in (op0, op1):
                 v, _ = rd(pa); wr(pa, (v & (0x40003c09 | 0x0e00c3e0)) | (1 << 9))  # port power
@@ -901,8 +1024,14 @@ try:
             print(f"  base PORTSC1 {dec1(rd(op1)[0])} | GDBG {gdbg()}")
             time.sleep(0.1)
             print(f"  base+100ms   {dec1(rd(op1)[0])} | GDBG {gdbg()}")
+            if os.environ.get("U2RESET"):
+                # The stick has run USB2 since boot, so its SS side sits in SS.Disabled with the
+                # receiver terminations off; a USB 2.0 bus reset sends it back to Rx.Detect.
+                v0, _ = rd(op0)
+                wr(op0, (v0 & (0x200 | 0xc000 | 0x0e000000)) | (1 << 4))
+                print(f"  USB2 port reset issued: PORTSC0 {v0:#x} -> {rd(op0)[0]:#x}", flush=True)
             cur, _ = rd(op1)                                     # WPR (warm reset, bit31)
-            if not os.environ.get("NOSWITCH"):                   # skip: don't fire WPR on top of
+            if not os.environ.get("NOSWITCH") and not os.environ.get("U2RESET"):
                 wr(op1, (cur & (0x200 | 0xc000 | 0x0e000000)) | (1 << 31))  # the controller's own PR
             last = None; end = time.time() + 6
             while time.time() < end:
@@ -933,7 +1062,70 @@ try:
                         live.append(sel)
             print(f"  LSP live sels: {live}  GDBGLTSSM {rd(DRD+0xc164)[0]:#x}")
             print(f"  pipehandler: mux(+0xc) {rd(PIPE+0xc)[0]:#x} nonsel(+0x20) {rd(PIPE+0x20)[0]:#x}")
+            print(f"  UC_CTRL core+0x260 {rd(CORE + 0x260)[0]:#x}", flush=True)
+            if os.environ.get("MBOX"):   # last: an unpowered mailbox read can hang the SoC
+                print(f"  PHY CPU mailbox INBOX_CTRL {rd(MXW + 0x8110)[0]:#x} "
+                      f"OUTBOX_CTRL {rd(MXW + 0x8114)[0]:#x}", flush=True)
             wr(CORE + 0x6c, l0)
+        elif s == "fwstart":
+            phy_cpu_wake()
+            tn, tv = poll(CORE + 0x260, 1 << 10, 1 << 10, 1000)
+            print(f"  UC_TNBL_DONE {tn} ({tv:#x})")
+        elif s == "txdeton":
+            # AppleT8150USBXHCI::setUSB3Mode takes the TXDETRX lock (AUSBC_PWR_CTRL, usb-drd reg[5],
+            # REQ +0x18 / ACK +0x1c bit 0) before the PHY setPowerLevel; u3bist waits for its ack
+            # after the PIPE lock and releases it after the PIPE unlock.
+            rmw(PCTL + 0x18, 0, 1); ta, tv = poll(PCTL + 0x1c, 1, 1, 50)
+            print(f"  TXDETRX req set, ack {ta} ({tv:#x})")
+        elif s in ("tunread", "tunapply"):
+            # The usb-drd1 controller tunables (never applied by this harness). Window = the
+            # slot AppleT8150USBXHCI::applyAllTunables passes: ADT usb-drd reg index, slot 0
+            # read at the dwc3 globals (core+0xc100). DRD_CIO_REGS = the Apple glue (core+0xcd00).
+            # tunread: port 1 and port 2 values, read only. tunapply: write them on port 1.
+            import struct as _st
+            node = u.adt["/arm-io/usb-drd1"]
+            TUN = [("tunable_DRD_USB31_DBG_DEFAULT", None), ("tunable_DRD_USB31_GBL_DEFAULT", None),
+                   ("tunable_DRD_USB31_GBL_HOST", None), ("tunable_DRD_USB31_CFG_HOST", 1),
+                   ("tunable_LINK_REGS_DEFAULT", 7), ("tunable_AUSBC_DEBUG_DEFAULT", 8),
+                   ("tunable_BULK_FABRIC_DEFAULT", 6), ("tunable_PIPE_HANDLER_DEFAULT", 3),
+                   ("tunable_DRD_CIO_REGS_DEFAULT", "cio")]
+            P2 = 0x382280000 - DRD
+            for prop, idx in TUN:
+                raw = bytes(node._properties[prop])
+                base = DRD + 0xc100 if idx is None else DRD + 0xcd00 if idx == "cio" else node.get_reg(idx)[0]
+                for j in range(0, len(raw), 12):
+                    ofs, mask, val = _st.unpack_from("<III", raw, j)
+                    a = base + (ofs & 0xffffff)
+                    v1, f1 = rd(a)
+                    v2, f2 = rd(a + P2) if s == "tunread" else (0, False)
+                    line = (f"  {prop[8:]:22} {a:#012x} want {val:#010x}/{mask:#010x} "
+                            f"p1 {v1:#010x}{'F' if f1 else ''} {'ok' if (v1 & mask) == val else 'DIFF'}")
+                    if s == "tunread":
+                        line += f"  p2 {v2:#010x}{'F' if f2 else ''} {'ok' if (v2 & mask) == val else 'DIFF'}"
+                    else:
+                        rmw(a, mask, val & mask); line += f"  -> {rd(a)[0]:#010x}"
+                    print(line, flush=True)
+                pet()
+        elif s == "ackprobe":
+            # Is the USB3 PIPE clock running? The controller answers the pipehandler LOCK_REQ
+            # through the selected PIPE backend (atc.c: "stopped parking cannot clock the
+            # ACK"). Toggle LOCK_REQ under each mux: dummy 0x22 (clocked, positive control),
+            # clock OFF 0x00 (negative control), USB3 0x10 (the question). Run after u3bist.
+            rmw(CORE + 0x6c, 0xfc, (2 << 2) | (7 << 5))
+            m0 = rd(PIPE + 0xc)[0]
+            def setmux(v):
+                rmw(PIPE + 0xc, 0x70, 0); rmw(PIPE + 0xc, 0x3, v & 3); rmw(PIPE + 0xc, 0x70, v & 0x70)
+            for name, v in (("usb3", 0x10), ("dummy", 0x22), ("clkoff", 0x00), ("dummy", 0x22), ("usb3", 0x10)):
+                setmux(v); time.sleep(0.01)
+                a0 = rd(PIPE + 0x14)[0]
+                # the same link-detect overrides u3bist sets before its (acked) lock
+                rmw(PIPE + 0x4, (1 << 1) | (1 << 2), 0); rmw(PIPE + 0x0, 0, (1 << 0) | (1 << 2))
+                rmw(PIPE + 0x10, 0, 1); lk, la = poll(PIPE + 0x14, 1, 1, 20)
+                rmw(PIPE + 0x10, 1, 0); ul, ua = poll(PIPE + 0x14, 1, 0, 20)
+                rmw(PIPE + 0x0, (1 << 0) | (1 << 2), 0)
+                print(f"  mux {rd(PIPE + 0xc)[0]:#04x} ({name:6}) ack before {a0:#x} lock {lk} ({la:#x}) "
+                      f"unlock {ul} ({ua:#x}) GDBG {rd(DRD + 0xc164)[0]:#010x}", flush=True)
+            setmux(m0)
         elif s == "phypwr":
             # the driver's atcphy_power_on at ATCPHY_POWER_CTRL = core+0x20000
             # (reg[32]) - the USB3 PHY power/reset block, distinct from the reg[39]
