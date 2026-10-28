@@ -39,6 +39,26 @@ R=/tmp/report
 		[ -f $d/speed ] && echo "--- usb $(basename $d): speed $(cat $d/speed) version $(cat $d/version) $(cat $d/manufacturer 2>/dev/null) $(cat $d/product 2>/dev/null)"
 	done
 	echo "--- partitions"; cat /proc/partitions; blkid /dev/nvme0n1* 2>&1
+	# OMARCHY-BOOT (p5, ext4) and OMARCHY-ROOT (p6, btrfs), read-only: block devices set
+	# read-only first, no journal or log replay.
+	echo "--- omarchy partitions, read-only"
+	for p in /dev/nvme0n1p5 /dev/nvme0n1p6; do blockdev --setro $p; echo "$p read-only: $(blockdev --getro $p)"; done
+	mkdir -p /mnt/boot /mnt/root
+	mount -t ext4 -o ro,noload /dev/nvme0n1p5 /mnt/boot 2>&1 && {
+		echo "--- OMARCHY-BOOT"; df -h /mnt/boot; find /mnt/boot -maxdepth 3 | head -80
+		for f in $(find /mnt/boot -maxdepth 3 -name "*.conf" -o -maxdepth 3 -name "*.cfg" | head -5); do
+			echo "--- $f"; head -40 $f; done
+		umount /mnt/boot; }
+	mount -t btrfs -o ro,rescue=nologreplay,subvolid=5 /dev/nvme0n1p6 /mnt/root 2>&1 && {
+		echo "--- OMARCHY-ROOT (top level)"; df -h /mnt/root; ls -la /mnt/root
+		for s in /mnt/root /mnt/root/@ /mnt/root/@root; do
+			[ -e $s/etc/os-release ] || continue
+			echo "--- $s"; cat $s/etc/os-release; echo "fstab:"; cat $s/etc/fstab
+			echo "modules: $(ls $s/usr/lib/modules 2>&1)"; echo "boot: $(ls $s/boot 2>&1)"
+			echo "packages: $(ls $s/var/lib/pacman/local 2>/dev/null | wc -l)"
+			echo "kernel cmdline: $(cat $s/etc/kernel/cmdline 2>/dev/null)"
+			ls $s/home 2>&1; done
+		umount /mnt/root; }
 	echo "--- blkid"; blkid /dev/sda /dev/sda1 2>&1
 	echo "--- read 2 GiB, direct I/O"; dd if=/dev/sda of=/dev/null bs=1M count=2048 iflag=direct 2>&1
 	echo "--- sha256 of the first 256 MiB, twice"

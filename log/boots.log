@@ -263,3 +263,5 @@
 18:16:16 net-clkb1: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
 18:25:53 net-alone1: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
 19:00:10 net-nvme1: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped
+19:13:39 net-omar1: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped
+19:22:40 net-arch1: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped

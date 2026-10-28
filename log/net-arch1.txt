@@ -1,0 +1,507 @@
+=== Arch root report 59.82 s
+Linux omarchy-m5 7.2.11-aurora-j714c-wip+ #85 SMP PREEMPT Wed Oct 28 18:51:23 CET 2026 aarch64 GNU/Linux
+maxcpus=1 console=tty0 t6050_wdt=170 pd_ignore_unused printk.time=1 fstab=no idle=nop arm64.nowfxt
+--- sit0
+--- read-only
+nvme0n1p3 1
+nvme0n1p5 1
+nvme0n1p6 1
+--- mounts
+overlay / overlay rw,relatime,lowerdir=/lower,upperdir=/rw/upper,workdir=/rw/work,uuid=on 0 0
+proc /proc proc rw,nosuid,nodev,noexec,relatime 0 0
+sysfs /sys sysfs rw,nosuid,nodev,noexec,relatime 0 0
+devtmpfs /dev devtmpfs rw,nosuid,size=66205408k,nr_inodes=4137838,mode=755 0 0
+tmpfs /dev/shm tmpfs rw,nosuid,nodev 0 0
+devpts /dev/pts devpts rw,nosuid,noexec,relatime,gid=5,mode=600,ptmxmode=000 0 0
+tmpfs /run tmpfs rw,nosuid,nodev,size=26482544k,nr_inodes=819200,mode=755 0 0
+cgroup2 /sys/fs/cgroup cgroup2 rw,nosuid,nodev,noexec,relatime,nsdelegate,memory_recursiveprot,memory_hugetlb_accounting 0 0
+bpf /sys/fs/bpf bpf rw,nosuid,nodev,noexec,relatime,mode=700 0 0
+systemd-1 /proc/sys/fs/binfmt_misc autofs rw,relatime,fd=39,pgrp=1,timeout=0,minproto=5,maxproto=5,direct,pipe_ino=3099 0 0
+none /run/credentials/systemd-journald.service tmpfs ro,nosuid,nodev,noexec,relatime,nosymfollow,size=1024k,nr_inodes=1024,mode=700,noswap 0 0
+tmpfs /tmp tmpfs rw,nosuid,nodev,nr_inodes=1048576 0 0
+debugfs /sys/kernel/debug debugfs rw,nosuid,nodev,noexec,relatime 0 0
+mqueue /dev/mqueue mqueue rw,nosuid,nodev,noexec,relatime 0 0
+configfs /sys/kernel/config configfs rw,nosuid,nodev,noexec,relatime 0 0
+binfmt_misc /proc/sys/fs/binfmt_misc binfmt_misc rw,nosuid,nodev,noexec,relatime 0 0
+none /run/credentials/systemd-resolved.service tmpfs ro,nosuid,nodev,noexec,relatime,nosymfollow,size=1024k,nr_inodes=1024,mode=700,noswap 0 0
+none /run/credentials/systemd-networkd.service tmpfs ro,nosuid,nodev,noexec,relatime,nosymfollow,size=1024k,nr_inodes=1024,mode=700,noswap 0 0
+none /run/credentials/getty@tty1.service tmpfs ro,nosuid,nodev,noexec,relatime,nosymfollow,size=1024k,nr_inodes=1024,mode=700,noswap 0 0
+tmpfs /run/user/0 tmpfs rw,nosuid,nodev,relatime,size=13241264k,nr_inodes=3310316,mode=700 0 0
+--- is-system-running
+running
+--- failed
+  UNIT LOAD ACTIVE SUB DESCRIPTION
+
+0 loaded units listed.
+--- running services
+  UNIT                      LOAD   ACTIVE SUB     DESCRIPTION
+  dbus-broker.service       loaded active running D-Bus System Message Bus
+  getty@tty1.service        loaded active running Getty on tty1
+  sshd.service              loaded active running OpenSSH Daemon
+  systemd-journald.service  loaded active running Journal Service
+  systemd-logind.service    loaded active running User Login Management
+  systemd-networkd.service  loaded active running Network Management
+  systemd-resolved.service  loaded active running Network Name Resolution
+  systemd-timesyncd.service loaded active running Network Time Synchronization
+  systemd-udevd.service     loaded active running Rule-based Manager for Device Events and Files
+  systemd-userdbd.service   loaded active running User Database Manager
+  t6050-report.service      loaded active running T6050 test report over the network
+  user@0.service            loaded active running User Manager for UID 0
+
+Legend: LOAD   -> Reflects whether the unit definition was properly loaded.
+        ACTIVE -> The high-level unit activation state, i.e. generalization of SUB.
+        SUB    -> The low-level unit activation state, values depend on unit type.
+
+12 loaded units listed.
+--- journal
+Jul 24 22:49:32 omarchy-m5 kernel: BTRFS info (device nvme0n1p6 state E): turning on async discard
+Jul 24 22:49:32 omarchy-m5 kernel: BTRFS info (device nvme0n1p6 state E): enabling free space tree
+Jul 24 22:49:32 omarchy-m5 kernel: phy-apple-t6050-usb2 2aaa90000.phy: SS watch: PORTSC 0xe03 / 0xa0002a0, GDBGLTSSM 0x9cc20024
+Jul 24 22:49:32 omarchy-m5 kernel: phy-apple-t6050-usb2 2aaa90000.phy: SS watch: PORTSC 0xe03 / 0x2a0, GDBGLTSSM 0x9cc20024
+Jul 24 22:49:32 omarchy-m5 systemd[1]: System time advanced to timestamp on /var/lib/systemd/timesync/clock: Fri 2026-07-24 22:49:31 UTC
+Jul 24 22:49:32 omarchy-m5 kernel: phy-apple-t6050-usb2 2aaa90000.phy: SS watch: PORTSC 0xe03 / 0xa0002a0, GDBGLTSSM 0x9cc20024
+Jul 24 22:49:32 omarchy-m5 systemd[1]: systemd 261.2-1-arch running in system mode (+PAM +AUDIT -SELINUX +APPARMOR -IMA +IPE +SMACK +SECCOMP +GCRYPT +GNUTLS +OPENSSL +ACL +BLKID +CURL +ELFUTILS +FIDO2 +IDN2 +KMOD +LIBCRYPTSETUP +LIBCRYPTSETUP_PLUGINS +LIBFDISK +PCRE2 +PWQUALITY +P11KIT +QRENCODE +TPM2 +BZIP2 +LZ4 +XZ +ZLIB +ZSTD +BPF_FRAMEWORK -BTF +XKBCOMMON +UTMP +LIBARCHIVE)
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Detected architecture arm64.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Hostname set to <omarchy-m5>.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: bpf-restrict-fs: BPF LSM hook not enabled in the kernel, BPF LSM not supported.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Queued start job for default target Graphical Interface.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Created slice Slice /system/dirmngr.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Created slice Slice /system/getty.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Created slice Slice /system/gpg-agent.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Created slice Slice /system/gpg-agent-browser.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Created slice Slice /system/gpg-agent-extra.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Created slice Slice /system/gpg-agent-ssh.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Created slice Slice /system/keyboxd.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Created slice Slice /system/modprobe.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Created slice User and Session Slice.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Started Dispatch Password Requests to Console Directory Watch.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Started Forward Password Requests to Wall Directory Watch.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Set up automount Arbitrary Executable File Formats File System Automount Point.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Reached target Image Downloads.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Reached target Local Integrity Protected Volumes.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Reached target Path Units.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Reached target Remote File Systems.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Reached target Slice Units.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Reached target Swaps.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Reached target Local Verity Protected Volumes.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Listening on Device-mapper event daemon FIFOs.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Listening on Query the User Interactively for a Password.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Listening on Process Core Dump Socket.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Listening on Credential Encryption/Decryption.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Listening on Factory Reset Management.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Listening on Hostname Service Socket.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Listening on Journal Socket (/dev/log).
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Listening on Journal Sockets.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Listening on Console Output Muting Service Socket.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Listening on Network Management Metrics Varlink Socket.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Listening on Network Management Varlink Socket.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Listening on Network Management Netlink Socket.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: TPM PCR Measurements skipped, unmet condition check ConditionSecurity=measured-os
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Make TPM PCR Policy skipped, unmet condition check ConditionSecurity=measured-uki
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Listening on Disk Repartitioning Service Socket.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Listening on Resolve Monitor Varlink Socket.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Listening on Resolve Service Varlink Socket.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Listening on Simple Block Device Backed Storage Provider.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Listening on Simple File System Backed Storage Provider.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Listening on udev Control Socket.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Listening on udev Kernel Socket.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Listening on udev Varlink Socket.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Listening on User Database Manager Socket.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Huge Pages File System skipped, unmet condition check ConditionPathExists=/sys/kernel/mm/hugepages
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Mounting POSIX Message Queue File System...
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Mounting Kernel Debug File System...
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Kernel Trace File System skipped, unmet condition check ConditionPathExists=/sys/kernel/tracing
+Jul 24 22:49:32 omarchy-m5 systemd[1]: tmp.mount: x-systemd.graceful-option=usrquota specified, but option is not available, suppressing.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Mounting Temporary Directory /tmp...
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Create List of Static Device Nodes skipped, unmet condition check ConditionFileNotEmpty=/lib/modules/7.2.11-aurora-j714c-wip+/modules.devname
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Load Kernel Module configfs skipped, unmet condition check ConditionKernelModuleLoaded=!configfs
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Mounting Kernel Configuration File System...
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Load Kernel Module drm skipped, unmet condition check ConditionKernelModuleLoaded=!drm
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Starting Load Kernel Module fuse...
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Clear Stale Hibernate Storage Info skipped, unmet condition check ConditionPathExists=/sys/firmware/efi/efivars/HibernateLocation-8cf2644b-4b0b-428f-9387-6d876050dc67
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Rebuild Hardware Database skipped, unmet condition check ConditionNeedsUpdate=/etc
+Jul 24 22:49:32 omarchy-m5 systemd[1]: systemd-journald.service: unit configures an IP firewall, but the local system does not support BPF/cgroup firewalling.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: systemd-journald.service: (This warning is only shown for the first unit using IP firewalling.)
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Starting Journal Service...
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Load Kernel Modules skipped, no trigger condition checks were met.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Starting Generate Network Units from Kernel Command Line...
+Jul 24 22:49:32 omarchy-m5 systemd[1]: TPM PCR Machine ID Measurement skipped, unmet condition check ConditionSecurity=measured-os
+Jul 24 22:49:32 omarchy-m5 systemd[1]: TPM PCR OS Separator skipped, unmet condition check ConditionSecurity=measured-os
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Starting Load/Save OS Random Seed...
+Jul 24 22:49:32 omarchy-m5 systemd-journald[117]: Collecting audit messages is disabled.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Starting Apply Kernel Variables...
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Starting Create Static Device Nodes in /dev gracefully...
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Early TPM SRK Setup skipped, unmet condition check ConditionSecurity=measured-os
+Jul 24 22:49:32 omarchy-m5 systemd[1]: TPM PCR NvPCR Initialization Separator skipped, unmet condition check ConditionPathExists=/etc/initrd-release
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Reached target Local Encrypted Volumes.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: TPM NvPCR Product ID Measurement skipped, unmet condition check ConditionSecurity=measured-os
+Jul 24 22:49:32 omarchy-m5 systemd[1]: TPM SRK Setup skipped, unmet condition check ConditionSecurity=measured-os
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Starting Load udev Rules from Credentials...
+Jul 24 22:49:32 omarchy-m5 systemd-journald[117]: Journal started
+Jul 24 22:49:32 omarchy-m5 systemd-journald[117]: Runtime Journal (/run/log/journal/a60a1335f8584c3e81085b4cbd1e8048) is 8M, max 2.5G, 2.5G free.
+Jul 24 22:49:32 omarchy-m5 systemd-sysctl[121]: Couldn't write '|/usr/lib/systemd/systemd-coredump %P %u %g %s %t %c %h %d %F %I' to 'kernel/core_pattern', ignoring: No such file or directory
+Jul 24 22:49:32 omarchy-m5 systemd-sysctl[121]: Couldn't write '16' to 'kernel/core_pipe_limit', ignoring: No such file or directory
+Jul 24 22:49:32 omarchy-m5 systemd-sysctl[121]: Couldn't write '16' to 'kernel/sysrq', ignoring: No such file or directory
+Jul 24 22:49:32 omarchy-m5 systemd-sysctl[121]: Couldn't write '1' to 'kernel/core_uses_pid', ignoring: No such file or directory
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Starting Coldplug All udev Devices...
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Started Journal Service.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Mounted POSIX Message Queue File System.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Mounted Kernel Debug File System.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Mounted Temporary Directory /tmp.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Mounted Kernel Configuration File System.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: modprobe@fuse.service: Deactivated successfully.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Finished Load Kernel Module fuse.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Finished Generate Network Units from Kernel Command Line.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Finished Load/Save OS Random Seed.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Finished Apply Kernel Variables.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Finished Load udev Rules from Credentials.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Reached target Preparation for Network.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Listening on Network Management Resolve Hook Socket.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: FUSE Control File System skipped, unmet condition check ConditionPathExists=/sys/fs/fuse/connections
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Starting Flush Journal to Persistent Storage...
+Jul 24 22:49:32 omarchy-m5 systemd-journald[117]: Time spent on flushing to /var/log/journal/a60a1335f8584c3e81085b4cbd1e8048 is 1.287ms for 438 entries.
+Jul 24 22:49:32 omarchy-m5 systemd-journald[117]: System Journal (/var/log/journal/a60a1335f8584c3e81085b4cbd1e8048) is 6.4M, max 51.2M, 44.7M free.
+Jul 24 22:49:32 omarchy-m5 systemd-journald[117]: Received client request to flush runtime journal.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Starting User Database Manager...
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Finished Flush Journal to Persistent Storage.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: proc-sys-fs-binfmt_misc.automount: Got automount request for /proc/sys/fs/binfmt_misc, triggered by 135 ((systemd-userd))
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Mounting Arbitrary Executable File Formats File System...
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Mounted Arbitrary Executable File Formats File System.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Started User Database Manager.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Finished Create Static Device Nodes in /dev gracefully.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Create System Users skipped, no trigger condition checks were met.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Starting Journal Log Access Socket...
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Starting Network Name Resolution...
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Starting Network Time Synchronization...
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Starting Create Static Device Nodes in /dev...
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Listening on Journal Log Access Socket.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Finished Create Static Device Nodes in /dev.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Reached target Preparation for Local File Systems.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Repartition Root Disk skipped, no trigger condition checks were met.
+Jul 24 22:49:32 omarchy-m5 systemd-resolved[146]: Positive Trust Anchors:
+Jul 24 22:49:32 omarchy-m5 systemd-resolved[146]: . IN DS 20326 8 2 e06d44b80b8f1d39a95c0b0d7c65d08458e880409bbc683457104237c7f8ec8d
+Jul 24 22:49:32 omarchy-m5 systemd-resolved[146]: . IN DS 38696 8 2 683d2d0acb8c9b712a1948b27f741219298d0a450d612c483af444a4c0fb2b16
+Jul 24 22:49:32 omarchy-m5 systemd-resolved[146]: Negative trust anchors: home.arpa 10.in-addr.arpa 16.172.in-addr.arpa 17.172.in-addr.arpa 18.172.in-addr.arpa 19.172.in-addr.arpa 20.172.in-addr.arpa 21.172.in-addr.arpa 22.172.in-addr.arpa 23.172.in-addr.arpa 24.172.in-addr.arpa 25.172.in-addr.arpa 26.172.in-addr.arpa 27.172.in-addr.arpa 28.172.in-addr.arpa 29.172.in-addr.arpa 30.172.in-addr.arpa 31.172.in-addr.arpa 170.0.0.192.in-addr.arpa 171.0.0.192.in-addr.arpa 168.192.in-addr.arpa d.f.ip6.arpa ipv4only.arpa resolver.arpa corp home internal intranet lan local private test
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Starting Rule-based Manager for Device Events and Files...
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Started Network Time Synchronization.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Reached target System Time Set.
+Jul 24 22:49:32 omarchy-m5 kernel: nvme-apple 45dcc0000.nvme: RTKit: syslog message: gc.c:9348: Stopping GC rebuild
+Jul 24 22:49:32 omarchy-m5 systemd-resolved[146]: Using system hostname 'omarchy-m5'.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Started Network Name Resolution.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Reached target Host and Network Name Lookups.
+Jul 24 22:49:32 omarchy-m5 systemd-udevd[153]: Using default interface naming scheme 'v261'.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Started Rule-based Manager for Device Events and Files.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Starting Network Management...
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Finished Coldplug All udev Devices.
+Jul 24 22:49:32 omarchy-m5 systemd-networkd[156]: Failed to open nftables netlink socket. IPMasquerade= and NFTSet= settings will not be applied. Ignoring: Protocol not supported
+Jul 24 22:49:32 omarchy-m5 systemd-networkd[156]: lo: Link UP
+Jul 24 22:49:32 omarchy-m5 systemd-networkd[156]: lo: Gained carrier
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Started Network Management.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Reached target Network.
+Jul 24 22:49:32 omarchy-m5 systemd-resolved[146]: Switching to fallback DNS server 9.9.9.9#dns.quad9.net.
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Starting Enable Persistent Storage in systemd-networkd...
+Jul 24 22:49:32 omarchy-m5 systemd[1]: Finished Enable Persistent Storage in systemd-networkd.
+Jul 24 22:49:32 omarchy-m5 kernel: nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+Jul 24 22:49:32 omarchy-m5 kernel: nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+Jul 24 22:49:32 omarchy-m5 kernel: nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+Jul 24 22:49:32 omarchy-m5 kernel: nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+Jul 24 22:49:32 omarchy-m5 kernel: nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+Jul 24 22:49:32 omarchy-m5 kernel: nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+Jul 24 22:49:32 omarchy-m5 kernel: nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+Jul 24 22:49:32 omarchy-m5 kernel: nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+Jul 24 22:49:32 omarchy-m5 kernel: nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+Jul 24 22:49:32 omarchy-m5 kernel: nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+Jul 24 22:49:32 omarchy-m5 kernel: nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+Jul 24 22:49:32 omarchy-m5 kernel: nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+Jul 24 22:49:32 omarchy-m5 kernel: nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+Jul 24 22:49:32 omarchy-m5 kernel: nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+Jul 24 22:49:32 omarchy-m5 kernel: nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+Jul 24 22:49:32 omarchy-m5 kernel: nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+Jul 24 22:49:32 omarchy-m5 kernel: nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+Jul 24 22:49:32 omarchy-m5 kernel: nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+Jul 24 22:49:32 omarchy-m5 kernel: nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+Jul 24 22:49:32 omarchy-m5 kernel: nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+Jul 24 22:49:32 omarchy-m5 kernel: scsi 0:0:0:0: Direct-Access     SanDisk  Extreme Pro DDE1 0010 PQ: 0 ANSI: 6
+Jul 24 22:49:32 omarchy-m5 kernel: scsi 0:0:0:1: Enclosure         SanDisk  SES Device       0010 PQ: 0 ANSI: 6
+Jul 24 22:49:32 omarchy-m5 kernel: sd 0:0:0:0: [sda] 1953525168 512-byte logical blocks: (1.00 TB/932 GiB)
+Jul 24 22:49:32 omarchy-m5 kernel: cdc_ncm 1-1:2.0 enu1c2: renamed from eth0
+Jul 24 22:49:33 omarchy-m5 kernel: sd 0:0:0:0: [sda] Write Protect is off
+Jul 24 22:49:33 omarchy-m5 kernel: sd 0:0:0:0: [sda] Mode Sense: 3d 00 10 00
+Jul 24 22:49:33 omarchy-m5 systemd-networkd[156]: eth0: Interface name change detected, renamed to enu1c2.
+Jul 24 22:49:33 omarchy-m5 kernel: sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, supports DPO and FUA
+Jul 24 22:49:33 omarchy-m5 systemd-networkd[156]: enu1c2: Configuring with /etc/systemd/network/en.network.
+Jul 24 22:49:33 omarchy-m5 systemd-networkd[156]: enu1c2: Link UP
+Jul 24 22:49:33 omarchy-m5 kernel:  sda: sda1
+Jul 24 22:49:33 omarchy-m5 kernel: sd 0:0:0:0: [sda] Attached SCSI disk
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Starting Virtual Console Setup...
+Jul 24 22:49:33 omarchy-m5 systemd-vconsole-setup[186]: Configuration of first virtual console was skipped, ignoring remaining ones.
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Finished Virtual Console Setup.
+Jul 24 22:49:33 omarchy-m5 systemd-networkd[156]: enu1c2: Gained carrier
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Virtual Machine and Container Storage (Compatibility) skipped, unmet condition check ConditionPathExists=/var/lib/machines.raw
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Reached target Local File Systems.
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Listening on Boot Loader Control Service Socket.
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Listening on Disk Image Download Service Socket.
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Listening on System Extension Image Management.
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Set Up Additional Binary Formats skipped, no trigger condition checks were met.
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Update Boot Loader Random Seed skipped, no trigger condition checks were met.
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Starting Create System Files and Directories...
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Starting Load JSON user/group Records from Credentials...
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Finished Load JSON user/group Records from Credentials.
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Finished Create System Files and Directories.
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Rebuild Dynamic Linker Cache skipped, no trigger condition checks were met.
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Initial Setup skipped, unmet condition check ConditionFirstBoot=yes
+Jul 24 22:49:33 omarchy-m5 systemd[1]: First Boot Complete skipped, unmet condition check ConditionFirstBoot=yes
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Rebuild Journal Catalog skipped, unmet condition check ConditionNeedsUpdate=/var
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Save Transient machine-id to Disk skipped, unmet condition check ConditionPathIsMountPoint=/etc/machine-id
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Update is Completed skipped, no trigger condition checks were met.
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Starting Record System Boot/Shutdown in UTMP...
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Finished Record System Boot/Shutdown in UTMP.
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Reached target System Initialization.
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Started Refresh existing PGP keys of archlinux-keyring regularly.
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Started Daily verification of password and group files.
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Started Daily Cleanup of Temporary Directories.
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Reached target Timer Units.
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Listening on D-Bus System Message Bus Socket.
+Jul 24 22:49:33 omarchy-m5 systemd[1]: GnuPG network certificate management daemon for /etc/pacman.d/gnupg skipped, unmet condition check ConditionPathIsReadWrite=/etc/pacman.d/gnupg
+Jul 24 22:49:33 omarchy-m5 systemd[1]: GnuPG cryptographic agent and passphrase cache (access for web browsers) for /etc/pacman.d/gnupg skipped, unmet condition check ConditionPathIsReadWrite=/etc/pacman.d/gnupg
+Jul 24 22:49:33 omarchy-m5 systemd[1]: GnuPG cryptographic agent and passphrase cache (restricted) for /etc/pacman.d/gnupg skipped, unmet condition check ConditionPathIsReadWrite=/etc/pacman.d/gnupg
+Jul 24 22:49:33 omarchy-m5 systemd[1]: GnuPG cryptographic agent (ssh-agent emulation) for /etc/pacman.d/gnupg skipped, unmet condition check ConditionPathIsReadWrite=/etc/pacman.d/gnupg
+Jul 24 22:49:33 omarchy-m5 systemd[1]: GnuPG cryptographic agent and passphrase cache for /etc/pacman.d/gnupg skipped, unmet condition check ConditionPathIsReadWrite=/etc/pacman.d/gnupg
+Jul 24 22:49:33 omarchy-m5 systemd[1]: GnuPG public key management service for /etc/pacman.d/gnupg skipped, unmet condition check ConditionPathIsReadWrite=/etc/pacman.d/gnupg
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Listening on OpenSSH Server Socket (systemd-ssh-generator, AF_UNIX Local).
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Listening on User Login Management Varlink Socket.
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Listening on Virtual Machine and Container Registration Service Socket.
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Reached target Socket Units.
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Starting D-Bus System Message Bus...
+Jul 24 22:49:33 omarchy-m5 systemd[1]: TPM PCR Barrier (Initialization) skipped, unmet condition check ConditionSecurity=measured-os
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Started D-Bus System Message Bus.
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Reached target Basic System.
+Jul 24 22:49:33 omarchy-m5 systemd[1]: SSH Key Generation skipped, no trigger condition checks were met.
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Starting OpenSSH Daemon...
+Jul 24 22:49:33 omarchy-m5 dbus-broker-launch[198]: Ready
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Starting User Login Management...
+Jul 24 22:49:33 omarchy-m5 systemd[1]: TPM PCR Barrier (User) skipped, unmet condition check ConditionSecurity=measured-os
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Starting Permit User Sessions...
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Started T6050 test report over the network.
+Jul 24 22:49:33 omarchy-m5 systemd-networkd[156]: enu1c2: DHCPv4 address 192.168.188.40/24, gateway 192.168.188.1 acquired from 192.168.188.1
+Jul 24 22:49:33 omarchy-m5 systemd-timesyncd[147]: Network configuration changed, trying to establish connection.
+Jul 24 22:49:33 omarchy-m5 sshd[200]: Server listening on 0.0.0.0 port 22.
+Jul 24 22:49:33 omarchy-m5 sshd[200]: Server listening on :: port 22.
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Started OpenSSH Daemon.
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Finished Permit User Sessions.
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Reached target SSH Access Available.
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Started Getty on tty1.
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Reached target Login Prompts.
+Jul 24 22:49:33 omarchy-m5 systemd-logind[201]: Watching system buttons on /dev/input/event1 (Apple MTP keyboard)
+Jul 24 22:49:33 omarchy-m5 systemd-logind[201]: New seat seat0.
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Started User Login Management.
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Reached target Multi-User System.
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Reached target Graphical Interface.
+Jul 24 22:49:33 omarchy-m5 systemd[1]: Startup finished in 3.096s (kernel) + 1.714s (userspace) = 4.810s.
+Oct 28 18:23:11 omarchy-m5 systemd-resolved[146]: Clock change detected. Flushing caches.
+Oct 28 18:23:11 omarchy-m5 systemd-timesyncd[147]: Contacted time server 192.168.188.1:123 (192.168.188.1).
+Oct 28 18:23:11 omarchy-m5 systemd-timesyncd[147]: Initial clock synchronization to Wed 2026-10-28 18:23:11.485684 UTC.
+Oct 28 18:23:11 omarchy-m5 systemd[1]: Started Verify integrity of password and group files.
+Oct 28 18:23:11 omarchy-m5 systemd[1]: shadow.service: Deactivated successfully.
+Oct 28 18:23:12 omarchy-m5 systemd-networkd[156]: enu1c2: Gained IPv6LL
+Oct 28 18:23:12 omarchy-m5 kernel: dockchannel-hid 294b30000.input: iface multi-touch start timed out
+Oct 28 18:23:13 omarchy-m5 systemd-timesyncd[147]: Contacted time server 192.168.188.1:123 (192.168.188.1).
+Oct 28 18:23:36 omarchy-m5 report.sh[221]: udhcpc: started, v1.36.1
+Oct 28 18:23:36 omarchy-m5 systemd-networkd[156]: sit0: Link UP
+Oct 28 18:23:36 omarchy-m5 systemd-networkd[156]: sit0: Gained carrier
+Oct 28 18:23:36 omarchy-m5 report.sh[221]: udhcpc: broadcasting discover
+Oct 28 18:23:39 omarchy-m5 report.sh[221]: udhcpc: broadcasting discover
+Oct 28 18:23:42 omarchy-m5 report.sh[221]: udhcpc: broadcasting discover
+Oct 28 18:23:45 omarchy-m5 report.sh[221]: udhcpc: broadcasting discover
+Oct 28 18:23:48 omarchy-m5 report.sh[221]: udhcpc: broadcasting discover
+Oct 28 18:23:51 omarchy-m5 report.sh[221]: udhcpc: broadcasting discover
+Oct 28 18:23:54 omarchy-m5 report.sh[221]: udhcpc: broadcasting discover
+Oct 28 18:23:57 omarchy-m5 report.sh[221]: udhcpc: broadcasting discover
+Oct 28 18:24:00 omarchy-m5 report.sh[221]: udhcpc: broadcasting discover
+Oct 28 18:24:01 omarchy-m5 login[212]: pam_unix(login:session): session opened for user root(uid=0) by LOGIN(uid=0)
+Oct 28 18:24:01 omarchy-m5 systemd-logind[201]: New session 'c1' of user 'root' with class 'user-early' and type 'tty'.
+Oct 28 18:24:01 omarchy-m5 systemd[1]: Created slice User Slice of UID 0.
+Oct 28 18:24:01 omarchy-m5 systemd[1]: Starting User Runtime Directory /run/user/0...
+Oct 28 18:24:01 omarchy-m5 systemd[1]: Finished User Runtime Directory /run/user/0.
+Oct 28 18:24:01 omarchy-m5 systemd[1]: Starting User Manager for UID 0...
+Oct 28 18:24:01 omarchy-m5 (systemd)[229]: pam_warn(systemd-user:setcred): function=[pam_sm_setcred] flags=0x8002 service=[systemd-user] terminal=[] user=[root] ruser=[<unknown>] rhost=[<unknown>]
+Oct 28 18:24:01 omarchy-m5 (systemd)[229]: pam_unix(systemd-user:session): session opened for user root(uid=0) by (uid=0)
+Oct 28 18:24:01 omarchy-m5 systemd-logind[201]: New session 'c2' of user 'root' with class 'manager-early' and type 'unspecified'.
+Oct 28 18:24:01 omarchy-m5 systemd[229]: Queued start job for default target Main User Target.
+Oct 28 18:24:01 omarchy-m5 systemd[229]: Created slice User Application Slice.
+Oct 28 18:24:01 omarchy-m5 systemd[229]: Reached target Paths.
+Oct 28 18:24:01 omarchy-m5 systemd[229]: Reached target Timers.
+Oct 28 18:24:01 omarchy-m5 systemd[229]: Starting D-Bus User Message Bus Socket...
+Oct 28 18:24:01 omarchy-m5 systemd[229]: Listening on GnuPG network certificate management daemon.
+Oct 28 18:24:01 omarchy-m5 systemd[229]: Listening on GnuPG cryptographic agent and passphrase cache (access for web browsers).
+Oct 28 18:24:01 omarchy-m5 systemd[229]: Listening on GnuPG cryptographic agent and passphrase cache (restricted).
+Oct 28 18:24:01 omarchy-m5 systemd[229]: Listening on GnuPG cryptographic agent (ssh-agent emulation).
+Oct 28 18:24:01 omarchy-m5 systemd[229]: Listening on GnuPG cryptographic agent and passphrase cache.
+Oct 28 18:24:01 omarchy-m5 systemd[229]: Listening on GnuPG public key management service.
+Oct 28 18:24:01 omarchy-m5 systemd[229]: Listening on p11-kit server.
+Oct 28 18:24:01 omarchy-m5 systemd[229]: Listening on Query the User Interactively for a Password.
+Oct 28 18:24:01 omarchy-m5 systemd[229]: Listening on Disk Image Download Service Socket.
+Oct 28 18:24:01 omarchy-m5 systemd[229]: Listening on Journal Log Access Socket.
+Oct 28 18:24:01 omarchy-m5 systemd[229]: Listening on Virtual Machine and Container Registration Service Socket.
+Oct 28 18:24:01 omarchy-m5 systemd[229]: Listening on Simple File System Backed Storage Provider.
+Oct 28 18:24:01 omarchy-m5 systemd[229]: Listening on D-Bus User Message Bus Socket.
+Oct 28 18:24:01 omarchy-m5 systemd[229]: Reached target Sockets.
+Oct 28 18:24:01 omarchy-m5 systemd[229]: Reached target Basic System.
+Oct 28 18:24:01 omarchy-m5 systemd[1]: Started User Manager for UID 0.
+Oct 28 18:24:01 omarchy-m5 systemd[1]: Started Session c1 of User root.
+Oct 28 18:24:01 omarchy-m5 systemd[229]: Reached target Main User Target.
+Oct 28 18:24:01 omarchy-m5 systemd[229]: Startup finished in 68ms.
+Oct 28 18:24:01 omarchy-m5 login[212]: ROOT LOGIN ON tty1
+Oct 28 18:24:03 omarchy-m5 report.sh[221]: udhcpc: broadcasting discover
+Oct 28 18:24:06 omarchy-m5 report.sh[221]: udhcpc: no lease, failing
+--- dmesg
+[    3.035392] apple-pmgr-pwrstate 2380600000.power-management:power-controller@698: sync_state() pending due to 2380600000.power-management:power-controller@6a0
+[    3.035771] apple-pmgr-pwrstate 2380600000.power-management:power-controller@698: sync_state() pending due to 2380600000.power-management:power-controller@6a8
+[    3.036268] clk: Disabling unused clocks
+[    3.036627] PM: genpd: Not disabling unused power domains
+[    3.037974] Freeing unused kernel memory: 768K
+[    3.038334] Run /init as init process
+[    3.038670]   with arguments:
+[    3.038671]     /init
+[    3.038672]   with environment:
+[    3.038673]     HOME=/
+[    3.038673]     TERM=linux
+[    3.038673]     fstab=no
+[    3.039572] usb 3-1: UAS is ignored for this device, using usb-storage instead
+[    3.039915] usb 3-1: UAS is ignored for this device, using usb-storage instead
+[    3.040248] usb-storage 3-1:1.0: USB Mass Storage device detected
+[    3.040635] usb-storage 3-1:1.0: Quirks match for vid 0781 pid 55e8: 800000
+[    3.041032] scsi host0: usb-storage 3-1:1.0
+[    3.041476] input: Apple MTP multi-touch as /devices/platform/soc/294b14000.fifo/294b30000.input/0019:05AC:0359.0002/input/input0
+[    3.041811] magicmouse 0019:05AC:0359.0002: input: HOST HID v5.10 Mouse [Apple MTP multi-touch] on 294b30000.input.1 (multi-touch)
+[    3.042905] rtkit-helper 294600000.mtp: RTKit: syslog message: touch_iface.c:458: Grape interface configuration completed
+[    3.043279] dockchannel-hid 294b30000.input: Interface keyboard is now ready
+[    3.043670] rtkit-helper 294600000.mtp: RTKit: syslog message: keyboard_cr.c:73: Keyboard interface configuration completed
+[    3.044032] rtkit-helper 294600000.mtp: RTKit: syslog message: keyboard.c:77: Keyboard ready
+[    3.044475] input: Apple MTP keyboard as /devices/platform/soc/294b14000.fifo/294b30000.input/0019:05AC:0359.0003/input/input1
+[    3.044837] apple 0019:05AC:0359.0003: input: HOST HID v5.10 Keyboard [Apple MTP keyboard] on 294b30000.input.2 (keyboard)
+[    3.046811] dockchannel-hid 294b30000.input: Interface actuator is now ready
+[    3.047165] rtkit-helper 294600000.mtp: RTKit: syslog message: actuator_cr.c:84: Actuator interface configuration completed
+[    3.047552] rtkit-helper 294600000.mtp: RTKit: syslog message: actuator.c:71: Actuator ready
+[    3.049423] BTRFS: device label OMARCHY-ROOT devid 1 transid 337 /dev/nvme0n1p6 (259:6) scanned by mount (64)
+[    3.050243] BTRFS info (device nvme0n1p6): first mount of filesystem 487d9a90-6fd6-43ae-abce-fc7f8c7c5455
+[    3.050628] BTRFS info (device nvme0n1p6): using crc32c checksum algorithm
+[    3.054121] BTRFS info (device nvme0n1p6 state E): enabling ssd optimizations
+[    3.054503] BTRFS info (device nvme0n1p6 state E): disabling log replay at mount time
+[    3.054880] BTRFS info (device nvme0n1p6 state E): turning on async discard
+[    3.055251] BTRFS info (device nvme0n1p6 state E): enabling free space tree
+[    3.064447] phy-apple-t6050-usb2 2aaa90000.phy: SS watch: PORTSC 0xe03 / 0xa0002a0, GDBGLTSSM 0x9cc20024
+[    3.076407] phy-apple-t6050-usb2 2aaa90000.phy: SS watch: PORTSC 0xe03 / 0x2a0, GDBGLTSSM 0x9cc20024
+[    3.108097] systemd[1]: System time advanced to timestamp on /var/lib/systemd/timesync/clock: Fri 2026-07-24 22:49:31 UTC
+[    3.224471] phy-apple-t6050-usb2 2aaa90000.phy: SS watch: PORTSC 0xe03 / 0xa0002a0, GDBGLTSSM 0x9cc20024
+[    3.468897] systemd[1]: systemd 261.2-1-arch running in system mode (+PAM +AUDIT -SELINUX +APPARMOR -IMA +IPE +SMACK +SECCOMP +GCRYPT +GNUTLS +OPENSSL +ACL +BLKID +CURL +ELFUTILS +FIDO2 +IDN2 +KMOD +LIBCRYPTSETUP +LIBCRYPTSETUP_PLUGINS +LIBFDISK +PCRE2 +PWQUALITY +P11KIT +QRENCODE +TPM2 +BZIP2 +LZ4 +XZ +ZLIB +ZSTD +BPF_FRAMEWORK -BTF +XKBCOMMON +UTMP +LIBARCHIVE)
+[    3.480932] systemd[1]: Detected architecture arm64.
+[    3.483893] systemd[1]: Hostname set to <omarchy-m5>.
+[    3.490840] systemd[1]: bpf-restrict-fs: BPF LSM hook not enabled in the kernel, BPF LSM not supported.
+[    3.556314] systemd[1]: Queued start job for default target Graphical Interface.
+[    3.557600] systemd[1]: Created slice Slice /system/dirmngr.
+[    3.558623] systemd[1]: Created slice Slice /system/getty.
+[    3.559580] systemd[1]: Created slice Slice /system/gpg-agent.
+[    3.560542] systemd[1]: Created slice Slice /system/gpg-agent-browser.
+[    3.561490] systemd[1]: Created slice Slice /system/gpg-agent-extra.
+[    3.562455] systemd[1]: Created slice Slice /system/gpg-agent-ssh.
+[    3.563423] systemd[1]: Created slice Slice /system/keyboxd.
+[    3.564433] systemd[1]: Created slice Slice /system/modprobe.
+[    3.565410] systemd[1]: Created slice User and Session Slice.
+[    3.566338] systemd[1]: Started Dispatch Password Requests to Console Directory Watch.
+[    3.567278] systemd[1]: Started Forward Password Requests to Wall Directory Watch.
+[    3.568299] systemd[1]: Set up automount Arbitrary Executable File Formats File System Automount Point.
+[    3.569283] systemd[1]: Reached target Image Downloads.
+[    3.570248] systemd[1]: Reached target Local Integrity Protected Volumes.
+[    3.571202] systemd[1]: Reached target Path Units.
+[    3.572127] systemd[1]: Reached target Remote File Systems.
+[    3.573046] systemd[1]: Reached target Slice Units.
+[    3.573942] systemd[1]: Reached target Swaps.
+[    3.574818] systemd[1]: Reached target Local Verity Protected Volumes.
+[    3.575717] systemd[1]: Listening on Device-mapper event daemon FIFOs.
+[    3.576949] systemd[1]: Listening on Query the User Interactively for a Password.
+[    3.578204] systemd[1]: Listening on Process Core Dump Socket.
+[    3.579325] systemd[1]: Listening on Credential Encryption/Decryption.
+[    3.580570] systemd[1]: Listening on Factory Reset Management.
+[    3.581473] systemd[1]: Listening on Hostname Service Socket.
+[    3.582359] systemd[1]: Listening on Journal Socket (/dev/log).
+[    3.583201] systemd[1]: Listening on Journal Sockets.
+[    3.584365] systemd[1]: Listening on Console Output Muting Service Socket.
+[    3.585244] systemd[1]: Listening on Network Management Metrics Varlink Socket.
+[    3.586116] systemd[1]: Listening on Network Management Varlink Socket.
+[    3.586988] systemd[1]: Listening on Network Management Netlink Socket.
+[    3.587841] systemd[1]: TPM PCR Measurements skipped, unmet condition check ConditionSecurity=measured-os
+[    3.588267] systemd[1]: Make TPM PCR Policy skipped, unmet condition check ConditionSecurity=measured-uki
+[    3.588934] systemd[1]: Listening on Disk Repartitioning Service Socket.
+[    3.589806] systemd[1]: Listening on Resolve Monitor Varlink Socket.
+[    3.590673] systemd[1]: Listening on Resolve Service Varlink Socket.
+[    3.591869] systemd[1]: Listening on Simple Block Device Backed Storage Provider.
+[    3.593078] systemd[1]: Listening on Simple File System Backed Storage Provider.
+[    3.593968] systemd[1]: Listening on udev Control Socket.
+[    3.594849] systemd[1]: Listening on udev Kernel Socket.
+[    3.595721] systemd[1]: Listening on udev Varlink Socket.
+[    3.596589] systemd[1]: Listening on User Database Manager Socket.
+[    3.597464] systemd[1]: Huge Pages File System skipped, unmet condition check ConditionPathExists=/sys/kernel/mm/hugepages
+[    3.598662] systemd[1]: Mounting POSIX Message Queue File System...
+[    3.599711] systemd[1]: Mounting Kernel Debug File System...
+[    3.600585] systemd[1]: Kernel Trace File System skipped, unmet condition check ConditionPathExists=/sys/kernel/tracing
+[    3.601047] systemd[1]: tmp.mount: x-systemd.graceful-option=usrquota specified, but option is not available, suppressing.
+[    3.606001] systemd[1]: Mounting Temporary Directory /tmp...
+[    3.607447] systemd[1]: Create List of Static Device Nodes skipped, unmet condition check ConditionFileNotEmpty=/lib/modules/7.2.11-aurora-j714c-wip+/modules.devname
+[    3.608476] systemd[1]: Load Kernel Module configfs skipped, unmet condition check ConditionKernelModuleLoaded=!configfs
+[    3.611508] systemd[1]: Mounting Kernel Configuration File System...
+[    3.612667] systemd[1]: Load Kernel Module drm skipped, unmet condition check ConditionKernelModuleLoaded=!drm
+[    3.615097] systemd[1]: Starting Load Kernel Module fuse...
+[    3.616275] systemd[1]: Clear Stale Hibernate Storage Info skipped, unmet condition check ConditionPathExists=/sys/firmware/efi/efivars/HibernateLocation-8cf2644b-4b0b-428f-9387-6d876050dc67
+[    3.618575] systemd[1]: Rebuild Hardware Database skipped, unmet condition check ConditionNeedsUpdate=/etc
+[    3.619240] systemd[1]: systemd-journald.service: unit configures an IP firewall, but the local system does not support BPF/cgroup firewalling.
+[    3.619738] systemd[1]: systemd-journald.service: (This warning is only shown for the first unit using IP firewalling.)
+[    3.622886] systemd[1]: Starting Journal Service...
+[    3.631515] systemd[1]: Load Kernel Modules skipped, no trigger condition checks were met.
+[    3.642838] systemd[1]: Starting Generate Network Units from Kernel Command Line...
+[    3.644281] systemd[1]: TPM PCR Machine ID Measurement skipped, unmet condition check ConditionSecurity=measured-os
+[    3.645674] systemd[1]: TPM PCR OS Separator skipped, unmet condition check ConditionSecurity=measured-os
+[    3.649294] systemd[1]: Starting Load/Save OS Random Seed...
+[    3.651300] systemd-journald[117]: Collecting audit messages is disabled.
+[    3.660461] systemd[1]: Starting Apply Kernel Variables...
+[    3.663693] systemd[1]: Starting Create Static Device Nodes in /dev gracefully...
+[    3.666980] systemd[1]: Early TPM SRK Setup skipped, unmet condition check ConditionSecurity=measured-os
+[    3.668205] systemd[1]: TPM PCR NvPCR Initialization Separator skipped, unmet condition check ConditionPathExists=/etc/initrd-release
+[    3.672550] systemd[1]: Reached target Local Encrypted Volumes.
+[    3.673703] systemd[1]: TPM NvPCR Product ID Measurement skipped, unmet condition check ConditionSecurity=measured-os
+[    3.674245] systemd[1]: TPM SRK Setup skipped, unmet condition check ConditionSecurity=measured-os
+[    3.679048] systemd[1]: Starting Load udev Rules from Credentials...
+[    3.688432] systemd[1]: Starting Coldplug All udev Devices...
+[    3.700539] systemd[1]: Started Journal Service.
+[    3.732242] systemd-journald[117]: Received client request to flush runtime journal.
+[    3.865602] nvme-apple 45dcc0000.nvme: RTKit: syslog message: gc.c:9348: Stopping GC rebuild
+[    4.073104] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    4.077362] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    4.077826] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    4.078412] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    4.078807] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    4.079166] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    4.079565] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    4.079912] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    4.080892] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    4.081232] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    4.081787] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    4.082093] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    4.082605] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    4.082925] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    4.083869] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    4.084138] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    4.084945] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    4.085212] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    4.085538] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    4.086234] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    4.110432] scsi 0:0:0:0: Direct-Access     SanDisk  Extreme Pro DDE1 0010 PQ: 0 ANSI: 6
+[    4.112542] scsi 0:0:0:1: Enclosure         SanDisk  SES Device       0010 PQ: 0 ANSI: 6
+[    4.135352] sd 0:0:0:0: [sda] 1953525168 512-byte logical blocks: (1.00 TB/932 GiB)
+[    4.138899] cdc_ncm 1-1:2.0 enu1c2: renamed from eth0
+[    4.153703] sd 0:0:0:0: [sda] Write Protect is off
+[    4.153996] sd 0:0:0:0: [sda] Mode Sense: 3d 00 10 00
+[    4.167037] sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, supports DPO and FUA
+[    4.226097]  sda: sda1
+[    4.226447] sd 0:0:0:0: [sda] Attached SCSI disk
+[    6.144429] dockchannel-hid 294b30000.input: iface multi-touch start timed out
