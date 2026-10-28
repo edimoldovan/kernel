@@ -1,0 +1,586 @@
+=== root report 155.56 s
+Linux omarchy 7.2.11-aurora-j714c-wip+ #86 SMP PREEMPT Wed Oct 28 19:52:27 CET 2026 aarch64 GNU/Linux
+maxcpus=1 console=tty0 t6050_wdt=170 pd_ignore_unused printk.time=1 fstab=no plymouth.enable=0 systemd.firstboot=no idle=nop arm64.nowfxt
+--- enu1c2
+3: enu1c2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast qlen 1000
+    inet 192.168.188.39/24 brd 192.168.188.255 scope global dynamic noprefixroute enu1c2
+       valid_lft 863941sec preferred_lft 863941sec
+--- read-only
+nvme0n1p3 1
+nvme0n1p5 1
+nvme0n1p6 1
+--- mounts
+overlay / overlay rw,relatime,lowerdir=/lower,upperdir=/rw/upper,workdir=/rw/work,uuid=on 0 0
+proc /proc proc rw,nosuid,nodev,noexec,relatime 0 0
+sysfs /sys sysfs rw,nosuid,nodev,noexec,relatime 0 0
+devtmpfs /dev devtmpfs rw,nosuid,size=66205408k,nr_inodes=4137838,mode=755 0 0
+tmpfs /dev/shm tmpfs rw,nosuid,nodev 0 0
+devpts /dev/pts devpts rw,nosuid,noexec,relatime,gid=5,mode=600,ptmxmode=000 0 0
+tmpfs /run tmpfs rw,nosuid,nodev,size=26482544k,nr_inodes=819200,mode=755 0 0
+cgroup2 /sys/fs/cgroup cgroup2 rw,nosuid,nodev,noexec,relatime,nsdelegate,memory_recursiveprot,memory_hugetlb_accounting 0 0
+bpf /sys/fs/bpf bpf rw,nosuid,nodev,noexec,relatime,mode=700 0 0
+systemd-1 /proc/sys/fs/binfmt_misc autofs rw,relatime,fd=38,pgrp=1,timeout=0,minproto=5,maxproto=5,direct,pipe_ino=3131 0 0
+binfmt_misc /proc/sys/fs/binfmt_misc binfmt_misc rw,nosuid,nodev,noexec,relatime 0 0
+debugfs /sys/kernel/debug debugfs rw,nosuid,nodev,noexec,relatime 0 0
+mqueue /dev/mqueue mqueue rw,nosuid,nodev,noexec,relatime 0 0
+configfs /sys/kernel/config configfs rw,nosuid,nodev,noexec,relatime 0 0
+none /run/credentials/systemd-journald.service tmpfs ro,nosuid,nodev,noexec,relatime,nosymfollow,size=1024k,nr_inodes=1024,mode=700,noswap 0 0
+none /run/credentials/systemd-resolved.service tmpfs ro,nosuid,nodev,noexec,relatime,nosymfollow,size=1024k,nr_inodes=1024,mode=700,noswap 0 0
+tmpfs /tmp tmpfs rw,nosuid,nodev,nr_inodes=1048576 0 0
+--- is-system-running
+starting
+--- failed
+  UNIT                               LOAD   ACTIVE SUB    DESCRIPTION
+● omarchy-provision-hardware.service loaded failed failed Omarchy first-boot hardware setup deferred from the image build
+● speakersafetyd.service             loaded failed failed Speaker Protection Daemon
+● ufw.service                        loaded failed failed CLI Netfilter Manager
+
+Legend: LOAD   → Reflects whether the unit definition was properly loaded.
+        ACTIVE → The high-level unit activation state, i.e. generalization of SUB.
+        SUB    → The low-level unit activation state, values depend on unit type.
+
+3 loaded units listed.
+--- running services
+  UNIT                      LOAD   ACTIVE SUB     DESCRIPTION
+  avahi-daemon.service      loaded active running Avahi mDNS/DNS-SD Stack
+  cups.service              loaded active running CUPS Scheduler
+  dbus-broker.service       loaded active running D-Bus System Message Bus
+  NetworkManager.service    loaded active running Network Manager
+  systemd-journald.service  loaded active running Journal Service
+  systemd-logind.service    loaded active running User Login Management
+  systemd-oomd.service      loaded active running Userspace Out-Of-Memory (OOM) Killer
+  systemd-resolved.service  loaded active running Network Name Resolution
+  systemd-timesyncd.service loaded active running Network Time Synchronization
+  systemd-udevd.service     loaded active running Rule-based Manager for Device Events and Files
+  systemd-userdbd.service   loaded active running User Database Manager
+  t6050-report.service      loaded active running T6050 test report over the network
+
+Legend: LOAD   → Reflects whether the unit definition was properly loaded.
+        ACTIVE → The high-level unit activation state, i.e. generalization of SUB.
+        SUB    → The low-level unit activation state, values depend on unit type.
+
+12 loaded units listed.
+--- /dev/dri
+total 0
+drwxr-xr-x    2 root     root            60 Oct 18 16:25 by-path
+crw-rw----    1 root     video     226,   0 Oct 18 16:25 card0
+--- display-manager
+○ sddm.service - Simple Desktop Display Manager
+     Loaded: loaded (/usr/lib/systemd/system/sddm.service; enabled; preset: disabled)
+    Drop-In: /usr/lib/systemd/system/sddm.service.d
+             └─10-omarchy-mac-wait-for-display.conf, 20-mac-first-boot.conf
+     Active: inactive (dead)
+        Job: 185
+       Docs: man:sddm(1)
+             man:sddm.conf(5)
+--- sddm, NetworkManager
+Oct 18 16:27:02 omarchy systemd[1]: Starting Network Manager...
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.1589] NetworkManager (version 1.58.1-2) is starting... (boot:fb99afaf-530f-4add-b696-ce54b77003d6)
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.1590] Read config: /etc/NetworkManager/NetworkManager.conf, /usr/lib/NetworkManager/conf.d/{20-connectivity.conf,20-omarchy-mac-wifi.conf}, /etc/NetworkManager/conf.d/{omarchy-connectivity.conf,omarchy-wifi-powersave.conf}
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.1841] manager[0x55559fd04710]: monitoring kernel firmware directory '/lib/firmware'.
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3023] hostname: hostname: using hostnamed
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3023] hostname: static hostname changed from (none) to "omarchy"
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3025] dns-mgr: init: dns=systemd-resolved rc-manager=symlink, plugin=systemd-resolved
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3050] Loaded device plugin: NMAtmManager (/usr/lib/NetworkManager/1.58.1-2/libnm-device-plugin-adsl.so)
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3088] Loaded device plugin: NMBluezManager (/usr/lib/NetworkManager/1.58.1-2/libnm-device-plugin-bluetooth.so)
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3098] Loaded device plugin: NMOvsFactory (/usr/lib/NetworkManager/1.58.1-2/libnm-device-plugin-ovs.so)
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3155] Loaded device plugin: NMTeamFactory (/usr/lib/NetworkManager/1.58.1-2/libnm-device-plugin-team.so)
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3170] Loaded device plugin: NMWifiFactory (/usr/lib/NetworkManager/1.58.1-2/libnm-device-plugin-wifi.so)
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3173] Loaded device plugin: NMWwanFactory (/usr/lib/NetworkManager/1.58.1-2/libnm-device-plugin-wwan.so)
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3181] manager: rfkill: Wi-Fi enabled by radio killswitch; enabled by state file
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3182] manager: rfkill: WWAN enabled by radio killswitch; enabled by state file
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3186] manager: Networking is enabled by state file
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3324] settings: Loaded settings plugin: keyfile (internal)
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3377] dhcp: init: Using DHCP client 'internal'
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3381] manager: (lo): new Loopback device (/org/freedesktop/NetworkManager/Devices/1)
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3475] device (lo): state change: unmanaged -> unavailable (reason 'connection-assumed', managed-type: 'external')
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3479] device (lo): state change: unavailable -> disconnected (reason 'connection-assumed', managed-type: 'external')
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3486] device (lo): Activation: starting connection 'lo' (788e19f2-8097-4564-9f2f-a4fe71116cb2)
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3495] manager: (enu1c2): new Ethernet device (/org/freedesktop/NetworkManager/Devices/2)
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3528] settings: (enu1c2): created default wired connection 'Wired connection 1'
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3529] device (enu1c2): state change: unmanaged -> unavailable (reason 'managed', managed-type: 'external')
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3545] manager: (sit0): new IPTunnel device (/org/freedesktop/NetworkManager/Devices/3)
+Oct 18 16:27:02 omarchy systemd[1]: Started Network Manager.
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3694] bus-manager: acquired D-Bus service "org.freedesktop.NetworkManager"
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3839] ovsdb: disconnected from ovsdb
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3840] device (lo): state change: disconnected -> prepare (reason 'none', managed-type: 'external')
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3841] device (lo): state change: prepare -> config (reason 'none', managed-type: 'external')
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3843] device (lo): state change: config -> ip-config (reason 'none', managed-type: 'external')
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3942] device (lo): state change: ip-config -> ip-check (reason 'none', managed-type: 'external')
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3963] device (lo): state change: ip-check -> secondaries (reason 'none', managed-type: 'external')
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3964] device (lo): state change: secondaries -> activated (reason 'none', managed-type: 'external')
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.4103] device (lo): Activation: successful, device activated.
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.8439] device (enu1c2): carrier: link connected
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.8441] device (enu1c2): state change: unavailable -> disconnected (reason 'carrier-changed', managed-type: 'full')
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.8485] policy: auto-activating connection 'Wired connection 1' (46f88265-29fa-3078-8f20-3acb209ff5fa)
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.8486] device (enu1c2): Activation: starting connection 'Wired connection 1' (46f88265-29fa-3078-8f20-3acb209ff5fa)
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.8487] device (enu1c2): state change: disconnected -> prepare (reason 'none', managed-type: 'full')
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.8488] manager: NetworkManager state is now CONNECTING
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.8488] device (enu1c2): state change: prepare -> config (reason 'none', managed-type: 'full')
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.8491] device (enu1c2): state change: config -> ip-config (reason 'none', managed-type: 'full')
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.8493] dhcp4 (enu1c2): activation: beginning transaction (timeout in 45 seconds)
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.8870] dhcp4 (enu1c2): state changed new lease, address=192.168.188.39, acd pending
+Oct 18 16:27:03 omarchy NetworkManager[264]: <info>  [1792340823.0243] dhcp4 (enu1c2): state changed new lease, address=192.168.188.39
+Oct 18 16:27:03 omarchy NetworkManager[264]: <info>  [1792340823.0247] policy: set 'Wired connection 1' (enu1c2) as default for IPv4 routing and DNS
+Oct 18 16:27:03 omarchy NetworkManager[264]: <info>  [1792340823.0263] device (enu1c2): state change: ip-config -> ip-check (reason 'none', managed-type: 'full')
+Oct 18 16:27:03 omarchy NetworkManager[264]: <info>  [1792340823.0267] device (enu1c2): state change: ip-check -> secondaries (reason 'none', managed-type: 'full')
+Oct 18 16:27:03 omarchy NetworkManager[264]: <info>  [1792340823.0268] device (enu1c2): state change: secondaries -> activated (reason 'none', managed-type: 'full')
+Oct 18 16:27:03 omarchy NetworkManager[264]: <info>  [1792340823.0270] manager: NetworkManager state is now CONNECTED_SITE
+Oct 18 16:27:03 omarchy NetworkManager[264]: <info>  [1792340823.0282] device (enu1c2): Activation: successful, device activated.
+Oct 18 16:27:03 omarchy NetworkManager[264]: <info>  [1792340823.0284] manager: startup complete
+Oct 18 16:27:03 omarchy NetworkManager[264]: <info>  [1792340823.1039] manager: NetworkManager state is now CONNECTED_GLOBAL
+Oct 18 16:27:04 omarchy NetworkManager[264]: <info>  [1792340824.6247] dhcp6 (enu1c2): activation: beginning transaction (timeout in 45 seconds)
+Oct 18 16:27:04 omarchy NetworkManager[264]: <info>  [1792340824.6289] policy: set 'Wired connection 1' (enu1c2) as default for IPv6 routing and DNS
+Oct 18 16:27:04 omarchy NetworkManager[264]: <info>  [1792340824.6561] dhcp6 (enu1c2): state changed new lease
+--- journal
+Oct 18 16:27:02 omarchy systemd[1]: Expecting device /dev/zram0...
+Oct 18 16:27:02 omarchy systemd[1]: Starting Network Manager Script Dispatcher Service...
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3324] settings: Loaded settings plugin: keyfile (internal)
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3377] dhcp: init: Using DHCP client 'internal'
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3381] manager: (lo): new Loopback device (/org/freedesktop/NetworkManager/Devices/1)
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3475] device (lo): state change: unmanaged -> unavailable (reason 'connection-assumed', managed-type: 'external')
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3479] device (lo): state change: unavailable -> disconnected (reason 'connection-assumed', managed-type: 'external')
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3486] device (lo): Activation: starting connection 'lo' (788e19f2-8097-4564-9f2f-a4fe71116cb2)
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3495] manager: (enu1c2): new Ethernet device (/org/freedesktop/NetworkManager/Devices/2)
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3528] settings: (enu1c2): created default wired connection 'Wired connection 1'
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3529] device (enu1c2): state change: unmanaged -> unavailable (reason 'managed', managed-type: 'external')
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3545] manager: (sit0): new IPTunnel device (/org/freedesktop/NetworkManager/Devices/3)
+Oct 18 16:27:02 omarchy systemd[1]: Started Network Manager.
+Oct 18 16:27:02 omarchy systemd[1]: Reached target Network.
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3694] bus-manager: acquired D-Bus service "org.freedesktop.NetworkManager"
+Oct 18 16:27:02 omarchy systemd[1]: Starting CUPS Scheduler...
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3839] ovsdb: disconnected from ovsdb
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3840] device (lo): state change: disconnected -> prepare (reason 'none', managed-type: 'external')
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3841] device (lo): state change: prepare -> config (reason 'none', managed-type: 'external')
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3843] device (lo): state change: config -> ip-config (reason 'none', managed-type: 'external')
+Oct 18 16:27:02 omarchy systemd[1]: Starting Permit User Sessions...
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3942] device (lo): state change: ip-config -> ip-check (reason 'none', managed-type: 'external')
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3963] device (lo): state change: ip-check -> secondaries (reason 'none', managed-type: 'external')
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.3964] device (lo): state change: secondaries -> activated (reason 'none', managed-type: 'external')
+Oct 18 16:27:02 omarchy systemd[1]: Started Network Manager Script Dispatcher Service.
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.4103] device (lo): Activation: successful, device activated.
+Oct 18 16:27:02 omarchy systemd[1]: Finished Permit User Sessions.
+Oct 18 16:27:02 omarchy systemd[1]: Starting Omarchy first boot: finish this Mac's image, then owner setup...
+Oct 18 16:27:02 omarchy systemd[1]: Started CUPS Scheduler.
+Oct 18 16:27:02 omarchy omarchy-mac-first-boot[327]: Creating this Mac's package keyring...
+Oct 18 16:27:02 omarchy bash[265]: /usr/lib/modules/7.2.11-9-1-ARCH/ is owned by linux-aurora 7.2.11.aurora9-1
+Oct 18 16:27:02 omarchy bash[265]: /usr/lib/modules/7.2.11-9-1-ARCH/ is owned by linux-aurora-headers 7.2.11.aurora9-1
+Oct 18 16:27:02 omarchy bash[262]: + continue
+Oct 18 16:27:02 omarchy systemd[1]: linux-modules-cleanup.service: Deactivated successfully.
+Oct 18 16:27:02 omarchy systemd[1]: Finished Clean up modules from old kernels.
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.8439] device (enu1c2): carrier: link connected
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.8441] device (enu1c2): state change: unavailable -> disconnected (reason 'carrier-changed', managed-type: 'full')
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.8485] policy: auto-activating connection 'Wired connection 1' (46f88265-29fa-3078-8f20-3acb209ff5fa)
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.8486] device (enu1c2): Activation: starting connection 'Wired connection 1' (46f88265-29fa-3078-8f20-3acb209ff5fa)
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.8487] device (enu1c2): state change: disconnected -> prepare (reason 'none', managed-type: 'full')
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.8488] manager: NetworkManager state is now CONNECTING
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.8488] device (enu1c2): state change: prepare -> config (reason 'none', managed-type: 'full')
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.8491] device (enu1c2): state change: config -> ip-config (reason 'none', managed-type: 'full')
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.8493] dhcp4 (enu1c2): activation: beginning transaction (timeout in 45 seconds)
+Oct 18 16:27:02 omarchy NetworkManager[264]: <info>  [1792340822.8870] dhcp4 (enu1c2): state changed new lease, address=192.168.188.39, acd pending
+Oct 18 16:27:03 omarchy NetworkManager[264]: <info>  [1792340823.0243] dhcp4 (enu1c2): state changed new lease, address=192.168.188.39
+Oct 18 16:27:03 omarchy avahi-daemon[260]: Joining mDNS multicast group on interface enu1c2.IPv4 with address 192.168.188.39.
+Oct 18 16:27:03 omarchy avahi-daemon[260]: New relevant interface enu1c2.IPv4 for mDNS.
+Oct 18 16:27:03 omarchy avahi-daemon[260]: Registering new address record for 192.168.188.39 on enu1c2.IPv4.
+Oct 18 16:27:03 omarchy NetworkManager[264]: <info>  [1792340823.0247] policy: set 'Wired connection 1' (enu1c2) as default for IPv4 routing and DNS
+Oct 18 16:27:03 omarchy systemd-resolved[187]: enu1c2: Bus client set search domain list to: fritz.box
+Oct 18 16:27:03 omarchy systemd-resolved[187]: enu1c2: Bus client set default route setting: yes
+Oct 18 16:27:03 omarchy systemd-resolved[187]: enu1c2: Bus client set DNS server list to: 192.168.188.1
+Oct 18 16:27:03 omarchy NetworkManager[264]: <info>  [1792340823.0263] device (enu1c2): state change: ip-config -> ip-check (reason 'none', managed-type: 'full')
+Oct 18 16:27:03 omarchy NetworkManager[264]: <info>  [1792340823.0267] device (enu1c2): state change: ip-check -> secondaries (reason 'none', managed-type: 'full')
+Oct 18 16:27:03 omarchy NetworkManager[264]: <info>  [1792340823.0268] device (enu1c2): state change: secondaries -> activated (reason 'none', managed-type: 'full')
+Oct 18 16:27:03 omarchy NetworkManager[264]: <info>  [1792340823.0270] manager: NetworkManager state is now CONNECTED_SITE
+Oct 18 16:27:03 omarchy NetworkManager[264]: <info>  [1792340823.0282] device (enu1c2): Activation: successful, device activated.
+Oct 18 16:27:03 omarchy NetworkManager[264]: <info>  [1792340823.0284] manager: startup complete
+Oct 18 16:27:03 omarchy NetworkManager[264]: <info>  [1792340823.1039] manager: NetworkManager state is now CONNECTED_GLOBAL
+Oct 18 16:27:03 omarchy avahi-daemon[260]: Server startup complete. Host name is omarchy.local. Local service cookie is 2949898438.
+Oct 18 16:27:03 omarchy avahi-daemon[260]: Withdrawing address record for ::1 on lo.
+Oct 18 16:27:03 omarchy avahi-daemon[260]: Withdrawing address record for 127.0.0.1 on lo.
+Oct 18 16:27:03 omarchy avahi-daemon[260]: Host name conflict, retrying with omarchy-2
+Oct 18 16:27:03 omarchy avahi-daemon[260]: Registering new address record for 192.168.188.39 on enu1c2.IPv4.
+Oct 18 16:27:03 omarchy avahi-daemon[260]: Registering new address record for ::1 on lo.*.
+Oct 18 16:27:03 omarchy avahi-daemon[260]: Registering new address record for 127.0.0.1 on lo.IPv4.
+Oct 18 16:27:03 omarchy systemd[1]: speakersafetyd.service: Scheduled restart job, restart counter is at 1.
+Oct 18 16:27:03 omarchy systemd[1]: Starting Speaker Protection Daemon...
+Oct 18 16:27:03 omarchy systemd[1]: Started Speaker Protection Daemon.
+Oct 18 16:27:03 omarchy speakersafetyd[373]: INFO  [speakersafetyd] Starting up
+Oct 18 16:27:03 omarchy speakersafetyd[373]: INFO  [speakersafetyd] Config base: "/usr/share/speakersafetyd/"
+Oct 18 16:27:03 omarchy speakersafetyd[373]: INFO  [speakersafetyd] Machine: apple,j714
+Oct 18 16:27:03 omarchy speakersafetyd[373]: INFO  [speakersafetyd] Config file: "/usr/share/speakersafetyd/apple/j714.conf"
+Oct 18 16:27:03 omarchy speakersafetyd[373]: INFO  [speakersafetyd] Device: hw:AppleJ714
+Oct 18 16:27:03 omarchy speakersafetyd[373]: thread 'main' (373) panicked at src/main.rs:136:27:
+Oct 18 16:27:03 omarchy speakersafetyd[373]: Failed to read config file: "couldn't read /usr/share/speakersafetyd/apple/j714.conf: No such file or directory (os error 2)"
+Oct 18 16:27:03 omarchy speakersafetyd[373]: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+Oct 18 16:27:03 omarchy systemd[1]: speakersafetyd.service: Main process exited, code=exited, status=101/n/a
+Oct 18 16:27:03 omarchy systemd[1]: speakersafetyd.service: Failed with result 'exit-code'.
+Oct 18 16:27:04 omarchy avahi-daemon[260]: Joining mDNS multicast group on interface enu1c2.IPv6 with address fe80::a096:749b:d63f:ed9c.
+Oct 18 16:27:04 omarchy avahi-daemon[260]: New relevant interface enu1c2.IPv6 for mDNS.
+Oct 18 16:27:04 omarchy avahi-daemon[260]: Registering new address record for fe80::a096:749b:d63f:ed9c on enu1c2.*.
+Oct 18 16:27:04 omarchy systemd[1]: speakersafetyd.service: Scheduled restart job, restart counter is at 2.
+Oct 18 16:27:04 omarchy systemd[1]: Starting Speaker Protection Daemon...
+Oct 18 16:27:04 omarchy systemd[1]: Reload requested from client PID 535 ('systemctl') (unit omarchy-mac-first-boot.service)...
+Oct 18 16:27:04 omarchy systemd[1]: Reloading...
+Oct 18 16:27:04 omarchy zram_generator::generator[578]: modprobe "zram" failed, ignoring: code exit status: 1
+Oct 18 16:27:04 omarchy (generato[558]: '/usr/lib/systemd/system-generators/zram-generator' failed with exit status 1.
+Oct 18 16:27:04 omarchy systemd[1]: Reloading finished in 106 ms.
+Oct 18 16:27:04 omarchy systemd[1]: Started Speaker Protection Daemon.
+Oct 18 16:27:04 omarchy NetworkManager[264]: <info>  [1792340824.6247] dhcp6 (enu1c2): activation: beginning transaction (timeout in 45 seconds)
+Oct 18 16:27:04 omarchy NetworkManager[264]: <info>  [1792340824.6289] policy: set 'Wired connection 1' (enu1c2) as default for IPv6 routing and DNS
+Oct 18 16:27:04 omarchy systemd[1]: Reload requested from client PID 586 ('systemctl') (unit omarchy-mac-first-boot.service)...
+Oct 18 16:27:04 omarchy systemd[1]: Reloading...
+Oct 18 16:27:04 omarchy systemd-resolved[187]: enu1c2: Bus client set DNS server list to: 192.168.188.1, fd58:8a51:3f83:0:464e:6dff:fefc:9af9, 2001:2042:3427:c504:464e:6dff:fefc:9af9
+Oct 18 16:27:04 omarchy speakersafetyd[587]: INFO  [speakersafetyd] Starting up
+Oct 18 16:27:04 omarchy speakersafetyd[587]: INFO  [speakersafetyd] Config base: "/usr/share/speakersafetyd/"
+Oct 18 16:27:04 omarchy speakersafetyd[587]: INFO  [speakersafetyd] Machine: apple,j714
+Oct 18 16:27:04 omarchy speakersafetyd[587]: INFO  [speakersafetyd] Config file: "/usr/share/speakersafetyd/apple/j714.conf"
+Oct 18 16:27:04 omarchy speakersafetyd[587]: INFO  [speakersafetyd] Device: hw:AppleJ714
+Oct 18 16:27:04 omarchy speakersafetyd[587]: thread 'main' (587) panicked at src/main.rs:136:27:
+Oct 18 16:27:04 omarchy speakersafetyd[587]: Failed to read config file: "couldn't read /usr/share/speakersafetyd/apple/j714.conf: No such file or directory (os error 2)"
+Oct 18 16:27:04 omarchy speakersafetyd[587]: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+Oct 18 16:27:04 omarchy NetworkManager[264]: <info>  [1792340824.6561] dhcp6 (enu1c2): state changed new lease
+Oct 18 16:27:04 omarchy zram_generator::generator[630]: modprobe "zram" failed, ignoring: code exit status: 1
+Oct 18 16:27:04 omarchy (generato[610]: '/usr/lib/systemd/system-generators/zram-generator' failed with exit status 1.
+Oct 18 16:27:04 omarchy systemd[1]: Reloading finished in 111 ms.
+Oct 18 16:27:04 omarchy systemd[1]: speakersafetyd.service: Main process exited, code=exited, status=101/n/a
+Oct 18 16:27:04 omarchy systemd[1]: speakersafetyd.service: Failed with result 'exit-code'.
+Oct 18 16:27:04 omarchy systemd[1]: Reload requested from client PID 637 ('systemctl') (unit omarchy-mac-first-boot.service)...
+Oct 18 16:27:04 omarchy systemd[1]: Reloading...
+Oct 18 16:27:04 omarchy zram_generator::generator[678]: modprobe "zram" failed, ignoring: code exit status: 1
+Oct 18 16:27:04 omarchy (generato[658]: '/usr/lib/systemd/system-generators/zram-generator' failed with exit status 1.
+Oct 18 16:27:04 omarchy systemd[1]: Reloading finished in 103 ms.
+Oct 18 16:27:04 omarchy systemd[1]: Reload requested from client PID 684 ('systemctl') (unit omarchy-mac-first-boot.service)...
+Oct 18 16:27:04 omarchy systemd[1]: Reloading...
+Oct 18 16:27:04 omarchy zram_generator::generator[724]: modprobe "zram" failed, ignoring: code exit status: 1
+Oct 18 16:27:04 omarchy (generato[705]: '/usr/lib/systemd/system-generators/zram-generator' failed with exit status 1.
+Oct 18 16:27:04 omarchy systemd[1]: Reloading finished in 104 ms.
+Oct 18 16:27:05 omarchy systemd[1]: Reload requested from client PID 731 ('systemctl') (unit omarchy-mac-first-boot.service)...
+Oct 18 16:27:05 omarchy systemd[1]: Reloading...
+Oct 18 16:27:05 omarchy zram_generator::generator[772]: modprobe "zram" failed, ignoring: code exit status: 1
+Oct 18 16:27:05 omarchy (generato[752]: '/usr/lib/systemd/system-generators/zram-generator' failed with exit status 1.
+Oct 18 16:27:05 omarchy systemd[1]: Reloading finished in 106 ms.
+Oct 18 16:27:05 omarchy systemd[1]: Reload requested from client PID 778 ('systemctl') (unit omarchy-mac-first-boot.service)...
+Oct 18 16:27:05 omarchy systemd[1]: Reloading...
+Oct 18 16:27:05 omarchy zram_generator::generator[819]: modprobe "zram" failed, ignoring: code exit status: 1
+Oct 18 16:27:05 omarchy (generato[799]: '/usr/lib/systemd/system-generators/zram-generator' failed with exit status 1.
+Oct 18 16:27:05 omarchy systemd[1]: Reloading finished in 103 ms.
+Oct 18 16:27:05 omarchy systemd[1]: Reload requested from client PID 825 ('systemctl') (unit omarchy-mac-first-boot.service)...
+Oct 18 16:27:05 omarchy systemd[1]: Reloading...
+Oct 18 16:27:05 omarchy zram_generator::generator[866]: modprobe "zram" failed, ignoring: code exit status: 1
+Oct 18 16:27:05 omarchy (generato[846]: '/usr/lib/systemd/system-generators/zram-generator' failed with exit status 1.
+Oct 18 16:27:05 omarchy avahi-daemon[260]: Server startup complete. Host name is omarchy-2.local. Local service cookie is 2949898438.
+Oct 18 16:27:05 omarchy systemd[1]: Reloading finished in 104 ms.
+Oct 18 16:27:05 omarchy systemd[1]: Reload requested from client PID 872 ('systemctl') (unit omarchy-mac-first-boot.service)...
+Oct 18 16:27:05 omarchy systemd[1]: Reloading...
+Oct 18 16:27:05 omarchy zram_generator::generator[913]: modprobe "zram" failed, ignoring: code exit status: 1
+Oct 18 16:27:05 omarchy (generato[893]: '/usr/lib/systemd/system-generators/zram-generator' failed with exit status 1.
+Oct 18 16:27:05 omarchy systemd[1]: Reloading finished in 103 ms.
+Oct 18 16:27:05 omarchy systemd[1]: Reload requested from client PID 954 ('systemctl') (unit omarchy-mac-first-boot.service)...
+Oct 18 16:27:05 omarchy systemd[1]: Reloading...
+Oct 18 16:27:05 omarchy zram_generator::generator[995]: modprobe "zram" failed, ignoring: code exit status: 1
+Oct 18 16:27:05 omarchy (generato[975]: '/usr/lib/systemd/system-generators/zram-generator' failed with exit status 1.
+Oct 18 16:27:05 omarchy systemd[1]: Reloading finished in 103 ms.
+Oct 18 16:27:05 omarchy systemd[1]: Bluetooth service skipped, unmet condition check ConditionPathIsDirectory=/sys/class/bluetooth
+Oct 18 16:27:05 omarchy systemd[1]: speakersafetyd.service: Scheduled restart job, restart counter is at 3.
+Oct 18 16:27:05 omarchy systemd[1]: Starting Speaker Protection Daemon...
+Oct 18 16:27:05 omarchy systemd[1]: Started Speaker Protection Daemon.
+Oct 18 16:27:05 omarchy speakersafetyd[1263]: INFO  [speakersafetyd] Starting up
+Oct 18 16:27:05 omarchy speakersafetyd[1263]: INFO  [speakersafetyd] Config base: "/usr/share/speakersafetyd/"
+Oct 18 16:27:05 omarchy speakersafetyd[1263]: INFO  [speakersafetyd] Machine: apple,j714
+Oct 18 16:27:05 omarchy speakersafetyd[1263]: INFO  [speakersafetyd] Config file: "/usr/share/speakersafetyd/apple/j714.conf"
+Oct 18 16:27:05 omarchy speakersafetyd[1263]: INFO  [speakersafetyd] Device: hw:AppleJ714
+Oct 18 16:27:05 omarchy speakersafetyd[1263]: thread 'main' (1263) panicked at src/main.rs:136:27:
+Oct 18 16:27:05 omarchy speakersafetyd[1263]: Failed to read config file: "couldn't read /usr/share/speakersafetyd/apple/j714.conf: No such file or directory (os error 2)"
+Oct 18 16:27:05 omarchy speakersafetyd[1263]: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+Oct 18 16:27:05 omarchy systemd[1]: speakersafetyd.service: Main process exited, code=exited, status=101/n/a
+Oct 18 16:27:05 omarchy systemd[1]: speakersafetyd.service: Failed with result 'exit-code'.
+Oct 18 16:27:05 omarchy omarchy-mac-first-boot[327]: Some hardware setup could not finish yet (see /var/log/omarchy-mac-first-boot.log and /var/log/omarchy-install.log); it is retried after first boot.
+Oct 18 16:27:05 omarchy systemd[1]: Reload requested from client PID 1348 ('systemctl') (unit omarchy-mac-first-boot.service)...
+Oct 18 16:27:05 omarchy systemd[1]: Reloading...
+Oct 18 16:27:06 omarchy zram_generator::generator[1391]: modprobe "zram" failed, ignoring: code exit status: 1
+Oct 18 16:27:06 omarchy (generato[1369]: '/usr/lib/systemd/system-generators/zram-generator' failed with exit status 1.
+Oct 18 16:27:06 omarchy systemd[1]: Reloading finished in 102 ms.
+Oct 18 16:27:06 omarchy omarchy-mac-first-boot[327]: Ready for account setup.
+Oct 18 16:27:06 omarchy systemd[1]: Reload requested from client PID 1397 ('systemctl') (unit omarchy-mac-first-boot.service)...
+Oct 18 16:27:06 omarchy systemd[1]: Reloading...
+Oct 18 16:27:06 omarchy zram_generator::generator[1438]: modprobe "zram" failed, ignoring: code exit status: 1
+Oct 18 16:27:06 omarchy (generato[1418]: '/usr/lib/systemd/system-generators/zram-generator' failed with exit status 1.
+Oct 18 16:27:06 omarchy systemd[1]: Reloading finished in 104 ms.
+Oct 18 16:27:06 omarchy avahi-daemon[260]: Leaving mDNS multicast group on interface enu1c2.IPv6 with address fe80::a096:749b:d63f:ed9c.
+Oct 18 16:27:06 omarchy avahi-daemon[260]: Joining mDNS multicast group on interface enu1c2.IPv6 with address fd58:8a51:3f83:0:db87:c95f:76a7:3c24.
+Oct 18 16:27:06 omarchy avahi-daemon[260]: Registering new address record for fd58:8a51:3f83:0:db87:c95f:76a7:3c24 on enu1c2.*.
+Oct 18 16:27:06 omarchy avahi-daemon[260]: Withdrawing address record for fe80::a096:749b:d63f:ed9c on enu1c2.
+Oct 18 16:27:06 omarchy avahi-daemon[260]: Registering new address record for 2001:2042:3427:c504:5204:2272:6b96:7e8e on enu1c2.*.
+Oct 18 16:27:06 omarchy systemd[1]: omarchy-mac-first-boot.service: Deactivated successfully.
+Oct 18 16:27:06 omarchy systemd[1]: Finished Omarchy first boot: finish this Mac's image, then owner setup.
+Oct 18 16:27:06 omarchy systemd[1]: omarchy-mac-first-boot.service: Consumed 2.237s CPU time over 3.804s wall clock time, 34M memory peak.
+Oct 18 16:27:06 omarchy systemd[1]: Starting Omarchy first-boot hardware setup deferred from the image build...
+Oct 18 16:27:06 omarchy systemd[1]: Starting Hold until boot process finishes up...
+Oct 18 16:27:06 omarchy systemd[1]: Starting Terminate Plymouth Boot Screen...
+Oct 18 16:27:06 omarchy systemd[1]: Finished Hold until boot process finishes up.
+Oct 18 16:27:06 omarchy systemd[1]: Finished Terminate Plymouth Boot Screen.
+Oct 18 16:27:06 omarchy omarchy-provision-hardware[1459]: Running deferred hardware step install/hardware/fix-bcm43xx.sh
+Oct 18 16:27:06 omarchy omarchy-provision-hardware[1459]: Error: Deferred hardware step failed: install/hardware/fix-bcm43xx.sh (see /var/log/omarchy-install.log); the next run resumes here
+Oct 18 16:27:06 omarchy systemd[1]: omarchy-provision-hardware.service: Main process exited, code=exited, status=75/TEMPFAIL
+Oct 18 16:27:06 omarchy systemd[1]: omarchy-provision-hardware.service: Failed with result 'exit-code'.
+Oct 18 16:27:06 omarchy systemd[1]: Failed to start Omarchy first-boot hardware setup deferred from the image build.
+Oct 18 16:27:06 omarchy systemd[1]: Starting Omarchy provisioning first-boot user setup...
+Oct 18 16:27:07 omarchy systemd[1]: speakersafetyd.service: Scheduled restart job, restart counter is at 4.
+Oct 18 16:27:07 omarchy systemd[1]: Starting Speaker Protection Daemon...
+Oct 18 16:27:07 omarchy systemd[1]: Started Speaker Protection Daemon.
+Oct 18 16:27:07 omarchy speakersafetyd[1515]: INFO  [speakersafetyd] Starting up
+Oct 18 16:27:07 omarchy speakersafetyd[1515]: INFO  [speakersafetyd] Config base: "/usr/share/speakersafetyd/"
+Oct 18 16:27:07 omarchy speakersafetyd[1515]: INFO  [speakersafetyd] Machine: apple,j714
+Oct 18 16:27:07 omarchy speakersafetyd[1515]: INFO  [speakersafetyd] Config file: "/usr/share/speakersafetyd/apple/j714.conf"
+Oct 18 16:27:07 omarchy speakersafetyd[1515]: INFO  [speakersafetyd] Device: hw:AppleJ714
+Oct 18 16:27:07 omarchy speakersafetyd[1515]: thread 'main' (1515) panicked at src/main.rs:136:27:
+Oct 18 16:27:07 omarchy speakersafetyd[1515]: Failed to read config file: "couldn't read /usr/share/speakersafetyd/apple/j714.conf: No such file or directory (os error 2)"
+Oct 18 16:27:07 omarchy speakersafetyd[1515]: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+Oct 18 16:27:07 omarchy systemd[1]: speakersafetyd.service: Main process exited, code=exited, status=101/n/a
+Oct 18 16:27:07 omarchy systemd[1]: speakersafetyd.service: Failed with result 'exit-code'.
+Oct 18 16:27:08 omarchy systemd[1]: speakersafetyd.service: Scheduled restart job, restart counter is at 5.
+Oct 18 16:27:08 omarchy systemd[1]: Starting Speaker Protection Daemon...
+Oct 18 16:27:08 omarchy systemd[1]: Started Speaker Protection Daemon.
+Oct 18 16:27:08 omarchy speakersafetyd[1578]: INFO  [speakersafetyd] Starting up
+Oct 18 16:27:08 omarchy speakersafetyd[1578]: INFO  [speakersafetyd] Config base: "/usr/share/speakersafetyd/"
+Oct 18 16:27:08 omarchy speakersafetyd[1578]: INFO  [speakersafetyd] Machine: apple,j714
+Oct 18 16:27:08 omarchy speakersafetyd[1578]: INFO  [speakersafetyd] Config file: "/usr/share/speakersafetyd/apple/j714.conf"
+Oct 18 16:27:08 omarchy speakersafetyd[1578]: INFO  [speakersafetyd] Device: hw:AppleJ714
+Oct 18 16:27:08 omarchy speakersafetyd[1578]: thread 'main' (1578) panicked at src/main.rs:136:27:
+Oct 18 16:27:08 omarchy speakersafetyd[1578]: Failed to read config file: "couldn't read /usr/share/speakersafetyd/apple/j714.conf: No such file or directory (os error 2)"
+Oct 18 16:27:08 omarchy speakersafetyd[1578]: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+Oct 18 16:27:08 omarchy systemd[1]: speakersafetyd.service: Main process exited, code=exited, status=101/n/a
+Oct 18 16:27:08 omarchy systemd[1]: speakersafetyd.service: Failed with result 'exit-code'.
+Oct 18 16:27:09 omarchy systemd[1]: speakersafetyd.service: Scheduled restart job, restart counter is at 6.
+Oct 18 16:27:09 omarchy systemd[1]: Starting Speaker Protection Daemon...
+Oct 18 16:27:09 omarchy systemd[1]: Started Speaker Protection Daemon.
+Oct 18 16:27:09 omarchy speakersafetyd[1630]: INFO  [speakersafetyd] Starting up
+Oct 18 16:27:09 omarchy speakersafetyd[1630]: INFO  [speakersafetyd] Config base: "/usr/share/speakersafetyd/"
+Oct 18 16:27:09 omarchy speakersafetyd[1630]: INFO  [speakersafetyd] Machine: apple,j714
+Oct 18 16:27:09 omarchy speakersafetyd[1630]: INFO  [speakersafetyd] Config file: "/usr/share/speakersafetyd/apple/j714.conf"
+Oct 18 16:27:09 omarchy speakersafetyd[1630]: INFO  [speakersafetyd] Device: hw:AppleJ714
+Oct 18 16:27:09 omarchy speakersafetyd[1630]: thread 'main' (1630) panicked at src/main.rs:136:27:
+Oct 18 16:27:09 omarchy speakersafetyd[1630]: Failed to read config file: "couldn't read /usr/share/speakersafetyd/apple/j714.conf: No such file or directory (os error 2)"
+Oct 18 16:27:09 omarchy speakersafetyd[1630]: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+Oct 18 16:27:09 omarchy systemd[1]: speakersafetyd.service: Main process exited, code=exited, status=101/n/a
+Oct 18 16:27:09 omarchy systemd[1]: speakersafetyd.service: Failed with result 'exit-code'.
+Oct 18 16:27:10 omarchy systemd[1]: speakersafetyd.service: Scheduled restart job, restart counter is at 7.
+Oct 18 16:27:10 omarchy systemd[1]: Starting Speaker Protection Daemon...
+Oct 18 16:27:10 omarchy systemd[1]: Started Speaker Protection Daemon.
+Oct 18 16:27:10 omarchy speakersafetyd[1657]: INFO  [speakersafetyd] Starting up
+Oct 18 16:27:10 omarchy speakersafetyd[1657]: INFO  [speakersafetyd] Config base: "/usr/share/speakersafetyd/"
+Oct 18 16:27:10 omarchy speakersafetyd[1657]: INFO  [speakersafetyd] Machine: apple,j714
+Oct 18 16:27:10 omarchy speakersafetyd[1657]: INFO  [speakersafetyd] Config file: "/usr/share/speakersafetyd/apple/j714.conf"
+Oct 18 16:27:10 omarchy speakersafetyd[1657]: INFO  [speakersafetyd] Device: hw:AppleJ714
+Oct 18 16:27:10 omarchy speakersafetyd[1657]: thread 'main' (1657) panicked at src/main.rs:136:27:
+Oct 18 16:27:10 omarchy speakersafetyd[1657]: Failed to read config file: "couldn't read /usr/share/speakersafetyd/apple/j714.conf: No such file or directory (os error 2)"
+Oct 18 16:27:10 omarchy speakersafetyd[1657]: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+Oct 18 16:27:10 omarchy systemd[1]: speakersafetyd.service: Main process exited, code=exited, status=101/n/a
+Oct 18 16:27:10 omarchy systemd[1]: speakersafetyd.service: Failed with result 'exit-code'.
+Oct 18 16:27:12 omarchy systemd[1]: speakersafetyd.service: Scheduled restart job, restart counter is at 8.
+Oct 18 16:27:12 omarchy systemd[1]: Starting Speaker Protection Daemon...
+Oct 18 16:27:12 omarchy systemd[1]: Started Speaker Protection Daemon.
+Oct 18 16:27:12 omarchy speakersafetyd[1723]: INFO  [speakersafetyd] Starting up
+Oct 18 16:27:12 omarchy speakersafetyd[1723]: INFO  [speakersafetyd] Config base: "/usr/share/speakersafetyd/"
+Oct 18 16:27:12 omarchy speakersafetyd[1723]: INFO  [speakersafetyd] Machine: apple,j714
+Oct 18 16:27:12 omarchy speakersafetyd[1723]: INFO  [speakersafetyd] Config file: "/usr/share/speakersafetyd/apple/j714.conf"
+Oct 18 16:27:12 omarchy speakersafetyd[1723]: INFO  [speakersafetyd] Device: hw:AppleJ714
+Oct 18 16:27:12 omarchy speakersafetyd[1723]: thread 'main' (1723) panicked at src/main.rs:136:27:
+Oct 18 16:27:12 omarchy speakersafetyd[1723]: Failed to read config file: "couldn't read /usr/share/speakersafetyd/apple/j714.conf: No such file or directory (os error 2)"
+Oct 18 16:27:12 omarchy speakersafetyd[1723]: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+Oct 18 16:27:12 omarchy systemd[1]: speakersafetyd.service: Main process exited, code=exited, status=101/n/a
+Oct 18 16:27:12 omarchy systemd[1]: speakersafetyd.service: Failed with result 'exit-code'.
+Oct 18 16:27:12 omarchy systemd[1]: NetworkManager-dispatcher.service: Deactivated successfully.
+Oct 18 16:27:13 omarchy systemd[1]: speakersafetyd.service: Scheduled restart job, restart counter is at 9.
+Oct 18 16:27:13 omarchy systemd[1]: Starting Speaker Protection Daemon...
+Oct 18 16:27:13 omarchy systemd[1]: Started Speaker Protection Daemon.
+Oct 18 16:27:13 omarchy speakersafetyd[1733]: INFO  [speakersafetyd] Starting up
+Oct 18 16:27:13 omarchy speakersafetyd[1733]: INFO  [speakersafetyd] Config base: "/usr/share/speakersafetyd/"
+Oct 18 16:27:13 omarchy speakersafetyd[1733]: INFO  [speakersafetyd] Machine: apple,j714
+Oct 18 16:27:13 omarchy speakersafetyd[1733]: INFO  [speakersafetyd] Config file: "/usr/share/speakersafetyd/apple/j714.conf"
+Oct 18 16:27:13 omarchy speakersafetyd[1733]: INFO  [speakersafetyd] Device: hw:AppleJ714
+Oct 18 16:27:13 omarchy speakersafetyd[1733]: thread 'main' (1733) panicked at src/main.rs:136:27:
+Oct 18 16:27:13 omarchy speakersafetyd[1733]: Failed to read config file: "couldn't read /usr/share/speakersafetyd/apple/j714.conf: No such file or directory (os error 2)"
+Oct 18 16:27:13 omarchy speakersafetyd[1733]: note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+Oct 18 16:27:13 omarchy systemd[1]: speakersafetyd.service: Main process exited, code=exited, status=101/n/a
+Oct 18 16:27:13 omarchy systemd[1]: speakersafetyd.service: Failed with result 'exit-code'.
+Oct 18 16:27:14 omarchy systemd[1]: speakersafetyd.service: Scheduled restart job, restart counter is at 10.
+Oct 18 16:27:14 omarchy systemd[1]: speakersafetyd.service: Start request repeated too quickly.
+Oct 18 16:27:14 omarchy systemd[1]: speakersafetyd.service: Failed with result 'start-limit-hit'.
+Oct 18 16:27:14 omarchy systemd[1]: Failed to start Speaker Protection Daemon.
+Oct 28 19:35:10 omarchy systemd-timesyncd[193]: Contacted time server [2a03:b0c0:2:f0:0:2:324f:9001]:123 (ntp.omarchy.org).
+Oct 28 19:35:10 omarchy systemd-timesyncd[193]: Initial clock synchronization to Wed 2026-10-28 19:35:10.736218 UTC.
+Oct 28 19:35:10 omarchy systemd-resolved[187]: Clock change detected. Flushing caches.
+Oct 28 19:35:10 omarchy systemd[1]: Reached target Network is Online.
+Oct 28 19:35:10 omarchy systemd[1]: Starting Refresh existing keys of archlinux-keyring...
+Oct 28 19:35:10 omarchy systemd[1]: Starting Daily man-db regeneration...
+Oct 28 19:35:10 omarchy systemd[1]: Starting Update the plocate database...
+Oct 28 19:35:10 omarchy systemd[1]: Started Verify integrity of password and group files.
+Oct 28 19:35:10 omarchy systemd[1]: shadow.service: Deactivated successfully.
+Oct 28 19:35:10 omarchy archlinux-keyring-wkd-sync[1756]: Skipping key 6F7680A36998CAEB6613982B0B05ADBFCA6D0C8A with UID pacman@localhost...
+Oct 28 19:35:10 omarchy archlinux-keyring-wkd-sync[1756]: Skipping key 68B3537F39A313B3E574D06777193F152BDBE6A6 with UID builder@archlinuxarm.org...
+Oct 28 19:35:10 omarchy archlinux-keyring-wkd-sync[1756]: Skipping key 12CE6799A94A3F1B5DDFFE88F576553597FB8FEB with UID asahi-alarm-keyring@localhost...
+Oct 28 19:35:10 omarchy archlinux-keyring-wkd-sync[1756]: Skipping key 40DFB630FF42BCFFB047046CF0134EE680CAC571 with UID pkgs@omarchy.org...
+Oct 28 19:35:10 omarchy archlinux-keyring-wkd-sync[1756]: Skipping key 6F7680A36998CAEB6613982B0B05ADBFCA6D0C8A with UID pacman@localhost...
+Oct 28 19:35:10 omarchy archlinux-keyring-wkd-sync[1756]: Skipping key 68B3537F39A313B3E574D06777193F152BDBE6A6 with UID builder@archlinuxarm.org...
+Oct 28 19:35:10 omarchy archlinux-keyring-wkd-sync[1756]: Skipping key 12CE6799A94A3F1B5DDFFE88F576553597FB8FEB with UID asahi-alarm-keyring@localhost...
+Oct 28 19:35:10 omarchy archlinux-keyring-wkd-sync[1756]: Skipping key 40DFB630FF42BCFFB047046CF0134EE680CAC571 with UID pkgs@omarchy.org...
+Oct 28 19:35:10 omarchy systemd[1]: archlinux-keyring-wkd-sync.service: Deactivated successfully.
+Oct 28 19:35:10 omarchy systemd[1]: Finished Refresh existing keys of archlinux-keyring.
+Oct 28 19:35:12 omarchy systemd[1]: systemd-hostnamed.service: Deactivated successfully.
+Oct 28 19:35:12 omarchy systemd[1]: plocate-updatedb.service: Deactivated successfully.
+Oct 28 19:35:12 omarchy systemd[1]: Finished Update the plocate database.
+Oct 28 19:35:12 omarchy systemd[1]: plocate-updatedb.service: Consumed 565ms CPU time over 2.157s wall clock time, 188.6M memory peak.
+Oct 28 19:35:15 omarchy systemd[1]: man-db.service: Deactivated successfully.
+Oct 28 19:35:15 omarchy systemd[1]: Finished Daily man-db regeneration.
+Oct 28 19:35:15 omarchy systemd[1]: man-db.service: Consumed 4.071s CPU time over 5.236s wall clock time, 478.8M memory peak.
+--- dmesg
+[    3.292196] input: Apple MTP keyboard as /devices/platform/soc/294b14000.fifo/294b30000.input/0019:05AC:0359.0003/input/input1
+[    3.295838] Freeing unused kernel memory: 768K
+[    3.297572] rtkit-helper 294600000.mtp: RTKit: syslog message: keyboard_cr.c:73: Keyboard interface configuration completed
+[    3.299301] rtkit-helper 294600000.mtp: RTKit: syslog message: keyboard.c:77: Keyboard ready
+[    3.301097] apple 0019:05AC:0359.0003: input: HOST HID v5.10 Keyboard [Apple MTP keyboard] on 294b30000.input.2 (keyboard)
+[    3.303661] Run /init as init process
+[    3.305547] dockchannel-hid 294b30000.input: Interface actuator is now ready
+[    3.307296] rtkit-helper 294600000.mtp: RTKit: syslog message: actuator_cr.c:84: Actuator interface configuration completed
+[    3.309120] rtkit-helper 294600000.mtp: RTKit: syslog message: actuator.c:71: Actuator ready
+[    3.316427]   with arguments:
+[    3.316431]     /init
+[    3.316432]   with environment:
+[    3.316433]     HOME=/
+[    3.316434]     TERM=linux
+[    3.316434]     fstab=no
+[    3.320420] BTRFS: device label OMARCHY_ROOT devid 1 transid 78 /dev/nvme0n1p6 (259:6) scanned by mount (64)
+[    3.328441] BTRFS info (device nvme0n1p6): first mount of filesystem 4f4d5801-524f-4f54-8000-000000000001
+[    3.329983] BTRFS info (device nvme0n1p6): using crc32c checksum algorithm
+[    3.342570] BTRFS info (device nvme0n1p6 state E): enabling ssd optimizations
+[    3.344093] BTRFS info (device nvme0n1p6 state E): disabling log replay at mount time
+[    3.352429] BTRFS info (device nvme0n1p6 state E): turning on async discard
+[    3.353911] BTRFS info (device nvme0n1p6 state E): enabling free space tree
+[    3.422352] phy-apple-t6050-usb2 2aaa90000.phy: SS watch: PORTSC 0xe03 / 0xa0002a0, GDBGLTSSM 0x9cc20024
+[    3.433206] systemd[1]: System time advanced to built-in epoch: Sun 2026-10-18 16:25:30 UTC
+[    3.465844] systemd[1]: systemd 262.1-1-arch running in system mode (+PAM +AUDIT -SELINUX +APPARMOR -IMA +IPE +SMACK +SECCOMP +GNUTLS +OPENSSL +ACL +BLKID +CURL +ELFUTILS +FIDO2 +IDN2 +KMOD +LIBCRYPTSETUP +LIBCRYPTSETUP_PLUGINS +LIBFDISK +PCRE2 +PWQUALITY +P11KIT +QRENCODE +TPM2 +BZIP2 +LZ4 +XZ +ZLIB +ZSTD +BPF_FRAMEWORK -BTF +XKBCOMMON +UTMP +LIBARCHIVE)
+[    3.472465] systemd[1]: Detected architecture arm64.
+[    3.489379] systemd[1]: Initializing machine ID from random generator.
+[    3.491314] systemd[1]: Hostname set to <omarchy>.
+[    3.508447] systemd[1]: bpf-restrict-fs: BPF LSM hook not enabled in the kernel, BPF LSM not supported.
+[    3.557307] zram_generator::generator[113]: modprobe "zram" failed, ignoring: code exit status: 1
+[    3.566658] (generato[94]: '/usr/lib/systemd/system-generators/zram-generator' failed with exit status 1.
+[    3.613361] systemd[1]: Queued start job for default target Graphical Interface.
+[    3.624207] systemd[1]: Created slice CUPS Slice.
+[    3.630808] systemd[1]: Created slice Slice /system/dirmngr.
+[    3.638795] systemd[1]: Created slice Slice /system/getty.
+[    3.646481] systemd[1]: Created slice Slice /system/gpg-agent.
+[    3.654508] systemd[1]: Created slice Slice /system/gpg-agent-browser.
+[    3.662351] systemd[1]: Created slice Slice /system/gpg-agent-extra.
+[    3.670425] systemd[1]: Created slice Slice /system/gpg-agent-ssh.
+[    3.678328] systemd[1]: Created slice Slice /system/keyboxd.
+[    3.686329] systemd[1]: Created slice Slice /system/modprobe.
+[    3.694345] systemd[1]: Created slice Slice /system/systemd-zram-setup.
+[    3.702250] systemd[1]: Created slice User and Session Slice.
+[    3.709802] systemd[1]: Started Forward Password Requests to Wall Directory Watch.
+[    3.717295] systemd[1]: Set up automount Arbitrary Executable File Formats File System Automount Point.
+[    3.724869] systemd[1]: Expecting device /dev/zram0...
+[    3.732444] systemd[1]: Reached target Local dm-clone Devices.
+[    3.735935] systemd[1]: Reached target Login Prompts.
+[    3.746010] systemd[1]: Reached target Image Downloads.
+[    3.753407] systemd[1]: Reached target Local Integrity Protected Volumes.
+[    3.761027] systemd[1]: Reached target Remote File Systems.
+[    3.764302] systemd[1]: Reached target Slice Units.
+[    3.773847] systemd[1]: Reached target Local Verity Protected Volumes.
+[    3.780996] systemd[1]: Listening on Device-mapper event daemon FIFOs.
+[    3.788993] systemd[1]: Listening on Query the User Interactively for a Password.
+[    3.796995] systemd[1]: Listening on Process Core Dump Socket.
+[    3.804853] systemd[1]: Listening on Credential Encryption/Decryption.
+[    3.808223] systemd[1]: Listening on Disk Encryption Enrollment Service Socket.
+[    3.818372] systemd[1]: Listening on Factory Reset Management.
+[    3.825530] systemd[1]: Listening on Hostname Service Socket.
+[    3.832774] systemd[1]: Listening on Journal Socket (/dev/log).
+[    3.835975] systemd[1]: Listening on Journal Sockets.
+[    3.842475] systemd[1]: Listening on Console Output Muting Service Socket.
+[    3.849903] systemd[1]: Listening on Userspace Out-Of-Memory (OOM) Killer Socket.
+[    3.857377] systemd[1]: TPM PCR Measurements skipped, unmet condition check ConditionSecurity=measured-os
+[    3.859016] systemd[1]: Make TPM PCR Policy skipped, unmet condition check ConditionSecurity=measured-uki
+[    3.864921] systemd[1]: Listening on Disk Repartitioning Service Socket.
+[    3.868388] systemd[1]: Listening on Resolve Monitor Varlink Socket.
+[    3.878137] systemd[1]: Listening on Resolve Service Varlink Socket.
+[    3.886053] systemd[1]: Listening on Simple Block Device Backed Storage Provider.
+[    3.893770] systemd[1]: Listening on Simple File System Backed Storage Provider.
+[    3.901650] systemd[1]: Listening on System Install Tool.
+[    3.909767] systemd[1]: Listening on System Updates.
+[    3.917248] systemd[1]: Listening on udev Kernel Socket.
+[    3.924873] systemd[1]: Listening on udev Varlink Socket.
+[    3.928303] systemd[1]: Listening on User Database Manager Socket.
+[    3.937921] systemd[1]: Huge Pages File System skipped, unmet condition check ConditionPathExists=/sys/kernel/mm/hugepages
+[    3.948923] systemd[1]: Mounting POSIX Message Queue File System...
+[    3.951683] nvme-apple 45dcc0000.nvme: RTKit: syslog message: gc.c:9348: Stopping GC rebuild
+[    3.964118] systemd[1]: Mounting Arbitrary Executable File Formats File System...
+[    3.978177] systemd[1]: Mounting Kernel Debug File System...
+[    3.990138] systemd[1]: Kernel Trace File System skipped, unmet condition check ConditionPathExists=/sys/kernel/tracing
+[    3.992082] systemd[1]: Create List of Static Device Nodes skipped, unmet condition check ConditionFileNotEmpty=/lib/modules/7.2.11-aurora-j714c-wip+/modules.devname
+[    4.000553] systemd[1]: Load Kernel Module configfs skipped, unmet condition check ConditionKernelModuleLoaded=!configfs
+[    4.002900] systemd[1]: Mounting Kernel Configuration File System...
+[    4.010356] systemd[1]: Load Kernel Module drm skipped, unmet condition check ConditionKernelModuleLoaded=!drm
+[    4.021320] systemd[1]: Starting Load Kernel Module fuse...
+[    4.029040] systemd[1]: Clear Stale Hibernate Storage Info skipped, unmet condition check ConditionPathExists=/sys/firmware/efi/efivars/HibernateLocation-8cf2644b-4b0b-428f-9387-6d876050dc67
+[    4.045322] systemd[1]: Rebuild Hardware Database skipped, no trigger condition checks were met.
+[    4.047357] systemd[1]: systemd-journald.service: unit configures an IP firewall, but the local system does not support BPF/cgroup firewalling.
+[    4.052442] systemd[1]: systemd-journald.service: (This warning is only shown for the first unit using IP firewalling.)
+[    4.058751] systemd[1]: Starting Journal Service...
+[    4.072551] systemd[1]: Starting Load Kernel Modules...
+[    4.084487] systemd[1]: TPM PCR Machine ID Measurement skipped, unmet condition check ConditionSecurity=measured-os
+[    4.086349] systemd[1]: TPM PCR OS Separator skipped, unmet condition check ConditionSecurity=measured-os
+[    4.103997] systemd[1]: Starting Load/Save OS Random Seed...
+[    4.112757] systemd-journald[125]: Collecting audit messages is disabled.
+[    4.125920] systemd[1]: Starting Create Static Device Nodes in /dev gracefully...
+[    4.137868] systemd[1]: Early TPM SRK Setup skipped, unmet condition check ConditionSecurity=measured-os
+[    4.139891] systemd[1]: TPM PCR NvPCR Initialization Separator skipped, unmet condition check ConditionPathExists=/etc/initrd-release
+[    4.152376] systemd[1]: TPM NvPCR Product ID Measurement skipped, unmet condition check ConditionSecurity=measured-os
+[    4.158733] systemd[1]: TPM SRK Setup skipped, unmet condition check ConditionSecurity=measured-os
+[    4.170102] systemd[1]: Starting Load udev Rules from Credentials...
+[    4.184515] systemd[1]: Starting Coldplug All udev Devices...
+[    4.207224] systemd[1]: Starting Virtual Console Setup...
+[    4.219943] systemd[1]: Started Journal Service.
+[    4.339488] scsi 0:0:0:0: Direct-Access     SanDisk  Extreme Pro DDE1 0010 PQ: 0 ANSI: 6
+[    4.356535] scsi 0:0:0:1: Enclosure         SanDisk  SES Device       0010 PQ: 0 ANSI: 6
+[    4.358526] systemd-journald[125]: Received client request to flush runtime journal.
+[    4.400478] sd 0:0:0:0: [sda] 1953525168 512-byte logical blocks: (1.00 TB/932 GiB)
+[    4.416561] sd 0:0:0:0: [sda] Write Protect is off
+[    4.418025] sd 0:0:0:0: [sda] Mode Sense: 3d 00 10 00
+[    4.440444] sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, supports DPO and FUA
+[    4.498138]  sda: sda1
+[    4.504579] sd 0:0:0:0: [sda] Attached SCSI disk
+[    5.037742] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    5.047848] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    5.053850] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    5.055603] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    5.061193] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    5.062914] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    5.064708] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    5.074028] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    5.075270] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    5.076773] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    5.078032] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    5.085120] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    5.086570] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    5.088366] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    5.090180] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    5.091518] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    5.092948] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    5.095180] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    5.096526] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    5.097496] nvme-apple 45dcc0000.nvme: RTKit: syslog message: util.c:4198: attempting to read element=PANICLOG not yet written, returning ERR_ABORT
+[    5.147137] cdc_ncm 1-1:2.0 enu1c2: renamed from eth0
+[    7.072442] dockchannel-hid 294b30000.input: iface multi-touch start timed out
+[    7.092581] dockchannel-hid 294b30000.input: Interface multi-touch is already starting
+[    7.101297] dockchannel-hid 294b30000.input: Interface multi-touch is already starting
+[   97.962135] zram_generator::generator[578]: modprobe "zram" failed, ignoring: code exit status: 1
+[   98.104644] zram_generator::generator[630]: modprobe "zram" failed, ignoring: code exit status: 1
+[   98.235463] zram_generator::generator[678]: modprobe "zram" failed, ignoring: code exit status: 1
+[   98.357715] zram_generator::generator[724]: modprobe "zram" failed, ignoring: code exit status: 1
+[   98.482082] zram_generator::generator[772]: modprobe "zram" failed, ignoring: code exit status: 1
+[   98.606701] zram_generator::generator[819]: modprobe "zram" failed, ignoring: code exit status: 1
+[   98.729601] zram_generator::generator[866]: modprobe "zram" failed, ignoring: code exit status: 1
+[   98.858907] zram_generator::generator[913]: modprobe "zram" failed, ignoring: code exit status: 1
+[   99.020919] zram_generator::generator[995]: modprobe "zram" failed, ignoring: code exit status: 1
+[   99.445436] zram_generator::generator[1391]: modprobe "zram" failed, ignoring: code exit status: 1
+[   99.562844] zram_generator::generator[1438]: modprobe "zram" failed, ignoring: code exit status: 1

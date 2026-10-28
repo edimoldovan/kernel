@@ -1,18 +1,18 @@
 #!/bin/sh
-# Initramfs init: boot the Arch root on OMARCHY-ROOT (nvme0n1p6, subvolume @) without writing the
+# Initramfs init: boot the root on OMARCHY-ROOT (nvme0n1p6, subvolume @) without writing the
 # disk. p3, p5 and p6 read-only at block level; @ mounted read-only without log replay, under an
 # overlay whose upper layer is RAM. Into the RAM layer: an empty fstab, busybox, and
 # t6050-report.service, which sends the state of the booted system to Omarchy (192.168.188.35:8000).
 mount -t proc proc /proc
 mount -t sysfs sysfs /sys
 mount -t devtmpfs devtmpfs /dev 2>/dev/null
-echo "=== OVERLAY: read-only Arch root ==="
+echo "=== OVERLAY: read-only root ==="
 n=0; while [ ! -b /dev/nvme0n1p6 ] && [ $n -lt 100 ]; do usleep 100000; n=$((n+1)); done
 for p in /dev/nvme0n1p3 /dev/nvme0n1p5 /dev/nvme0n1p6; do blockdev --setro $p; done
 mkdir -p /lower /rw /newroot
 mount -t btrfs -o ro,rescue=nologreplay,subvol=@ /dev/nvme0n1p6 /lower ||
 	{ echo "ROOT MOUNT FAILED"; setsid cttyhack /bin/sh; }
-mount -t tmpfs -o size=512m tmpfs /rw
+mount -t tmpfs -o size=2g tmpfs /rw
 mkdir -p /rw/upper /rw/work
 mount -t overlay overlay -o lowerdir=/lower,upperdir=/rw/upper,workdir=/rw/work /newroot ||
 	{ echo "OVERLAY FAILED"; setsid cttyhack /bin/sh; }
@@ -35,13 +35,17 @@ EOF
 cat > $T/report.sh <<'EOF'
 #!/usr/local/lib/t6050/busybox sh
 B=/usr/local/lib/t6050/busybox
-$B sleep 25
-for i in /sys/class/net/*; do n=${i##*/}; [ "$n" = lo ] || IF=$n; done
+# t6050_wdt cannot go past ~175 s; holding /dev/watchdog (30 s, petted) instead keeps the Mac up until
+# the report is sent (at most 10 min), then lets it reset.
+( exec 3>/dev/watchdog; i=0
+  while [ ! -e /run/t6050-sent ] && [ $i -lt 120 ]; do echo . >&3; $B sleep 5; i=$((i + 1)); done ) &
+$B sleep 180
+for i in /sys/class/net/e*; do IF=${i##*/}; done
 $B ip link set "$IF" up
-$B udhcpc -i "$IF" -n -q -t 10 -s /usr/local/lib/t6050/udhcpc.sh
+$B ip -4 addr show "$IF" | $B grep -q inet || $B udhcpc -i "$IF" -n -q -t 10 -s /usr/local/lib/t6050/udhcpc.sh
 R=/run/t6050-report.txt
 {
-	echo "=== Arch root report $($B cut -d' ' -f1 /proc/uptime) s"
+	echo "=== root report $($B cut -d' ' -f1 /proc/uptime) s"
 	$B uname -a; $B cat /proc/cmdline
 	echo "--- $IF"; $B ip -4 addr show "$IF"
 	echo "--- read-only"; for p in nvme0n1p3 nvme0n1p5 nvme0n1p6; do echo "$p $($B cat /sys/class/block/$p/ro)"; done
@@ -49,10 +53,17 @@ R=/run/t6050-report.txt
 	echo "--- is-system-running"; systemctl is-system-running
 	echo "--- failed"; systemctl --failed --no-pager
 	echo "--- running services"; systemctl list-units --type=service --state=running --no-pager
+	echo "--- /dev/dri"; $B ls -l /dev/dri
+	echo "--- display-manager"; systemctl status display-manager --no-pager
+	echo "--- sddm, NetworkManager"; journalctl -b -u sddm -u NetworkManager --no-pager | $B tail -n 60
+	for l in omarchy-provision-owner omarchy-mac-first-boot omarchy-install; do
+		echo "--- /var/log/$l.log"; $B tail -n 80 /var/log/$l.log
+	done
 	echo "--- journal"; journalctl -b --no-pager | $B tail -n 300
 	echo "--- dmesg"; $B dmesg | $B tail -n 150
 } > $R 2>&1
 for i in $($B seq 1 30); do $B nc 192.168.188.35 8000 < $R && break; $B sleep 2; done
+$B touch /run/t6050-sent
 EOF
 chmod +x $T/udhcpc.sh $T/report.sh
 cat > /newroot/etc/systemd/system/t6050-report.service <<'EOF'

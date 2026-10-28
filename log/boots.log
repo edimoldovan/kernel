@@ -265,3 +265,16 @@
 19:00:10 net-nvme1: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped
 19:13:39 net-omar1: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped
 19:22:40 net-arch1: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped
+20:04:26 write1: handoff ok, proxy back after 274s (offset 11, net 263s) -> unmapped
+20:12:16 write2: handoff ok, no watchdog reset in 280 s
+20:20:06 net-omro1: handoff ok, proxy back after 182s (offset 11, net 171s) -> unmapped
+20:29:13 net-omro1: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped
+20:32:40 net-omro2: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped
+20:36:35 net-omsetup1: handoff ok, proxy back after 185s (offset 11, net 174s) -> unmapped
+20:41:20 net-omsetup1: handoff ok, no watchdog reset in 280 s
+20:48:30 rw1: handoff ok, proxy back after 229s (offset 11, net 218s) -> unmapped
+20:53:11 write3: handoff ok, no watchdog reset in 280 s
+21:01:26 rw2: handoff ok, no watchdog reset in 280 s
+22:08:58 rw3: handoff ok, proxy back after 201s (offset 11, net 190s) -> unmapped
+22:13:06 rw4: handoff ok, proxy back after 151s (offset 11, net 140s) -> unmapped
+22:16:22 rw5: handoff ok, no watchdog reset in 280 s

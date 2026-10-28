@@ -1,0 +1,63 @@
+#!/bin/sh
+# Initramfs init: write the Omarchy Mac edge image onto the J714c, from Omarchy over HTTP
+# (tools/net_serve.py): the EFI image to p3, boot.img to p5 (OMARCHY-BOOT), root.img to p6
+# (OMARCHY-ROOT). Checks each target's size (and p6's start) and its filesystem first, skips a target
+# that already holds its image, checks each write against the image's sha256, sends the report.
+# Writes nothing else. The AP watchdog is petted for at most 25 min, then left to reset the Mac.
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev 2>/dev/null
+dmesg -n 1
+for i in $(seq 1 30); do [ -c /dev/watchdog ] && break; sleep 1; done
+( exec 3>/dev/watchdog && touch /tmp/wdt; i=0
+  while [ ! -e /tmp/done ] && [ $i -lt 300 ]; do echo . >&3; sleep 5; i=$((i + 1)); done ) &
+
+for i in $(seq 1 30); do [ -e /sys/class/net/eth0 ] && [ -b /dev/nvme0n1p6 ] && break; sleep 1; done
+ip link set eth0 up
+udhcpc -i eth0 -n -q -t 10 -s /udhcpc.sh
+S=http://192.168.188.35:8000
+R=/tmp/report
+: > $R
+log() { echo "$*" | tee -a $R; }
+send() { dmesg | tail -n 60 >> $R; wget -q -O /dev/null --post-file=$R $S/report; }
+fail() { log "FAILED: $*"; send; touch /tmp/done; exec setsid cttyhack /bin/sh; }
+attr() { cat /sys/class/block/$1/$2; }
+sum() { grep " .*$1\$" /tmp/SHA256SUMS | cut -d' ' -f1; }
+
+log "=== write omarchy $(cut -d' ' -f1 /proc/uptime) s, eth0 $(ip -4 addr show eth0 | grep -o 'inet [0-9./]*')"
+sleep 1
+# Holding /dev/watchdog (30 s, petted) replaces the 170 s t6050_wdt reset; without it, stop here.
+[ -e /tmp/wdt ] || fail "could not open /dev/watchdog"
+log "watchdog held: $(dmesg | grep -i -E 'watchdog|wdt' | tail -n 3 | tr '\n' ' ')"
+wget -q -O /tmp/SHA256SUMS $S/SHA256SUMS || fail "no SHA256SUMS"
+cat /tmp/SHA256SUMS >> $R
+
+[ "$(attr nvme0n1p3 size)" = 1024000 ] && blkid /dev/nvme0n1p3 | grep -q 'TYPE="vfat"' ||
+	fail "p3 is not the 500 MB vfat partition"
+[ "$(attr nvme0n1p5 size)" = 4194304 ] && blkid /dev/nvme0n1p5 | grep -q -E 'LABEL="OMARCHY[-_]BOOT"' ||
+	fail "p5 is not OMARCHY-BOOT"
+[ "$(attr nvme0n1p6 start)" = 3521970176 ] && [ "$(attr nvme0n1p6 size)" = 375963648 ] &&
+	blkid /dev/nvme0n1p6 | grep -q -E 'LABEL="OMARCHY[-_]ROOT"' || fail "p6 is not OMARCHY-ROOT"
+log "--- before"; blkid /dev/nvme0n1p3 /dev/nvme0n1p5 /dev/nvme0n1p6 | tee -a $R
+
+# w IMAGE PARTITION BS COUNT: unless BS x COUNT bytes (the image size) of the target already match,
+# write, flush, read back, compare
+got() { dd if=/dev/$1 bs=$2 count=$3 2> /dev/null | sha256sum | cut -d' ' -f1; }
+w() {
+	[ "$(got $2 $3 $4)" = "$(sum $1)" ] && { log "$1 -> $2: already there"; return; }
+	wget -q -O - $S/$1.gz | gunzip | dd of=/dev/$2 bs=4M 2> /tmp/dd || fail "write of $1: $(tail -n 1 /tmp/dd)"
+	sync; fsync /dev/$2
+	got=$(got $2 $3 $4)
+	[ "$got" = "$(sum $1)" ] || fail "$1 -> $2: sha256 $got, expected $(sum $1); written: $(tail -n 1 /tmp/dd)"
+	log "$1 -> $2: sha256 OK, $(tail -n 1 /tmp/dd), $(cut -d' ' -f1 /proc/uptime) s"
+}
+w esp.img nvme0n1p3 4M 125
+w boot.img nvme0n1p5 4M 512
+w root.img nvme0n1p6 64k 195552
+
+log "--- after"; blkid /dev/nvme0n1p3 /dev/nvme0n1p5 /dev/nvme0n1p6 | tee -a $R
+log "=== done $(cut -d' ' -f1 /proc/uptime) s"
+send
+touch /tmp/done
+echo "written; the watchdog resets the Mac in about 30 s"
+exec setsid cttyhack /bin/sh

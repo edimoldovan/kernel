@@ -1,0 +1,15 @@
+#!/bin/sh
+# Initramfs init: boot the Omarchy root on OMARCHY-ROOT (nvme0n1p6, subvolume @) read-write and hand
+# over to its systemd, which mounts the rest from the image's fstab (/boot on p5, the ESP on p3,
+# @home, @log, @pkg) and grows the root to the partition.
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev 2>/dev/null
+echo "=== RW: Omarchy root ==="
+n=0; while [ ! -b /dev/nvme0n1p6 ] && [ $n -lt 100 ]; do usleep 100000; n=$((n+1)); done
+mkdir -p /newroot
+mount -t btrfs -o rw,subvol=@ /dev/nvme0n1p6 /newroot || { echo "ROOT MOUNT FAILED"; setsid cttyhack /bin/sh; }
+echo "=== RW: switch_root to /sbin/init ==="
+umount /dev /sys /proc 2>/dev/null
+exec switch_root /newroot /sbin/init
+echo "switch_root failed"; setsid cttyhack /bin/sh
