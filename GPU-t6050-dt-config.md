@@ -143,12 +143,42 @@ From `dt_set_gpu_t8140()` (the template), changed for T6050:
   non-sgx external blocks (fabric / PMGR / MCC — the sgx node names an MCC via
   `function-mcc_dataset` -> `/arm-io/mcc`; PMGR holds clock/power-gates
   614/615/616). The kext resolves those at runtime from other ADT nodes.
-- [ ] **Conclusion: an hv MMIO trace is required** for the complete, correct map.
-      Trace macOS GPU init under the m1n1 hypervisor (`hv.trace_range` on the
-      sgx/gfx MMIO during AGXG17X startup) — the method the asahi values came
-      from. The table above gives the sgx-control group to cross-check the trace;
-      the trace supplies the external windows, the base windows and the final
-      slot numbering.
+- The complete map (external windows, base windows, final slot numbering) is
+  what macOS's AGXG17X builds; the asahi values came from an hv MMIO trace of it.
+
+### hv MMIO trace feasibility on T6050 (2026-10-28, static)
+
+Verdict: **the m1n1 hypervisor cannot boot macOS on T6050/M5 today**, so the hv
+MMIO trace is not available here without major new loader work.
+
+- The hv guest-boot dispatch (`proxyclient/m1n1/hv/__init__.py:1561`) switches on
+  `chip_id`; the newest handled are M4 (`0x6040`, `0x6041`). `0x6050`/`0x6051`
+  (M5) fall to `else: "CPUSTART unknown for this SoC!"; break` — the guest CPU
+  start is not set up.
+- The hv handles the guest security model by emulating SPRR/GXF in EL2 and
+  patching the image (`emulate_sprr`, `patch_text_sprr_emu`, `patch_m3_regs` for
+  M3). It has **no SPTM path**. M5 has no GXF (CPU-START.md: `AIDR_EL1` GXF bit
+  clear; guarded mode GL2 belongs to the SPTM), and macOS 26/27 XNU on M5 runs
+  under the SPTM. m1n1 at EL2 cannot provide or mediate the SPTM, so a macOS
+  guest would fault early.
+- The A18 Pro (`0x8140`, the Neo, same G17 generation) **is** in the hv chip
+  list — that is how the `hw/t8140.rs` windows were traced. The method is sound;
+  it just does not reach M5.
+
+So the register map cannot be completed by tracing on this machine now. Options:
+- [ ] **Static: derive the external windows from the ADT.** The AGXG17X kext
+      resolves the non-sgx windows from other ADT device nodes at runtime (MCC
+      `/arm-io/mcc`, PMGR, fabric) plus an offset. Find that code in the kext
+      (near the `0x153040` table use) to recover node+offset per window, then
+      compute the T6050 addresses from the live ADT. No hardware.
+- [ ] **Pragmatic: grow the map from firmware faults.** Boot with the recovered
+      sgx-control group (above) as the initial map; the interface-version gate is
+      checked first (a partial map still gives a clean first result), then add
+      windows as the firmware faults on a missing one. Needs boots (the GPU
+      session), not the hv.
+- [ ] **Full: enable the hv for M5.** Add `0x6050`/`0x6051` to the hv chip list
+      and implement SPTM mediation (Aura-class) so a macOS guest boots. Major;
+      the same SPTM wall that blocks secondary cores (CPU-START.md).
 
 `kernel_window` / `dynamic` / `low` (GPU-VA layout):
 - [ ] Likely unchanged from t8140 (same firmware generation); confirm the g17c
