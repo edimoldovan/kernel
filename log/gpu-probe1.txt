@@ -1,0 +1,146 @@
+TTY> Initialized dockchannel UART at 0x288e28000
+TTY> Device info:
+TTY>   Model: Mac17,7
+TTY>   Target: J714c
+TTY>   Board-ID: 0xa
+TTY>   Chip-ID: 0x6050
+TTY> 
+TTY> CPU init (MIDR: 0x611f0681 smp_id:0x0)...
+TTY>   CPU part: 0x68 rev: 0x11
+TTY>   CPU: M5 Max Sotra C (M core)
+TTY> 
+TTY> boot_args at 0x10004db0000
+TTY>   revision:     3
+TTY>   version:      2
+TTY>   virt_base:    0x11df0000
+TTY>   phys_base:    0x10003df0000
+TTY>   mem_size:     0x1fc6610000
+TTY>   top_of_kdata: 0x10004dc0000
+TTY>   video:
+TTY>     base:       0x11fd310c000
+TTY>     display:    0x1
+TTY>     stride:     0x2f40
+TTY>     width:      3024
+TTY>     height:     1964
+TTY>     depth:      30bpp
+TTY>     density:    1
+TTY>   machine_type: 0
+TTY>   devtree:      0x1209c000
+TTY>   devtree_size: 0xbc000
+TTY>   cmdline:      
+TTY>   boot_flags:   0x0
+TTY>   mem_size_act: 0x2000000000
+TTY> 
+TTY> 
+TTY> 
+TTY> m1n1 v2.0.0-53-g7cde7d1a
+TTY> Copyright The Asahi Linux Contributors
+TTY> Licensed under the GNU General Public License v2 or later
+TTY> 
+TTY> Running in EL2
+TTY> 
+TTY> OS FW version: unknown (mBoot-20457.41.3)
+TTY> System FW version: unknown (mBoot-20457.41.3)
+TTY> Heap base: 0x10004dc0000
+TTY> Boot policy: sip0 = 0
+TTY> MCC: Unsupported version:mcc,t6050
+TTY> MMU: Initializing...
+TTY> MMU: RAM base: 0x10000000000
+TTY> MMU: Top of normal RAM: 0x11fca400000
+TTY> MMU: Adding Device-nGnRE mapping at 0xbc0000000 (0x20000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0xb80000000 (0x40000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1cb0000000 (0x1c000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1800000000 (0x400000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1700000000 (0x100000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1c40000000 (0x4000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x800000000 (0x200000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0xa00000000 (0x80000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1c50000000 (0x4000)
+TTY> MMU: Adding Device-nGnRE mapping at 0xc00000000 (0x200000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0xe00000000 (0x80000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1c60000000 (0x4000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1000000000 (0x200000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1200000000 (0x80000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1c70000000 (0x4000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1400000000 (0x200000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1600000000 (0x80000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1c80000000 (0x4000)
+TTY> MMU: SCTLR_EL1: 30000180 -> 30901085
+TTY> MMU: running with MMU and caches enabled!
+TTY> AIC: Version 3 @ 0x280400000
+TTY> AIC: AIC3 with 1/4 dies, 3104/4096 IRQs, reg_size:40004, config:10000, extintrcfg_stride:04a00, intmaskset_stride:04a00, intmaskclear_stride:04a00
+TTY> AIC: Configuring 1 external interrupts
+TTY> Primary WDT register @ 0x28836c000
+TTY> Primary WDT disabled
+TTY> Secondary WDT register @ 0x288330008
+TTY> Secondary WDT disabled
+TTY> pmgr: Cleaning up device states...
+TTY> pmgr: initialized, 661 devices on 1 dies found.
+TTY> display: Display is internal
+TTY> display: Display is already initialized (3024x1964)
+TTY> fb init: 3024x1964 (30) [s=3024] @0x11fd310c000
+TTY> fb console: max rows 57, max cols 78
+TTY> fb: display logo
+TTY> cpufreq: Chip 0x6050 is unsupported
+TTY> Initialization complete.
+TTY> Checking for payloads...
+TTY> Devicetree compatible value: apple,j714c
+TTY> Unknown payload at 0x1000469c000 (magic: 5b41464b)
+TTY> No valid payload found
+TTY> dart: dart /arm-io/dart-usb0 at 0x2a2f80000 is a t8110
+TTY> USB0: initialized at 0x10004dc4090
+TTY> dart: dart /arm-io/dart-usb1 at 0x2aaf80000 is a t8110
+TTY> USB1: initialized at 0x10004dc4560
+TTY> dart: dart /arm-io/dart-usb2 at 0x382f80000 is a t8110
+TTY> USB2: initialized at 0x10004dc4a60
+TTY> Running proxy...
+TTY> Heap limit: 0x1000f400000 (128 MiB)
+m1n1 base: 0x100041cc000
+Fetching ADT (0x000BC000 bytes)...
+sgx reg 0: 0x2300000000 size 0x3fdc000
+sgx reg 1: 0x2300d00000 size 0x177000
+gfx-asc reg 0: 0x2302600000 size 0x88000
+gfx-asc reg 1: 0x2302050000 size 0x8
+gfx-asc iop-gfx-nub firmware GFX uuid 61B4CD74-FF02-3C39-AE39-1BA25A386AA1
+gfx-asc __TEXT: phys 0x10001148000 iova 0xfffffc0000000000 remap 0x10001148000 size 0x50000
+  saved /home/ed/dev/omarchy/firmware/gpu/gfx-asc__TEXT.bin; interface version at []
+  string AGXInterruptPMThresholdHandler
+  string AGX_CR_DCMP_ERROR
+  string AGX_CR_USC_CDM_DEBUG_STATUS
+  string AGX_CR_USC_CDM_SERV
+  string AGX_CR_USC_PDM_DEBUG_STATUS
+  string AGX_CR_USC_PDM_SERV
+  string AGX_CR_USC_VDM_DEBUG_STATUS
+  string AGX_CR_USC_VDM_SERV
+gfx-asc __DATA: phys 0x100027a4000 iova 0xfffffc0000050000 remap 0x100027a4000 size 0xc0000
+  saved /home/ed/dev/omarchy/firmware/gpu/gfx-asc__DATA.bin; interface version at []
+gfx-asc __DATA_SHARED_RO: phys 0x10002864000 iova 0xfffffc0000110000 remap 0x10002864000 size 0x8000
+  saved /home/ed/dev/omarchy/firmware/gpu/gfx-asc__DATA_SHARED_RO.bin; interface version at []
+gfx1-asc reg 0: 0x2302e00000 size 0x88000
+gfx1-asc reg 1: 0x2302850000 size 0x60000
+gfx1-asc iop-gfx1-nub firmware GFX1 uuid D93B638C-649D-3BF3-AFAA-A4D2D267B331
+gfx1-asc __TEXT: phys 0x10001198000 iova 0xfffffc0000000000 remap 0x10001198000 size 0x54000
+  saved /home/ed/dev/omarchy/firmware/gpu/gfx1-asc__TEXT.bin; interface version at []
+  string AGX_CR_FNDR_AFR_GLB_PERF_STATE_CONTROL
+  string AGX_CR_UMA_PTC_PAGE_RESERVE_CDM_PTC_MAX_COUNT
+  string AGX_CR_UMA_PTC_PAGE_RESERVE_CDM_PTC_MIN_COUNT
+  string AGX_CR_UMA_PTC_PAGE_RESERVE_CDM_PTC_RELOAD_COUNT
+  string AGX_CR_UMA_PTC_PAGE_RESERVE_FRG_PTC_MAX_COUNT
+  string AGX_CR_UMA_PTC_PAGE_RESERVE_FRG_PTC_MIN_COUNT
+  string AGX_CR_UMA_PTC_PAGE_RESERVE_FRG_PTC_RELOAD_COUNT
+  string AGX_CR_UMA_PTC_PAGE_RESERVE_GTP_PTC_MAX_COUNT
+gfx1-asc __DATA: phys 0x1000286c000 iova 0xfffffc0000054000 remap 0x1000286c000 size 0xb4000
+  saved /home/ed/dev/omarchy/firmware/gpu/gfx1-asc__DATA.bin; interface version at []
+gfx1-asc __DATA_SHARED_RO: phys 0x10002920000 iova 0xfffffc0000108000 remap 0x10002920000 size 0x8000
+  saved /home/ed/dev/omarchy/firmware/gpu/gfx1-asc__DATA_SHARED_RO.bin; interface version at []
+ID_VERSION (0x2300d04000) = 0x0b041100
+ID_UNK08 (0x2300d04008) = 0x000b0a00
+ID_COUNTS_1 (0x2300d04010) = 0x0011040a
+ID_COUNTS_2 (0x2300d04014) = 0x00040404
+ID_UNK18 (0x2300d04018) = 0x01320311
+ID_CLUSTERS (0x2300d0401c) = 0x400c1809
+CORE_MASK_0 (0x2300d01500) = 0x00000000
+CORE_MASK_1 (0x2300d01514) = 0x00000000
+CORE_MASKS_G14X (0x2300e01500) = 0xffffffff
+G17_CORE_POWER (0x2300e01000) = 0x00000000
+done
