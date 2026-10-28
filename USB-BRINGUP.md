@@ -2184,3 +2184,17 @@ usbd3 success was not the keys; `D1Vn`/`D2Vn` at 0 or 2 do not unlock `USBd`.
 - Test changes: harness `disc` step and options, `WATCH_SECS`, `U2RESETS`, stage prints with
   PORTSC; `init-net` waits up to 40 s for the stick on SS and prints the clock summary;
   `tools/smc_keys.sh` reads or writes `D1Vn`/`D2Vn`.
+
+## Next steps (USB3 on port 1)
+
+1. macOS: boot macOS from the startup picker with the stick in port 1; over SSH (`ed-mac.local`),
+   read that boot's log of `AppleHPM` and `AppleT6050TypeCPhy` (forceUSB23On, turnOnVbus,
+   usbDataConnect, set4ccLock, the order and the times) and port 1's `ioreg` properties ("HPM Mode
+   Block Active", "Forced Status Reg", transports); then stream the log while Ed replugs the stick
+   once. If these messages are not logged by default, the debug switch that enables them is the
+   step before.
+2. Replay that sequence on the proxy (harness step `disc` and its options), then in the kernel.
+3. One Linux boot plus one replug by hand after boot (`ss_flip=1` while the stick is flipped,
+   tipd not started): does a stick plugged in after boot train? It does on the proxy (hotplug3).
+4. Driver: take the plug orientation from port 1's Type-C controller (STATUS bit 4) instead of
+   `ss_flip`.
