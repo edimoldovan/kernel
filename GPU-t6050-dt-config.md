@@ -121,10 +121,23 @@ From `dt_set_gpu_t8140()` (the template), changed for T6050:
       is two OPP tables: `afr-perf-states` (table A, lower volts
       `125,600,650,670,705,715,755,780,795,850,895,930,995,1045` mV) vs the
       primary/`cs` (table B). This matches `hw/mod.rs` loading `apple,afr-opp`.
-- [ ] **`relative_a` / `relative_b`: not in the ADT.** No relative / perf-level /
-      ratio field exists on the sgx node (t8140's are hardcoded, from macOS or
-      measurement). Get them from the macOS AGX perf data or the firmware
-      interface; not statically derivable here.
+- [ ] **`relative_a` / `relative_b`: not statically recoverable; use a placeholder.**
+      Not in the ADT (no relative/perf-level field). Hunted the AGXG17X kext in
+      `kernelcache.mac17j.bin`: t8140's exact curves are absent (different chip),
+      and there is no stored monotonic percentage table — searched u32 runs
+      ending at 100, 128, 256, 1000, 1024, 0x10000 and double runs ending at 1.0
+      or 100.0 (only unrelated power-of-2/mask tables matched). The doubles just
+      before the register table (`~0x152dc0`) are a per-state power/thermal model
+      (freq/power coefficients, groups of ~11 doubles capped at 1.05), **not** a
+      relative curve. So macOS's AGX computes `relative` at runtime from that
+      power model; it is not a ready table to extract.
+      For first boot: placeholder with t8140's
+      `relative_a = [0,15,22,29,42,56,74,86,90,92,100]`,
+      `relative_b = [0,0,13,24,40,52,63,73,83,88,100]`, padded to 14 (e.g. repeat
+      the last pre-100 value, keep the final 100). `relative` only tunes DVFS, not
+      the interface gate or correctness, so a placeholder is safe until the real
+      curve is read from booted macOS (AGX IORegistry perf metrics) or derived
+      from the power-model doubles.
 
 Structural note (for the firmware-interface workflow): T6050 has **4** cluster
 perf tables (`perf-states` is 4×14; two distinct voltage profiles — tables 0/3
