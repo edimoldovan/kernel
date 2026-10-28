@@ -101,13 +101,39 @@ From `dt_set_gpu_t8140()` (the template), changed for T6050:
       confirm the g17c firmware requests the same addresses (it has two
       coprocessors like t8140).
 
-`PerfConfig` (`PERF`) and `OPPS`:
-- `PERF_STATES = 13` (t8140: 11), `OPPS = 14` (t8140: 16). These are new
-  constants for the T6050 path, not the shared G17P values.
-- [ ] `states_a` / `states_b`: which operating point each DVFS state uses.
-      With 4 perf tables (not 2), the A/B split differs — derive from the ADT
-      `afr-perf-states` / `cs-perf-states` and the four SRAM tables.
-- [ ] `relative_a` / `relative_b`, `sram_min_mv`: from the ADT.
+`PerfConfig` (`PERF`) and `OPPS` — derived from the ADT (2026-10-28, static):
+
+- [x] **`PERF_STATES = 14`** (not 13), `OPPS = 14`. Every ADT perf table has
+      `count = 14` (`perf-state-count = 14`); `gpu-num-perf-states = 13` is the
+      active count (13 + idle = 14). t8140 is 11 / 16. In `g17/fw/`,
+      `perf_states()` indexes `opps[states[i]]` and fills `[u32; PERF_STATES]`
+      arrays, so PERF_STATES is the per-table state count = 14.
+- [x] **`sram_min_mv = 775`** (t8140: 765). All four `perf-states-sram` tables
+      floor at 775 mV, and `afr`/`cs` `min_sram_volt = 775000`.
+- [x] **Primary OPP table** (`perf-states` table 0 → `operating-points-v2`), 14
+      states, freq MHz / volt mV:
+      `0/125, 338/630, 486/670, 636/705, 796/745, 888/755, 988/780, 1084/815,
+      1182/825, 1278/860, 1374/900, 1470/940, 1578/1020, 1620/1055`.
+- [x] **`states_a` / `states_b` = identity `[0,1,…,13]`.** t8140 interleaves
+      (16 OPPs, 11 states) so its `states_a/b` pick odd/even; T6050 has 14 states
+      at the same 14 frequencies as the OPP table, so each DVFS state maps to its
+      own OPP index. The A/B voltage difference is not in the state indices — it
+      is two OPP tables: `afr-perf-states` (table A, lower volts
+      `125,600,650,670,705,715,755,780,795,850,895,930,995,1045` mV) vs the
+      primary/`cs` (table B). This matches `hw/mod.rs` loading `apple,afr-opp`.
+- [ ] **`relative_a` / `relative_b`: not in the ADT.** No relative / perf-level /
+      ratio field exists on the sgx node (t8140's are hardcoded, from macOS or
+      measurement). Get them from the macOS AGX perf data or the firmware
+      interface; not statically derivable here.
+
+Structural note (for the firmware-interface workflow): T6050 has **4** cluster
+perf tables (`perf-states` is 4×14; two distinct voltage profiles — tables 0/3
+high, 1/2 low — for the 4 clusters) plus `afr`/`cs`, vs t8140's 2-table-from-one-
+OPP model. The 16 `core_mv` lanes in each `PerfGroup` likely carry the per-cluster
+voltages. How `perf_a`/`perf_b` map onto these 4 tables is a firmware-interface
+question, not a clean `PerfConfig` substitution. And `PERF_STATES = 14` enlarges
+the shared HwData perf arrays vs G17P (11) — consistent with the firmware's
+`perf_b` having grown (ties to the 0x128 HwData gap in `GPU-g17c-hwdata-gap.md`).
 
 `REGISTER_WINDOWS` / `RESERVED_REGISTER_SLOTS`:
 - The firmware's MMIO register map (18 windows + 17 reserved slots in
