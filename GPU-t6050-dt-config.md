@@ -138,11 +138,35 @@ From `dt_set_gpu_t8140()` (the template), changed for T6050:
       `0xd0d000, 0xd58000, 0xe08000, 0xe1c000, 0xe1f800`. So both the slot
       numbering and the offset/size set differ from t8140; do not carry t8140's
       `REGISTER_WINDOWS` over.
-- Not in any static table (so not statically recoverable): the sgx base window
-  (`+0`) and the `+0x1000000` window, the low slots (`0..0x11`), and the 6
-  non-sgx external blocks (fabric / PMGR / MCC — the sgx node names an MCC via
-  `function-mcc_dataset` -> `/arm-io/mcc`; PMGR holds clock/power-gates
-  614/615/616). The kext resolves those at runtime from other ADT nodes.
+- Not in any static table: the sgx base window (`+0`), the `+0x1000000` window,
+  the low slots (`0..0x11`), and the 6 non-sgx external blocks. The kext resolves
+  those from other ADT nodes at runtime; its register-map builder is not
+  statically locatable from the `0x153040` table (no `adrp` to the table page in
+  either `__PRELINK_TEXT` or `__TEXT_EXEC`, 15M insns scanned, and no raw pointer
+  to it — reached via a chained-fixup pointer).
+
+### External windows: ADT nodes to compute from (2026-10-28, static)
+
+Translation (from the macOS `/arm-io` ranges): a device node's real phys is
+`bus_addr + 0x2_0000_0000` for the small-block range and the GPU range (verified:
+sgx bus `0x21_0000_0000` -> real `0x23_0000_0000`). So the 6 external windows'
+T6050 bases come from the live ADT by name + a kext offset:
+
+- **MCC — confirmed a GPU helper.** The sgx node references it:
+  `function-mcc_dataset` -> `/arm-io/mcc`, bus `0x8062_0000`, real
+  **`0x2_8062_0000`**, size `0x4000`. Include this window from the start.
+- **PMGR** (holds the GPU clock/power-gates 614/615/616): `/arm-io/pmgr`,
+  bus `0x8060_0000`, real **`0x2_8060_0000`**, size `0x1fc000`.
+- **AIC** (GPU interrupts): `/arm-io/aic`, bus `0x8040_0000`, real
+  **`0x2_8040_0000`**, size `0x1cc000`.
+
+These three cover the likely fabric/PMGR/MCC externals; the exact per-slot node
+and offset for all six needs the kext builder (not cheaply located) or the
+fault loop. For t8140 the external windows were slots 0,3,9,10,12,14 — expect a
+similar count on T6050.
+- [ ] Fault loop supplies the rest: the firmware faults name the aperture VA
+      (hence the slot) it needs; map that slot to one of these blocks + offset,
+      boot again. The MCC window (above) is the one external to seed.
 - The complete map (external windows, base windows, final slot numbering) is
   what macOS's AGXG17X builds; the asahi values came from an hv MMIO trace of it.
 
