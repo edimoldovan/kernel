@@ -110,11 +110,46 @@ From `dt_set_gpu_t8140()` (the template), changed for T6050:
 - [ ] `relative_a` / `relative_b`, `sram_min_mv`: from the ADT.
 
 `REGISTER_WINDOWS` / `RESERVED_REGISTER_SLOTS`:
-- [ ] The firmware's MMIO register map. t8140 lists 18 windows at SoC-specific
-      physical addresses (`0x3_0101_4000`, `0x4_8000_0000`, ...). The T6050
-      addresses are different and are not in the ADT dump as window phys
-      addresses; derive from the g17c firmware's register-map use or from macOS.
-      This is the largest open piece of `hw/t6050.rs`.
+- The firmware's MMIO register map, 18 windows (`hw/t8140.rs`). It is not an ADT
+  property (the macOS sgx node has only its two `reg` ranges, no window list) and
+  the sgx-relative offsets are not stored in the kernelcache (the AGX kext forms
+  them at runtime as sgx-base + offset). The asahi values were traced from macOS.
+- [x] 12 of 18 are sgx-relative: `phys - 0x4_8000_0000` (t8140 sgx) is in
+      `[0, 0x400_0000)`, and for those `unk_18` is that offset. They rebase to
+      the T6050 sgx base `0x23_0000_0000`. GPU-internal, same generation, so the
+      offsets carry over; all land inside the sgx window (size `0x3fdc000`), and
+      slot 26 (`+0xd04000`, ID_VERSION) was read live in the probe.
+
+      | slot | T6050 phys       | size     | unk_18    | unk_20 |
+      |------|------------------|----------|-----------|--------|
+      | 17   | `0x23_0000_0000` | `0x21400`| 0         | 2 |
+      | 22   | `0x23_0100_0000` | `0x8000` | 0         | 2 |
+      | 26   | `0x23_00d0_4000` | `0x8000` | `0xd04000`| 2 |
+      | 27   | `0x23_00d0_d000` | `0x1000` | `0xd0d000`| 2 |
+      | 28   | `0x23_00d5_8000` | `0x8000` | `0xd58000`| 2 |
+      | 29   | `0x23_00d1_0000` | `0x4000` | `0xd10000`| 2 |
+      | 31   | `0x23_00d4_0000` | `0x4000` | `0xd40000`| 2 |
+      | 32   | `0x23_00d6_0000` | `0x4000` | `0xd60000`| 2 |
+      | 35   | `0x23_00e0_0000` | `0x4000` | `0xe00000`| 2 |
+      | 39   | `0x23_00e0_8000` | `0x8000` | 0         | 2 |
+      | 40   | `0x23_00e1_c000` | `0x4000` | `0xe1c000`| 2 |
+      | 41   | `0x23_00e1_f800` | `0x4000` | 0         | 2 |
+
+      The aperture offset (`va`) and `size` are unchanged from t8140.
+- [ ] 6 windows are other SoC blocks (not sgx-relative), t8140:
+      slot 0 `0x3_0101_4000`, 3 `0x2_2010_4000`, 9 `0x3_003d_0000`,
+      10 `0x3_003c_0000`, 12 `0x4_0165_c000`, 14 `0x3_0028_0000`. These are
+      fabric / PMGR / MCC blocks around the GPU (the sgx node names an MCC via
+      `function-mcc_dataset` -> `/arm-io/mcc`; PMGR holds clock/power-gates
+      614/615/616). Their T6050 addresses differ and are not derivable by rebase.
+- [ ] Get all 18 definitively by tracing macOS GPU init under the m1n1
+      hypervisor (`hv.trace_range` on the sgx/gfx MMIO during AGXG17X startup) —
+      the method the asahi values came from. This also confirms the 12 above and
+      the window sizes. The AGX register-map builder is near kernelcache offset
+      `0x151000` (it references the sgx offsets `0xd04000`, `0xd40000`,
+      `0xd60000`), if a static extraction is preferred over a trace.
+- `RESERVED_REGISTER_SLOTS` (t8140: 17 slots): re-derive from the T6050 trace;
+  the slot numbering may differ.
 
 `kernel_window` / `dynamic` / `low` (GPU-VA layout):
 - [ ] Likely unchanged from t8140 (same firmware generation); confirm the g17c
@@ -128,6 +163,7 @@ From `dt_set_gpu_t8140()` (the template), changed for T6050:
 - [ ] Device-tree node committed to `t6050*.dtsi` (+ `ps_gfx` always-on, OPP
       placeholders, reserved-memory).
 - [ ] `dt_set_gpu_t6050()` in m1n1 (14 states, 4 SRAM tables, regions).
-- [ ] `hw/t6050.rs`: register windows (the open piece), perf tables, fixed
-      buffers; `apple,agx-t6050` in the OF table.
+- [~] `hw/t6050.rs` register windows: 12 of 18 rebased (above); 6 non-sgx and
+      the slot reservations need a macOS MMIO trace.
+- [ ] `hw/t6050.rs`: perf tables, fixed buffers; `apple,agx-t6050` in the OF table.
 - [ ] `CONFIG_DRM_ASAHI` + the G17 path in `j714c.config`.
