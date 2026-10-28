@@ -1,0 +1,99 @@
+TTY> Heap limit: 0x1001136c000 (128 MiB)
+m1n1 base: 0x10006130000
+Fetching ADT (0x000BC000 bytes)...
+== xhcirst
+  pre:  USBCMD 0x1 USBSTS 0x10 glue 0x886 SID 0x33313130
+  HCRST self-clear ok (USBCMD 0x0); CNR clear ok (USBSTS 0x1)
+  post: glue 0x886 SID 0x33313130 CAP 0x1100020 HCSPARAMS1 0x200047f
+== tunapply
+  DRD_USB31_DBG_DEFAULT  0x02aa28c100 want 0x00000008/0x00000008 p1 0x00000009 ok  -> 0x00000009
+  DRD_USB31_GBL_DEFAULT  0x02aa28c164 want 0x00000000/0x00000002 p1 0x9cc20024 ok  -> 0x9cc20024
+  DRD_USB31_GBL_HOST     0x02aa28c104 want 0x00002f00/0x0001ef00 p1 0x00002f00 ok  -> 0x00002f00
+  DRD_USB31_GBL_HOST     0x02aa28c11c want 0x00000000/0x00000100 p1 0x00001808 ok  -> 0x00001808
+  DRD_USB31_GBL_HOST     0x02aa28c12c want 0x000800c8/0x000a07ff p1 0x0a4968c8 ok  -> 0x0a4968c8
+  DRD_USB31_GBL_HOST     0x02aa28c200 want 0x02000100/0x02000100 p1 0x02102500 ok  -> 0x02102500
+  DRD_USB31_GBL_HOST     0x02aa28c604 want 0x00000000/0x00001000 p1 0x00000700 ok  -> 0x00000700
+  DRD_USB31_GBL_HOST     0x02aa28c628 want 0x06000006/0xff0000ff p1 0x06181206 ok  -> 0x06181206
+  DRD_USB31_GBL_HOST     0x02aa28c62c want 0x08000008/0xff0000ff p1 0x08201808 ok  -> 0x08201808
+  DRD_USB31_GBL_HOST     0x02aa28c680 want 0x6f000006/0xffffffff p1 0x6f000006 ok  -> 0x6f000006
+  DRD_USB31_GBL_HOST     0x02aa28c684 want 0x00060000/0xffffffff p1 0x00060000 ok  -> 0x00060000
+  DRD_USB31_CFG_HOST     0x02aa200020 want 0x0000001b/0x000000ff p1 0xc001801b ok  -> 0xc001801b
+  LINK_REGS_DEFAULT      0x02aa28d010 want 0xff000000/0xff000000 p1 0xff067d05 ok  -> 0xff067d05
+  LINK_REGS_DEFAULT      0x02aa28d020 want 0x4e900000/0x7ff00000 p1 0x4e928162 ok  -> 0x4e928162
+  LINK_REGS_DEFAULT      0x02aa28d024 want 0x000b8000/0x001f8000 p1 0x008b8080 ok  -> 0x008b8080
+  LINK_REGS_DEFAULT      0x02aa28d060 want 0x00000600/0x0003ffff p1 0x00000600 ok  -> 0x00000600
+  AUSBC_DEBUG_DEFAULT    0x02aa98000c want 0x00000000/0x0000001f p1 0x00000000 ok  -> 0x00000000
+  BULK_FABRIC_DEFAULT    0x02aa080008 want 0x00000000/0x00008000 p1 0x00000004 ok  -> 0x00000004
+  BULK_FABRIC_DEFAULT    0x02aa080014 want 0x00000000/0x00008000 p1 0x00000004 ok  -> 0x00000004
+  BULK_FABRIC_DEFAULT    0x02aa080020 want 0x00000000/0x00008000 p1 0x00000004 ok  -> 0x00000004
+  PIPE_HANDLER_DEFAULT   0x02aaa84044 want 0x00000004/0x00000004 p1 0x00000034 ok  -> 0x00000034
+  DRD_CIO_REGS_DEFAULT   0x02aa28cd20 want 0x001e0000/0x00ff0000 p1 0x001e0000 ok  -> 0x001e0000
+== txdeton
+  TXDETRX req set, ack ok (0x1)
+== cio
+  atc1_common    already on (0x000003ff)
+  auss           already on (0x000003ff)
+  atc1_cio       already on (0x000003ff)
+  atc1_cio_usb   already on (0x000003ff)
+  atc1_cio_auss  already on (0x000003ff)
+  power ctrl 0x2ab200000 = 0x0000001b
+  power stat 0x2ab200004 = 0x00000103
+  power misc 0x2ab200008 = 0x00001802
+  set sleep small: stat ok (0x00000103)
+  set sleep big: stat ok (0x00000103)
+  power ctrl = 0x0000001b
+  power stat = 0x00000103
+  power misc = 0x00001802
+  core+0xc = 0x1001d110
+== tunables
+  tunable_ATC_COMMON_CFG   reg[43] 0x2ab250000: 1 entries, 0 faults
+  tunable_ATC_FABRIC       reg[40] 0x2ab244000: 65 entries, 0 faults
+  tunable_ATC0AXI2AF       reg[41] 0x2a8000000: 75 entries, 0 faults
+  tunable_AUS40CMN_SHM     reg[5] 0x2ab000a00: 1 entries, 0 faults
+  tunable_AUSPLL_CORE      reg[8] 0x2ab003200: 6 entries, 0 faults
+== tunx
+  tunable_ATC0AXI2AF_LIOA        reg[42] 0x2a8020000: 5 entries, 0 faults
+  tunable_LN0_RX_EQ_DFLT         reg[18] 0x2ab00b000: 3 entries, 0 faults
+  tunable_LN0_RX_CFG_TX_OF_RXCLK reg[20] 0x2ab00d000: 4 entries, 0 faults
+  tunable_LN1_RX_EQ_DFLT         reg[27] 0x2ab01b000: 3 entries, 0 faults
+  tunable_LN1_RX_CFG_TX_OF_RXCLK reg[29] 0x2ab01d000: 4 entries, 0 faults
+== u3bist
+  BIST+0x00 = 0x00000000
+  BIST+0x04 = 0x00000e01
+  BIST+0x80 = 0x00000000
+  BIST+0x88 = 0x00000000
+  BIST+0x8c = 0x00000000
+  baseline         SID 0x33313130 CAP 0x01100020 glue 0x00000886 USBSTS 0x11 ALIVE
+  lanes up: c120 0x15500744 c10 0x0 PLL 0x0
+  lanes up         SID 0x33313130 CAP 0x01100020 glue 0x00000886 USBSTS 0x11 ALIVE
+  mgmt core 0x2ab140040: 0xa0003 -> 0xa0003  STARTED
+  route: 6c 0x600202a 78 0x111 misc20008 0x0 pwr8 0x1802
+  PHY CPU before: ctrl 0x10 stat 0x16e outbox 0x26601
+> 00:0x60000000000220 (TYPE=0x6, STATE=0x220)
+  PHY CPU boot: ap TIMEOUT iop TIMEOUT; eps [] iop 0x0 ap 0x0 stat 0x16e
+  UC_TNBL_DONE ok (0xc81) mxwrap ctrl 0x10 stat 0x16e
+  [s1] STATUS2 bit8 -> 0: ok (0xc4)
+  [s2 rise] STATUS2 bit8 -> 1: timeout (0xc4)
+  [s2 fall] STATUS2 bit8 -> 0: ok (0xc4)
+  BIST(mac): s1 ok rise timeout fall ok; C1 0xe01 OV1 0x6100000 OV2 0x0 PWR 0x1b
+  after BIST       SID 0x33313130 CAP 0x01100020 glue 0x00000886 USBSTS 0x11 ALIVE
+  lock ok          SID 0x33313130 CAP 0x01100020 glue 0x00000886 USBSTS 0x11 ALIVE
+  TXDETRX ack ok (0x1)
+  mux 0x10 ul ok   SID 0x33313130 CAP 0x01100020 glue 0x00000886 USBSTS 0x11 ALIVE
+  TXDETRX release ok (0x0)
+  HCRST after PHY: HCRST ok (0x0) CNR ok (0x1) glue ['0x886', '0x886', '0x3c20060c', '0x2000b']
+  CTLR: USBCMD 0x1 USBSTS 0x10 CRCR 0x0 DCBAAP 0x0 CONFIG 0x0 ERSTSZ 0x0 ERSTBA 0x0
+  base PORTSC1 0x000002a0 PR 0 PLS 5 CCS 0 PED 0 PP 1 WRC 0 PRC 0 spd 0 | GDBG 0x9cc20024 ltssm 0x3 rxei 1 txdet 0
+  base+100ms   0x000002a0 PR 0 PLS 5 CCS 0 PED 0 PP 1 WRC 0 PRC 0 spd 0 | GDBG 0x9cc20024 ltssm 0x3 rxei 1 txdet 0
+  USB2 port reset issued: PORTSC0 0x206e1 -> 0x206f1
+  USB2 PORTSC0 0x206f1 CCS 1 | SS 0x000002a0 PR 0 PLS 5 CCS 0 PED 0 PP 1 WRC 0 PRC 0 spd 0 | GDBG 0x9cc20024 ltssm 0x3 rxei 1 txdet 0
+  USB2 PORTSC0 0x220e03 CCS 1 | SS 0x000002a0 PR 0 PLS 5 CCS 0 PED 0 PP 1 WRC 0 PRC 0 spd 0 | GDBG 0x9cc20024 ltssm 0x3 rxei 1 txdet 0
+  after watch      SID 0x33313130 CAP 0x01100020 glue 0x00000886 USBSTS 0x10 ALIVE
+  PIPE  GUSB3PIPECTL 0x1021102 GUSB2PHYCFG 0x2102500 GCTL 0x30c11004 GSTS 0x7e800001
+  PCS   CFG1 0x0 CFG2 0xe01 STATUS2 0x0 CFG_OV1 0x0 CFG_OV2 0x0
+  LANE  TXpwr(c120) 0x15500744 RXpwr(c10) 0x0 CFG0(c) 0x1001d110 lanemode(6c) 0x600202a PLLlock 0x0
+  PORTSC1 0x000002a0 PR 0 PLS 5 CCS 0 PED 0 PP 1 WRC 0 PRC 0 spd 0 glue cd28 0x886 cd40 0x3c20060c cd44 0x2000b
+  LSP live sels: []  GDBGLTSSM 0x9cc20024
+  pipehandler: mux(+0xc) 0x10 nonsel(+0x20) 0x8333
+  UC_CTRL core+0x260 0xc81
+== reboot

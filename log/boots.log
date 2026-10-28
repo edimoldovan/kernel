@@ -227,3 +227,38 @@
 13:50:56 net-u2: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
 13:54:23 net-u3: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
 13:57:49 net-u4: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
+14:23:55 net-i1: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
+14:27:46 net-i1: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped
+14:31:13 net-i2: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
+14:34:39 net-i3: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
+14:38:06 net-i4: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
+14:46:05 net-j1: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
+14:49:31 net-j2: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
+14:52:57 net-j3: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
+14:56:24 net-j4: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
+15:57:19 net-k1: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped
+16:01:36 net-l1: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped
+16:05:08 net-m1: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped
+16:08:38 net-n1: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped
+16:12:07 net-o1: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
+16:15:34 net-p1: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped
+16:19:03 net-q1: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped
+16:22:30 net-r1: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped
+16:49:45 net-fresh1: chainloaded proxy never appeared
+16:56:55 net-fresh1: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped
+17:18:39 net-flip1: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped
+17:24:11 net-wpr1: resident proxy absent
+17:22:06 net-flip2: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped
+17:25:33 net-flip3: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped
+17:29:01 net-flip4: chainloaded proxy never appeared
+17:29:01 net-wpr2: chainloaded proxy never appeared
+17:35:41 net-wpr3: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped
+17:39:08 net-wpr4: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped
+17:46:09 net-trace1: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
+17:53:11 net-wr131: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped
+17:59:16 net-u2r1: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped
+18:03:22 net-u2ra1: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped
+18:07:37 net-notipd1: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
+18:11:44 net-clk1: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped
+18:16:16 net-clkb1: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
+18:25:53 net-alone1: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped

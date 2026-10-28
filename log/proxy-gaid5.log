@@ -1,0 +1,221 @@
+TTY> Initialized dockchannel UART at 0x288e28000
+TTY> Device info:
+TTY>   Model: Mac17,7
+TTY>   Target: J714c
+TTY>   Board-ID: 0xa
+TTY>   Chip-ID: 0x6050
+TTY> 
+TTY> CPU init (MIDR: 0x611f0681 smp_id:0x0)...
+TTY>   CPU part: 0x68 rev: 0x11
+TTY>   CPU: M5 Max Sotra C (M core)
+TTY> 
+TTY> boot_args at 0x100055b8000
+TTY>   revision:     3
+TTY>   version:      2
+TTY>   virt_base:    0xfdf0000
+TTY>   phys_base:    0x10003df0000
+TTY>   mem_size:     0x1fc6610000
+TTY>   top_of_kdata: 0x100055c8000
+TTY>   video:
+TTY>     base:       0x11fd310c000
+TTY>     display:    0x1
+TTY>     stride:     0x2f40
+TTY>     width:      3024
+TTY>     height:     1964
+TTY>     depth:      30bpp
+TTY>     density:    1
+TTY>   machine_type: 0
+TTY>   devtree:      0x108a4000
+TTY>   devtree_size: 0xbc000
+TTY>   cmdline:      
+TTY>   boot_flags:   0x0
+TTY>   mem_size_act: 0x2000000000
+TTY> 
+TTY> 
+TTY> 
+TTY> m1n1 v2.0.0-53-g7cde7d1a
+TTY> Copyright The Asahi Linux Contributors
+TTY> Licensed under the GNU General Public License v2 or later
+TTY> 
+TTY> Running in EL2
+TTY> 
+TTY> OS FW version: unknown (mBoot-20457.41.3)
+TTY> System FW version: unknown (mBoot-20457.41.3)
+TTY> Heap base: 0x100055c8000
+TTY> Boot policy: sip0 = 0
+TTY> MCC: Unsupported version:mcc,t6050
+TTY> MMU: Initializing...
+TTY> MMU: RAM base: 0x10000000000
+TTY> MMU: Top of normal RAM: 0x11fca400000
+TTY> MMU: Adding Device-nGnRE mapping at 0xbc0000000 (0x20000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0xb80000000 (0x40000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1cb0000000 (0x1c000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1800000000 (0x400000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1700000000 (0x100000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1c40000000 (0x4000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x800000000 (0x200000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0xa00000000 (0x80000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1c50000000 (0x4000)
+TTY> MMU: Adding Device-nGnRE mapping at 0xc00000000 (0x200000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0xe00000000 (0x80000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1c60000000 (0x4000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1000000000 (0x200000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1200000000 (0x80000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1c70000000 (0x4000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1400000000 (0x200000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1600000000 (0x80000000)
+TTY> MMU: Adding Device-nGnRE mapping at 0x1c80000000 (0x4000)
+TTY> MMU: SCTLR_EL1: 30000180 -> 30901085
+TTY> MMU: running with MMU and caches enabled!
+TTY> AIC: Version 3 @ 0x280400000
+TTY> AIC: AIC3 with 1/4 dies, 3104/4096 IRQs, reg_size:40004, config:10000, extintrcfg_stride:04a00, intmaskset_stride:04a00, intmaskclear_stride:04a00
+TTY> AIC: Configuring 1 external interrupts
+TTY> Primary WDT register @ 0x28836c000
+TTY> Primary WDT disabled
+TTY> Secondary WDT register @ 0x288330008
+TTY> Secondary WDT disabled
+TTY> pmgr: Cleaning up device states...
+TTY> pmgr: initialized, 661 devices on 1 dies found.
+TTY> display: Display is internal
+TTY> display: Display is already initialized (3024x1964)
+TTY> fb init: 3024x1964 (30) [s=3024] @0x11fd310c000
+TTY> fb console: max rows 57, max cols 78
+TTY> fb: display logo
+TTY> cpufreq: Chip 0x6050 is unsupported
+TTY> Initialization complete.
+TTY> Checking for payloads...
+TTY> Devicetree compatible value: apple,j714c
+TTY> Unknown payload at 0x10004ea4000 (magic: 5b41464b)
+TTY> No valid payload found
+TTY> dart: dart /arm-io/dart-usb0 at 0x2a2f80000 is a t8110
+TTY> USB0: initialized at 0x100055cc090
+TTY> dart: dart /arm-io/dart-usb1 at 0x2aaf80000 is a t8110
+TTY> USB1: initialized at 0x100055cc560
+TTY> dart: dart /arm-io/dart-usb2 at 0x382f80000 is a t8110
+TTY> USB2: initialized at 0x100055cca60
+TTY> Running proxy...
+TTY> Heap limit: 0x1000fc08000 (128 MiB)
+m1n1 base: 0x100049d4000
+Fetching ADT (0x000BC000 bytes)...
+== xhcirst
+  pre:  USBCMD 0x0 USBSTS 0x1 glue 0x886 SID 0x33313130
+  HCRST self-clear ok (USBCMD 0x0); CNR clear ok (USBSTS 0x1)
+  post: glue 0x886 SID 0x33313130 CAP 0x1100020 HCSPARAMS1 0x200047f
+== tunapply
+  DRD_USB31_DBG_DEFAULT  0x02aa28c100 want 0x00000008/0x00000008 p1 0x00000001 DIFF  -> 0x00000009
+  DRD_USB31_GBL_DEFAULT  0x02aa28c164 want 0x00000000/0x00000002 p1 0x9cc20026 DIFF  -> 0x9cc20024
+  DRD_USB31_GBL_HOST     0x02aa28c104 want 0x00002f00/0x0001ef00 p1 0x00006f00 DIFF  -> 0x00002f00
+  DRD_USB31_GBL_HOST     0x02aa28c11c want 0x00000000/0x00000100 p1 0x00001908 DIFF  -> 0x00001808
+  DRD_USB31_GBL_HOST     0x02aa28c12c want 0x000800c8/0x000a07ff p1 0x0a416802 DIFF  -> 0x0a4968c8
+  DRD_USB31_GBL_HOST     0x02aa28c200 want 0x02000100/0x02000100 p1 0x00102400 DIFF  -> 0x02102500
+  DRD_USB31_GBL_HOST     0x02aa28c604 want 0x00000000/0x00001000 p1 0x00000700 ok  -> 0x00000700
+  DRD_USB31_GBL_HOST     0x02aa28c628 want 0x06000006/0xff0000ff p1 0x18181218 DIFF  -> 0x06181206
+  DRD_USB31_GBL_HOST     0x02aa28c62c want 0x08000008/0xff0000ff p1 0x20201820 DIFF  -> 0x08201808
+  DRD_USB31_GBL_HOST     0x02aa28c680 want 0x6f000006/0xffffffff p1 0x00000000 DIFF  -> 0x6f000006
+  DRD_USB31_GBL_HOST     0x02aa28c684 want 0x00060000/0xffffffff p1 0x00060000 ok  -> 0x00060000
+  DRD_USB31_CFG_HOST     0x02aa200020 want 0x0000001b/0x000000ff p1 0xc0018080 DIFF  -> 0xc001801b
+  LINK_REGS_DEFAULT      0x02aa28d010 want 0xff000000/0xff000000 p1 0x9c067d05 DIFF  -> 0xff067d05
+  LINK_REGS_DEFAULT      0x02aa28d020 want 0x4e900000/0x7ff00000 p1 0x4e928162 ok  -> 0x4e928162
+  LINK_REGS_DEFAULT      0x02aa28d024 want 0x000b8000/0x001f8000 p1 0x008b8080 ok  -> 0x008b8080
+  LINK_REGS_DEFAULT      0x02aa28d060 want 0x00000600/0x0003ffff p1 0x000034c2 DIFF  -> 0x00000600
+  AUSBC_DEBUG_DEFAULT    0x02aa98000c want 0x00000000/0x0000001f p1 0x0000001f DIFF  -> 0x00000000
+  BULK_FABRIC_DEFAULT    0x02aa080008 want 0x00000000/0x00008000 p1 0x00008004 DIFF  -> 0x00000004
+  BULK_FABRIC_DEFAULT    0x02aa080014 want 0x00000000/0x00008000 p1 0x00008004 DIFF  -> 0x00000004
+  BULK_FABRIC_DEFAULT    0x02aa080020 want 0x00000000/0x00008000 p1 0x00008004 DIFF  -> 0x00000004
+  PIPE_HANDLER_DEFAULT   0x02aaa84044 want 0x00000004/0x00000004 p1 0x00000030 DIFF  -> 0x00000034
+  DRD_CIO_REGS_DEFAULT   0x02aa28cd20 want 0x001e0000/0x00ff0000 p1 0x00000000 DIFF  -> 0x001e0000
+== txdeton
+  TXDETRX req set, ack timeout (0x0)
+== cio
+  atc1_common    already on (0x000003ff)
+  auss           on: ok (0x000003ff)
+  atc1_cio       on: ok (0x000003ff)
+  atc1_cio_usb   on: ok (0x000003ff)
+  atc1_cio_auss  on: ok (0x000003ff)
+  power ctrl 0x2ab200000 = 0x00000004
+  power stat 0x2ab200004 = 0x00000100
+  power misc 0x2ab200008 = 0x00001800
+  set sleep small: stat ok (0x00000101)
+  set sleep big: stat ok (0x00000103)
+  power ctrl = 0x0000000b
+  power stat = 0x00000103
+  power misc = 0x00001800
+  core+0xc = 0x1003f33a
+== tunables
+  tunable_ATC_COMMON_CFG   reg[43] 0x2ab250000: 1 entries, 0 faults
+  tunable_ATC_FABRIC       reg[40] 0x2ab244000: 65 entries, 0 faults
+  tunable_ATC0AXI2AF       reg[41] 0x2a8000000: 75 entries, 0 faults
+  tunable_AUS40CMN_SHM     reg[5] 0x2ab000a00: 1 entries, 0 faults
+  tunable_AUSPLL_CORE      reg[8] 0x2ab003200: 6 entries, 0 faults
+== tunx
+  tunable_ATC0AXI2AF_LIOA        reg[42] 0x2a8020000: 5 entries, 0 faults
+  tunable_LN0_RX_EQ_DFLT         reg[18] 0x2ab00b000: 3 entries, 0 faults
+  tunable_LN0_RX_CFG_TX_OF_RXCLK reg[20] 0x2ab00d000: 4 entries, 0 faults
+  tunable_LN1_RX_EQ_DFLT         reg[27] 0x2ab01b000: 3 entries, 0 faults
+  tunable_LN1_RX_CFG_TX_OF_RXCLK reg[29] 0x2ab01d000: 4 entries, 0 faults
+== u3bist
+  BIST+0x00 = 0x00000000
+  BIST+0x04 = 0x00000e00
+  BIST+0x80 = 0x00000000
+  BIST+0x88 = 0x00000000
+  BIST+0x8c = 0x00000000
+  baseline         SID 0x33313130 CAP 0x01100020 glue 0x00000886 USBSTS 0x11 ALIVE
+  lanes up: c120 0x15540744 c10 0x0 PLL 0x0
+  lanes up         SID 0x33313130 CAP 0x01100020 glue 0x00000886 USBSTS 0x11 ALIVE
+  mgmt core 0x2ab140040: 0xa0002 -> 0xa0003  STARTED
+  route: 6c 0x600002a 78 0x111 misc20008 0x0 pwr8 0x1800
+  PHY CPU before: ctrl 0x2 stat 0x6c outbox 0x20001
+< 00:0x100000000c000c
+[mgmt] Supported versions 12 .. 12
+> 00:0x200000000c000c (TYPE=0x2, MAX_VER=0xc, MIN_VER=0xc)
+< 00:0x80000000000003
+[mgmt] Adding endpoint 0x0
+[mgmt] Adding endpoint 0x1
+> 00:0x80000000000001 (TYPE=0x8, LAST=0, BASE=0, MORE=1)
+< 00:0x88000100000007
+[mgmt] Adding endpoint 0x20
+[mgmt] Adding endpoint 0x21
+[mgmt] Adding endpoint 0x22
+> 00:0x88000100000000 (TYPE=0x8, LAST=1, BASE=1, MORE=0)
+Starting endpoint #0x1 (crash)
+> 00:0x50000100000002 (TYPE=0x5, EP=0x1, FLAG=2)
+> 00:0xb0000000000020 (TYPE=0xb, STATE=0x20)
+< 01:0x10100010007df0
+[crash] buf prealloc at dva 0x10007df0
+< 00:0x70000000000020
+[mgmt] IOP power state is now 0x20
+< 00:0xb0000000000020
+[mgmt] AP power state is now 0x20
+> 00:0x60000000000220 (TYPE=0x6, STATE=0x220)
+  PHY CPU boot: ap on iop on; eps ['0x0', '0x1', '0x20', '0x21', '0x22'] iop 0x20 ap 0x20 stat 0x16e
+  UC_TNBL_DONE ok (0xc81) mxwrap ctrl 0x10 stat 0x16e
+  [s1] STATUS2 bit8 -> 0: ok (0x84)
+  [s2 rise] STATUS2 bit8 -> 1: timeout (0xc4)
+  [s2 fall] STATUS2 bit8 -> 0: ok (0xc4)
+  BIST(mac): s1 ok rise timeout fall ok; C1 0xe01 OV1 0x6100000 OV2 0x0 PWR 0x1b
+  after BIST       SID 0x33313130 CAP 0x01100020 glue 0x00000886 USBSTS 0x11 ALIVE
+  lock ok          SID 0x33313130 CAP 0x01100020 glue 0x00000886 USBSTS 0x11 ALIVE
+  TXDETRX ack ok (0x1)
+  mux 0x10 ul ok   SID 0x33313130 CAP 0x01100020 glue 0x00000886 USBSTS 0x11 ALIVE
+  TXDETRX release ok (0x0)
+  HCRST after PHY: HCRST ok (0x0) CNR ok (0x1) glue ['0x886', '0x886', '0x3c20060c', '0x2000b']
+  CTLR: USBCMD 0x1 USBSTS 0x10 CRCR 0x0 DCBAAP 0x0 CONFIG 0x0 ERSTSZ 0x0 ERSTBA 0x0
+  base PORTSC1 0x000002a0 PR 0 PLS 5 CCS 0 PED 0 PP 1 WRC 0 PRC 0 spd 0 | GDBG 0x9cc20024 ltssm 0x3 rxei 1 txdet 0
+  base+100ms   0x000002a0 PR 0 PLS 5 CCS 0 PED 0 PP 1 WRC 0 PRC 0 spd 0 | GDBG 0x9cc20024 ltssm 0x3 rxei 1 txdet 0
+  USB2 port reset issued: PORTSC0 0x206e1 -> 0x206f1
+  USB2 PORTSC0 0x206f1 CCS 1 | SS 0x000002a0 PR 0 PLS 5 CCS 0 PED 0 PP 1 WRC 0 PRC 0 spd 0 | GDBG 0x9cc20024 ltssm 0x3 rxei 1 txdet 0
+  USB2 PORTSC0 0x220e03 CCS 1 | SS 0x000002a0 PR 0 PLS 5 CCS 0 PED 0 PP 1 WRC 0 PRC 0 spd 0 | GDBG 0x9cc20024 ltssm 0x3 rxei 1 txdet 0
+  after watch      SID 0x33313130 CAP 0x01100020 glue 0x00000886 USBSTS 0x10 ALIVE
+  PIPE  GUSB3PIPECTL 0x1021102 GUSB2PHYCFG 0x2102500 GCTL 0x30c11004 GSTS 0x7e800001
+  PCS   CFG1 0x0 CFG2 0xe01 STATUS2 0x0 CFG_OV1 0x0 CFG_OV2 0x0
+  LANE  TXpwr(c120) 0x15500744 RXpwr(c10) 0x0 CFG0(c) 0x1001d110 lanemode(6c) 0x600202a PLLlock 0x0
+  PORTSC1 0x000002a0 PR 0 PLS 5 CCS 0 PED 0 PP 1 WRC 0 PRC 0 spd 0 glue cd28 0x886 cd40 0x3c20060c cd44 0x2000b
+  LSP live sels: []  GDBGLTSSM 0x9cc20024
+  pipehandler: mux(+0xc) 0x10 nonsel(+0x20) 0x8333
+  UC_CTRL core+0x260 0xc81
+== disc
+  hpm1 before: mode b'APP ' pstate 0 status 0x100248fd power 0xf01 data 0x80000073
+  Gaid written
+  after Gaid: SSPS 0: 0; asleep
+   0.00 s  PORTSC0 0x002202a0 PORTSC1 0x000002a0 | hpm1 -
+== reboot

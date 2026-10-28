@@ -197,10 +197,11 @@ if is_proxy(DRD) and not os.environ.get("FORCE_PORT1"):
 if not is_proxy(PORTS_PROXY_CHECK[2]):
     print("note: port 2 does not look like the proxy port")
 p.set_exc_guard(GUARD.RETURN | GUARD.SILENT)
+T0 = time.time()
 arm()
 try:
     for s in steps:
-        print(f"== {s}")
+        print(f"== {s}  PORTSC1 {rd(DRD + 0x430)[0]:#x} GCTL {rd(DRD + 0xc110)[0]:#x} {time.time() - T0:7.3f} s", flush=True)
         pet()
         if s == "read":
             step_read()
@@ -805,8 +806,9 @@ try:
             def chk(tag):
                 sid, _ = rd(DRD + 0xc120); cap, _ = rd(DRD + 0x0)
                 g28, _ = rd(DRD + 0xcd28); sts, _ = rd(op + 4)
+                p1, _ = rd(op + 0x410)
                 print(f"  {tag:16} SID {sid:#010x} CAP {cap:#010x} glue {g28:#010x} "
-                      f"USBSTS {sts:#x} {'ALIVE' if sid and cap else 'DEAD'}", flush=True)
+                      f"USBSTS {sts:#x} PORTSC1 {p1:#x} {time.time() - T0:7.3f} s {'ALIVE' if sid and cap else 'DEAD'}", flush=True)
             for off in (0x0, 0x4, 0x80, 0x88, 0x8c):
                 v, f = rd(BB + off)
                 print(f"  BIST+{off:#04x} = {v:#010x}{' FAULT' if f else ''}")
@@ -947,9 +949,12 @@ try:
                 tn, tv = poll(CORE + 0x260, 1 << 10, 1 << 10, 1000)
                 print(f"  UC_TNBL_DONE {tn} ({tv:#x}) mxwrap ctrl {rd(MXW + 0x28)[0]:#x} "
                       f"stat {rd(MXW + 0x44)[0]:#x}")
+                chk("after fw")
                 rmw(PWR, 0, 1 << 4)                                  # deassert_aciophy_reset
                 time.sleep(0.1)
+                chk("after phyrst")
                 rmw(OV1, 0, 1 << 20); usben(); s1 = st2("s1", 0)
+                chk("after s1")
                 rmw(OV1, 0x1e000000, 3 << 25); usben(); s2 = st2("s2 rise", 1); s3 = st2("s2 fall", 0)
                 rmw(OV2, 0x660, 0); usben()
                 rmw(PIPE + 0x20, 0xf, 3); rmw(PIPE + 0x20, 1 << 12, 0)   # clear_nonselected
@@ -1003,10 +1008,12 @@ try:
                 # xHCI reset with CIO on and the PIPE on USB3. Earlier (no pipe clock) this wedged in
                 # CNR; completing now means the controller runs on the USB3 PHY's clock.
                 g0 = [rd(DRD + o)[0] for o in (0xcd28, 0xcd2c, 0xcd40, 0xcd44)]
+                print(f"  before HCRST: PORTSC1 {dec1(rd(op1)[0])}", flush=True)
                 wr(op, rd(op)[0] | 2)
                 hr, hv = poll(op, 2, 0, 2000); cr, cv = poll(op + 4, 1 << 11, 0, 2000)
                 g1 = [rd(DRD + o)[0] for o in (0xcd28, 0xcd2c, 0xcd40, 0xcd44)]
                 print(f"  HCRST after PHY: HCRST {hr} ({hv:#x}) CNR {cr} ({cv:#x}) glue {[hex(v) for v in g1]}", flush=True)
+                print(f"  after HCRST: PORTSC1 {dec1(rd(op1)[0])}", flush=True)
                 if g1 != g0:
                     for o, v in zip((0xcd28, 0xcd2c, 0xcd40, 0xcd44), g0):
                         wr(DRD + o, v)
@@ -1033,13 +1040,28 @@ try:
             cur, _ = rd(op1)                                     # WPR (warm reset, bit31)
             if not os.environ.get("NOSWITCH") and not os.environ.get("U2RESET"):
                 wr(op1, (cur & (0x200 | 0xc000 | 0x0e000000)) | (1 << 31))  # the controller's own PR
-            last = None; end = time.time() + 6
+            last = None; end = time.time() + float(os.environ.get("WATCH_SECS", "6"))
             while time.time() < end:
                 v0, _ = rd(op0); v1, _ = rd(op1); g = gdbg()
                 if (v0, v1, g) != last:
                     print(f"  USB2 PORTSC0 {v0:#06x} CCS {v0 & 1} | SS {dec1(v1)} | GDBG {g}")
                     last = (v0, v1, g)
                 time.sleep(0.01)
+            # U2RESETS=N: up to N-1 more USB 2.0 resets, 2 s apart, until the SS port is in U0
+            for k in range(1, int(os.environ.get("U2RESETS", "1"))):
+                if (rd(op1)[0] & 0x1e1) == 0x1:          # CCS, PLS U0
+                    break
+                v0, _ = rd(op0)
+                wr(op0, (v0 & (0x200 | 0xc000 | 0x0e000000)) | (1 << 4))
+                print(f"  USB2 port reset {k + 1}: PORTSC0 {v0:#x}", flush=True)
+                end = time.time() + 2
+                while time.time() < end:
+                    pet()
+                    v0, _ = rd(op0); v1, _ = rd(op1); g = gdbg()
+                    if (v0, v1, g) != last:
+                        print(f"  USB2 PORTSC0 {v0:#06x} CCS {v0 & 1} | SS {dec1(v1)} | GDBG {g}")
+                        last = (v0, v1, g)
+                    time.sleep(0.01)
             chk("after watch")
             print(f"  PIPE  GUSB3PIPECTL {rd(DRD+0xc2c0)[0]:#x} GUSB2PHYCFG {rd(DRD+0xc200)[0]:#x} "
                   f"GCTL {rd(DRD+0xc110)[0]:#x} GSTS {rd(DRD+0xc118)[0]:#x}")
@@ -1341,6 +1363,112 @@ try:
             print(f"  HCRST self-clear {sr} (USBCMD {vr:#x}); CNR clear {sc} (USBSTS {vc:#x})")
             print(f"  post: glue {rd(DRD+0xcd28)[0]:#x} SID {rd(DRD+0xc120)[0]:#x} "
                   f"CAP {rd(DRD+0x0)[0]:#x} HCSPARAMS1 {rd(DRD+0x4)[0]:#x}")
+        elif s == "disc":
+            # Port 1's Type-C controller (ADT hpm1, nub-spmi-a0 SID 0xa, ACE3 register window as
+            # linux-aurora's tipd/spmi.c): simulated disconnect in the debug mode, unlocked with the
+            # ADT target-type's first four characters reversed ("417J"), as the kernel does.
+            from m1n1.hw.spmi import SPMI
+            spmi, SID = SPMI(u, "/arm-io/nub-spmi-a0"), 0xa
+            def sel(reg):
+                spmi.write_zero(SID, reg)
+                for _ in range(1000):
+                    if spmi.read_reg(SID, 0) == reg:
+                        return
+                raise Exception(f"ACE3 select {reg:#x} timeout")
+            def hrd(reg, n):
+                sel(reg); out = b""
+                for off in range(0, n, 16):
+                    out += spmi.read_ext(SID, 0x20 + off, min(16, n - off))
+                return out
+            def hwr(reg, data):
+                sel(reg)
+                for off in range(0, len(data), 16):
+                    spmi.write_ext(SID, 0xa0 + off, data[off:off + 16])
+            def cmd(c, data=b""):
+                if data:
+                    hwr(0x09, data)
+                hwr(0x08, c.encode())
+                for _ in range(300):
+                    v = hrd(0x08, 4)
+                    if v == b"!CMD":
+                        return "!CMD"
+                    if v == b"\0\0\0\0":
+                        return hrd(0x09, 1)[0]
+                    time.sleep(0.01)
+                return "timeout"
+            def hstate():
+                try:
+                    return hstate1()
+                except Exception as e:
+                    return f"unreadable ({e})"
+            def hstate1():
+                return (f"mode {hrd(0x03, 4)} pstate {hrd(0x20, 1)[0]} "
+                        f"status {int.from_bytes(hrd(0x1a, 4), 'little'):#x} "
+                        f"power {int.from_bytes(hrd(0x3f, 2), 'little'):#x} "
+                        f"data {int.from_bytes(hrd(0x5f, 4), 'little'):#x}")
+            op = DRD + 0x20; op0 = op + 0x400; op1 = op + 0x410
+            spmi.wakeup(SID)
+            print(f"  hpm1 before: {hstate()}", flush=True)
+            if os.environ.get("DISC_SSPS"):      # DISC_SSPS=1: system power state S0 first, as tipd
+                print(f"  SSPS 0: {cmd('SSPS', bytes([0]))}; {hstate()}", flush=True)
+            if os.environ.get("DISC_GAID"):      # DISC_GAID=1: controller firmware reset instead of DISC
+                hwr(0x08, b"Gaid")
+                print("  Gaid written", flush=True)
+                # The firmware restarts in power state 7 and attaches nothing until the system
+                # power state is S0 again (as iBoot sets at boot).
+                for _ in range(50):
+                    time.sleep(0.1)
+                    try:
+                        spmi.wakeup(SID)
+                        if hrd(0x03, 4) == b"APP ":
+                            break
+                    except Exception:
+                        pass
+                ssps = "not sent"
+                for _ in range(0 if os.environ.get("DISC_GAID") == "nossps" else 50):
+                    # it NACKs SPMI commands while it settles
+                    try:
+                        spmi.wakeup(SID)
+                        ssps = cmd("SSPS", bytes([0]))
+                        break
+                    except Exception as e:
+                        ssps = f"failed ({e})"
+                        time.sleep(0.1)
+                if os.environ.get("DISC_GAID") == "sleep":
+                    spmi.sleep(SID)              # left alone for the attach, as before a replug
+                    print(f"  after Gaid: SSPS 0: {ssps}; asleep", flush=True)
+                else:
+                    print(f"  after Gaid: SSPS 0: {ssps}; {hstate()}", flush=True)
+            elif not os.environ.get("NODISC"):   # NODISC=1: watch only (a replug by hand)
+                res = [cmd("LOCK", b"417J"), cmd("DBMa", b"\x01"), cmd("DISC", b"\x02"),
+                       cmd("DBMa", b"\x00"), cmd("LOCK", b"\0\0\0\0")]
+                print(f"  LOCK DBMa DISC DBMa0 LOCK0: {res}", flush=True)
+            usbd_at = float(os.environ.get("DISC_USBD", "-1"))   # DISC_USBD=t: "USBd" 1 at t s into the watch
+            quiet = os.environ.get("DISC_QUIET")   # DISC_QUIET=1: controller back to sleep, not read
+            if quiet:
+                spmi.sleep(SID)
+            secs = float(os.environ.get("DISC_WATCH", "30"))
+            last = None; t0 = time.time()
+            while time.time() < t0 + secs:
+                pet()
+                if os.environ.get("DISC_ACK"):    # DISC_ACK=1: clear the controller's events, as tipd
+                    ev = hrd(0x14, 8)
+                    if any(ev):
+                        hwr(0x18, ev)
+                        print(f"  {time.time() - t0:5.2f} s  INT_EVENT1 {int.from_bytes(ev, 'little'):#018x} cleared", flush=True)
+                if 0 <= usbd_at <= time.time() - t0:
+                    if os.environ.get("DISC_USBD_DBMA"):   # in the debug mode, as DISC
+                        r = [cmd("LOCK", b"417J"), cmd("DBMa", b"\x01"), cmd("USBd", bytes([1])),
+                             cmd("DBMa", b"\x00"), cmd("LOCK", b"\0\0\0\0")]
+                    else:
+                        r = cmd("USBd", bytes([1]))
+                    print(f"  {time.time() - t0:5.2f} s  USBd 1: {r}", flush=True)
+                    usbd_at = -1
+                v0, _ = rd(op0); v1, _ = rd(op1); h = "-" if quiet else hstate()
+                if (v0, v1, h) != last:
+                    print(f"  {time.time() - t0:5.2f} s  PORTSC0 {v0:#010x} PORTSC1 {v1:#010x} | hpm1 {h}", flush=True)
+                    last = (v0, v1, h)
+                time.sleep(0.02)
         elif s == "reboot":
             disarm()
             p.reboot()

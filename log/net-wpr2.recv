@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/home/ed/dev/omarchy/kernel/tools/net_recv.py", line 9, in <module>
+    c, a = s.accept()
+           ~~~~~~~~^^
+  File "/usr/lib/python3.14/socket.py", line 298, in accept
+    fd, addr = self._accept()
+               ~~~~~~~~~~~~^^
+TimeoutError: timed out

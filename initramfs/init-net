@@ -15,6 +15,9 @@ echo " kernel: $(uname -a)"
 echo "=========================================="
 
 for i in $(seq 1 30); do [ -e /sys/class/net/eth0 ] && [ -b /dev/sda ] && break; sleep 1; done
+# The stick may reach SuperSpeed (bus 4) only after several USB 2.0 resets; give it 40 s.
+for i in $(seq 1 40); do [ -e /sys/bus/usb/devices/4-1 ] && break; sleep 1; done
+for i in $(seq 1 15); do [ -b /dev/sda ] && break; sleep 1; done
 ip link set eth0 up
 udhcpc -i eth0 -n -q -t 10 -s /udhcpc.sh
 echo "net: $(ip -4 addr show eth0 | grep -o "inet [0-9./]*") link $(cat /sys/class/net/eth0/speed 2>/dev/null) Mb/s"
@@ -42,6 +45,7 @@ R=/tmp/report
 	dd if=/dev/sda bs=1M count=256 iflag=direct 2>/dev/null | sha256sum
 	echo "=== after the tests $(cut -d' ' -f1 /proc/uptime) s"
 	portsc
+	echo "--- clk_summary"; cat /sys/kernel/debug/clk/clk_summary 2>&1
 	echo "--- dmesg"; dmesg
 } > $R 2>&1
 cat $R | head -n 30

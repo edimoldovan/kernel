@@ -1708,3 +1708,479 @@ every change of PORTSC (USB 2.0 / SS) and GDBGLTSSM.
   resets it at 6.2 s (Polling again, then RxDetect, no connection).
 - The resident proxy leaves port 1 in device mode with GUSB3PIPECTL 0x01021102 (SUSPHY set),
   GUSB2PHYCFG 0x00102400, glue 0x886: the proven proxy runs never ran the USB 2.0 flip.
+
+## Port 1 without the USB 2.0 flip, from the proxy start state: 0 of 5 (2026-10-28 14:20-14:40, boots net-i1..i4)
+
+Driver change (linux-aurora, uncommitted): on port 1 `t6050_usb2_init()` skips
+`t6050_usb2_host_flip()` and runs `t6050_usb3_up()` directly (step 6 sets host mode); ports 0
+and 2 keep the flip. First it logs the inherited state (pipehandler first, the core only with
+dwc3 out of reset). Five boots with the hub and port event log; the first i1 report was
+overwritten by the batch's i1.
+
+- The chainloaded loader (`build/m1n1.macho`) is the `T6050_NO_HOST_PREP` build: its
+  "T6050 host prep skipped" string is in the binary. It does not flip port 1; no loader change.
+- Inherited state, every boot: pipehandler +0x0 0, +0x4 0x16, +0xc 0x22, +0x1c 1, +0x20 0x9332;
+  GCTL 0x30c12004, GUSB2PHYCFG 0x102400, GUSB3PIPECTL 0x1021102, glue 0x886 / 0x3c20060c,
+  PORTSC 0x280 / 0x280. Equal to the resident proxy's values.
+- Sequence: cd28 0x886 at every step, CIO on included; PIPE lock 1. Same as with SUSPHY set in
+  u1-u4 and in the proxy runs (with the flip it was 0 from step 4, lock 0).
+- End of step 16: PORTSC 0x206e1 / 0x2b0, the SS port in a warm reset (with the flip: 0x2a0).
+  It completes after the xHCI reset (0x2802a0 at 2.07 s, then RxDetect 0x2a0), as with
+  `HCRST_AFTER` in the proxy runs.
+- i1-i3 and the first i1: the hub's two USB 2.0 port resets (2.10 s, 2.22 s); the stick stays
+  on USB 2.0 (`usb 3-1: speed 480`), the SS port stays in RxDetect.
+- i4: after the second USB 2.0 reset the stick leaves USB 2.0 (disconnect, 0x2202a0 at 2.28 s).
+  The SS port stays in RxDetect until 3.46 s, then Polling (0x2e0), SS.Inactive (0x2c0) at
+  4.55 s, the hub's warm reset at 6.19 s, RxDetect again; the stick is back on USB 2.0 at
+  6.31 s. Same late Polling and SS.Inactive as u1 (Polling at 3.49 s).
+- From 2.18 s the usb4 root hub suspends and resumes (WCE/WOE on the SS port, 0xa0002a0); from
+  3.10 s the usb3 root hub is suspended too.
+
+| Batch | Setting | SuperSpeed |
+|---|---|---|
+| i1-i4 + first i1 | no flip on port 1, proxy start state, SUSPHY set | 0 of 5 |
+| j1-j4 | as i, GUSB3PIPECTL SUSPHY cleared after the step 17 xHCI reset (`ss_susphy_clear=1`) | 0 of 4 |
+
+- j (new boot parameter `ss_susphy_clear`, default 0): the readback after the xHCI reset is
+  GUSB3PIPECTL 0x1001102. Every boot has the trace of i1-i3: the SS port's warm reset completes
+  at 2.07 s, the hub's USB 2.0 resets at 2.10 s and 2.22 s, the stick stays on USB 2.0, the SS
+  port stays in RxDetect.
+
+## The proven proxy command fails today too (2026-10-28 ~15:05, `log/proxy-ref1.log`, `log/proxy-swap1.log`)
+
+The command of runs 45-53 (`MACBIST FWWAKE NOPHYPWR NORESET NOLANES HCRST_AFTER MACORDER MACXBAR
+U2RESET`, steps `xhcirst tunapply txdeton cio tunables tunx u3bist`, then `reboot`), each run
+from a reset (after j4's watchdog reset, after the first run's reboot):
+
+| Run | Orientation | Result |
+|---|---|---|
+| ref1 | normal | USB 2.0 reset: PORTSC0 0x206f1 -> 0x220e03 (stick enabled at high speed); SS port 0x2a0 RxDetect for the whole 6 s |
+| swap1 | flipped (`SWAP=1`) | the same |
+
+- Both: HCRST after the PHY ok, glue 0x886 kept, base PORTSC1 0x2a0 (PR 0, clean: no warm reset
+  pending, unlike the kernel's 0x2b0), TXDETRX ack and release ok, PIPE lock ok, BIST s1 ok, rise
+  timeout, fall ok. GUSB3PIPECTL 0x1021102 (SUSPHY set), GDBGLTSSM 0x9cc20024 throughout.
+- Last SuperSpeed boot: t1 (~13:00). Since then 0 of 27 kernel boots (t2-t3, p, s, w, u, i + first i1, j) and 0 of 2 proxy runs.
+
+After Ed reseated the stick in port 1 (adapter not pressing on it), the same command from a
+reset (`log/proxy-ref2.log`, `log/proxy-swap2.log`):
+
+| Run | Orientation | Result |
+|---|---|---|
+| ref2 | normal | as ref1: stick at high speed after the USB 2.0 reset, SS port in RxDetect for 6 s |
+| swap2 | flipped | the same |
+| ref3 | normal, network adapter out of port 0 | the same |
+
+- The harness (`tools/t6050_phy_power_test.py`) is unchanged since 11:13, before runs 45-53.
+  The command that trained the link at ~11:20 fails now with or without the adapter, in both
+  orientations, after a reseat of the stick.
+- The stick in Omarchy (Bus 009, xhci-pci-prom21): `0781:55e8 SanDisk 3.2 Gen2`, usb-storage,
+  10000M. The stick still does SuperSpeed.
+
+After a full shutdown and power-on of the Mac (stick in port 1, adapter in port 0):
+
+| Run | Setting | Result |
+|---|---|---|
+| cold1 | normal, first run after the cold boot | as ref1: stick at high speed, SS port in RxDetect |
+| twice1a + twice1b | normal, two runs with no reset in between | both as ref1; in the second the PHY CPU no longer answers RTKit (already booted), UC_TNBL_DONE still set |
+
+- In every run since ~13:00 the stick stays on USB 2.0 after the USB 2.0 reset (PORTSC0
+  0x220e03). In runs 45-53 it left USB 2.0 at that point (0x206f1 -> 0x2202a0) and trained to U0.
+  The stick does not see the host's SuperSpeed receiver: the host side of the SS lanes, or the
+  contact to them, is what changed.
+| turn1 | stick turned 180° in port 1, normal | as ref1 |
+| turnswap1 | stick turned 180° in port 1, flipped (`SWAP=1`) | as ref1 |
+
+- With ref3/swap2 before the turn, both plug orientations have been run with both lane
+  settings: the stick never leaves USB 2.0, the SS port stays in RxDetect.
+
+macOS 27.2 on the same Mac, stick in port 1 (after the 180° turn), System Information: "USB 3.1
+Bus", Location ID 0x01000000, driver AppleT8142USBXHCI; SanDisk 3.2 Gen2 (0781:55e8) at Location
+ID 0x01200000, Link Speed 10 Gb/s, power allocated 4.48 W (896 mA). Port 1 and the stick do
+SuperSpeed under macOS.
+
+macOS port state (`ioreg`, same session): Type-C controllers on SPMI: `hpm0@C` (nub-spmi-a0)
+= Port-USB-C@1, `hpm1@A` (nub-spmi-a0) = Port-USB-C@2, `hpm2@C` (nub-spmi-a1) = Port-USB-C@3.
+Port-USB-C@1 and @2 (the two left ports): ConnectionActive, TransportsActive ("CC","USB3"),
+PlugOrientation 2. Port-USB-C@3: ("CC","USB3","USB2"), PlugOrientation 1.
+
+Restart from macOS into m1n1 without touching the stick, then the reference at once:
+
+| Run | Setting | Result |
+|---|---|---|
+| macos-swap1 | flipped (`SWAP=1`, matches PlugOrientation 2) | as ref1 |
+| macos-ref1 | normal | as ref1 |
+
+Batches i and j ran while the reference itself failed: their 0 of 5 and 0 of 4 do not judge
+skipping the flip or clearing SUSPHY after step 17. Both settings are untested, not refuted.
+
+PHY reset released early, then the reference on top (both flipped, `SWAP=1`; `log/proxy-stackA1.log`,
+`log/proxy-stackB1.log`):
+
+| Run | Setting | Result |
+|---|---|---|
+| stackA1 | reference without `NORESET` (PHY reset released at power-on, power ctrl 0x1b), no reboot | as ref1 |
+| stackB1 | full reference on top of A, then `reboot` | as ref1 (HCRST at the start completes) |
+
+Comparison with the morning runs (record of the session that ran them:
+`~/.config/Claude/side-session-notes/local_41904250-8a0b-4c2a-b5d3-767316a3a49b/morning-pass.txt`;
+each morning run started from a `mac_ctl.py` reboot, which is `p.reboot()` like the harness
+`reboot` step; the network adapter was not in the Mac then):
+
+- Every displayed host register in run 52 equals today's ref1 up to the USB 2.0 reset: HCRST after
+  the PHY ok, glue 0x886 0x886 0x3c20060c 0x2000b, base PORTSC1 0x2a0 (PR 0), GDBGLTSSM
+  0x9cc20024, PORTSC0 0x206e1 -> 0x206f1, GUSB3PIPECTL 0x1021102, GUSB2PHYCFG 0x2102500, GCTL
+  0x30c11004, GSTS 0x7e800001.
+- Runs 52, 53 and 55 (all three morning runs with `U2RESET`): while the USB 2.0 reset was still
+  running (PORTSC0 0x206f1, PR 1) the SS port went Polling (0x2e0) and, in 52 and 53, U0
+  (0x21603, speed 5); then PORTSC0 0x2202a0 (the stick left USB 2.0). Today (14 runs): the
+  USB 2.0 reset ends with the stick enabled at high speed (0x220e03), the SS port stays 0x2a0.
+
+## Replug with the SuperSpeed side up: U0 at once (2026-10-28 ~16:00, `log/proxy-hotplug3.log`)
+
+Harness change: `WATCH_SECS` sets the watch after the sequence (default 6 s). The reference
+(flipped, `SWAP=1`, with `U2RESET`), watch 120 s, `WDT_SECS=178`. (hotplug1/2 used `NOSWITCH=1`
+to skip the warm reset; it also skips the PIPE switch to USB3 in step 15, so the xHCI reset
+after the PHY timed out and the controller read 0. Not a Mac fault.)
+
+- USB 2.0 reset: as all day, PORTSC0 0x206f1 -> 0x220e03 (stick at high speed), SS 0x2a0.
+- Ed unplugged the stick, counted to three, plugged it back in the same way up: PORTSC0 0x2202a0
+  (USB 2.0 disconnect), SS 0x21603: CCS, PED, U0, speed 5 (SuperSpeedPlus). No Polling state
+  seen at the 10 ms watch rate.
+- The host side of the sequence is sound. What stopped working at ~13:00 is the stick going for
+  SuperSpeed on a USB 2.0 reset; a fresh connection trains at once.
+- Not explained: t1 passed and t2, 3.5 minutes later, failed with nothing physical changed.
+
+The Type-C controller can simulate a disconnect: linux-aurora's tipd driver supports
+`apple,sn201202x` over SPMI (`drivers/usb/typec/tipd/spmi.c`) and has the 4CC command `DISC`
+(debugfs, `CONFIG_TYPEC_TPS6598X_DEBUG_COMMANDS`). `t6050-j714c-usb.dtsi` (not included by
+`t6050-j714c.dts`) has the SPMI controller `spmi@28a188000` and hpm0 at SPMI address 0xc. macOS:
+hpm0@C and hpm1@A on nub-spmi-a0, hpm2@C on nub-spmi-a1.
+
+## Simulated disconnect through port 1's Type-C controller (2026-10-28 ~16:10-16:40, boots net-k1, net-l1, net-m1)
+
+Kernel change (linux-aurora, uncommitted): `t6050-j714c-usb2.dtsi` gets the SPMI controller
+`spmi@28a188000` (nub-spmi-a0) with port 1's controller only, `hpm1` (ADT hpm1, left-front,
+`usb-pd@a`, `apple,sn201202x`, polled, no interrupts, `connector` without a graph), and
+`usb2phy_1` points at it (`apple,typec-controller`). tipd exports `tps6598x_exec_cmd_tmo` and
+`tps6598x_block_read`; `spmi.c` has `sn201202x_simulate_disconnect()`. The PHY driver queues it
+at the end of step 16 (`ss_replug_s`, default 2, 0 = off) and retries every 100 ms until the
+controller is bound. Port 1 runs without the flip, SUSPHY set, `ss_susphy_clear` 0.
+
+| Boot | Sequence | Result |
+|---|---|---|
+| k1 | `DISC` (1 byte: 2) | `-EINVAL`: the controller answers `!CMD` outside its debug mode; stick on USB 2.0 |
+| l1 | `LOCK` "417J" (ADT target-type J714c, first four characters reversed, as m1n1's `tps6598x_enter_kis`), `DBMa` 1, `DISC` 2, 2.5 s, `DBMa` 0, `LOCK` 0000 | every command 0; USB 2.0 disconnect at 2.17 s, then no port 1 event up to the report at 35 s (no stick) |
+| m1 | as l1, with the controller state logged | as l1 (the stick was back on USB 2.0 at boot: l1 left nothing behind) |
+
+Controller state in m1 (MODE, STATUS 0x1a, POWER_STATUS 0x3f, DATA_STATUS 0x5f):
+- before: APP, 0x100248fd, 0xf01, 0x80000073;
+- right after `DISC`: DISC, 0x58000002, 0, 0;
+- 2.6 s later: APP, 0x100240fd (bit 11 clear), 0x1, 0x80000073;
+- 14.2 s (about 12 s after the reattach): APP, 0x100248fd, 0xf01, 0x80000073, the state of
+  before. Still no USB 2.0 or SS connection on port 1 up to 35 s.
+| n1 | `LOCK`, `DBMa` 1, `DISC` 2, then at once `DBMa` 0, `LOCK` 0000 | every command 0; same as l1/m1 |
+
+n1 controller state: DISC done: DISC 0x58000002; locked again (0.14 s later): APP 0x50000002;
+0.7 s: APP 0x10000002; 2.3 s after `DISC`: APP 0x100240fd, power 0x1, data 0x80000073 (attached,
+data connection, STATUS bits 11:10 = 0: PP_HV switch off); 11.6 s after `DISC`: 0x100248fd,
+power 0xf01 (bits 11:10 = 2: PP_HV switch enabled as output, the state before). No port 1 USB 2.0
+or SS event after the disconnect up to the report at 35 s; PORTSC 0x0a0002a0 / 0x0a0002a0.
+| o1 | as n1, with the port and PHY registers logged around it | stick back on USB 2.0 only (`usb 3-1: speed 480`) |
+
+o1: the hub had reset the stick to high speed (2.27 s) before the disconnect (USB 2.0 disconnect
+2.40 s). Controller attached again at 4.54 s (power 0x1); the stick reconnected on USB 2.0 at
+5.04 s (PORTSC1 0xa0206e1, WCE/WOE: the bus was suspended) and enumerated at high speed; the SS
+port stayed in RxDetect (0xa0002a0). Power 0xf01 at 13.9 s. Port and PHY registers before /
+after: PORTSC 0x206e1 / 0x2b0 -> 0xe03 / 0xa0002a0, usb2phy 0x102 0x0 0xd0000f -> 0x102 0x0
+0xc0000f (SIG bit 20 clear), pipe mux 0x10, GUSB2PHYCFG 0x2102500, GUSB3PIPECTL 0x1021102, power
+0x1b / 0x103, UC_CTRL 0xc81, STATUS2 0x1c4 -> 0xc4: the SS side is still up. In n1 the stick had
+not been reset before the disconnect and did not come back at all.
+| p1 | as o1, `usbcore.autosuspend=-1` | as n1: the stick did not come back (PORTSC 0x2a0 / 0x2a0 at 28 s) |
+
+Orientation: since Ed turned the stick 180° (~15:20) it is in the flipped orientation (macOS
+PlugOrientation 2; the controller's STATUS bit 4 set: 0x100248fd). The hotplug3 replug that
+trained ran the flipped lane setting (`SWAP=1`); the kernel boots k1-p1 ran the driver's fixed
+normal crossbar. New boot parameter `ss_flip` (default 0): active lane 1 in step 7, lane mode
+0x28 (bits 22/24 cleared) and crossbar 0x111 in step 9, PWR+0x8 lane swap bit 1 in step 10, as
+the harness's `SWAP` path.
+| q1 | as o1, `ss_flip=1` | the stick goes for SS after the reattach: SS port 0xa4002c0 (SS.Inactive, PLC) at 8.29 s, hub warm reset, RxDetect at 8.44 s; then no port 1 device on either bus |
+
+q1: controller attached again at 5.0 s (power 0x1); SS.Inactive 3.3 s later, during a suspended
+usb4 root hub (WCE/WOE on the SS port). In hotplug3 (proxy, nothing suspends the port) the
+flipped setting went to U0 at once.
+| r1 | as q1, `usbcore.autosuspend=-1` | as q1: SS.Inactive (0x4002c0, no WCE/WOE) at 8.29 s, hub warm reset, then no device |
+
+Harness step `disc` (new): port 1's controller over SPMI from the proxy (`m1n1.hw.spmi`, nub-spmi-a0
+SID 0xa, ACE3 register window as tipd/spmi.c): wakeup, `LOCK` "417J", `DBMa` 1, `DISC` 2,
+`DBMa` 0, `LOCK` 0000, then 30 s watch of PORTSC0/PORTSC1 and the controller state.
+
+proxy-disc1 (reference flipped with `U2RESET`, 3 s watch, then `disc`; `log/proxy-disc1.log`):
+every command 0. Controller: 0.02 s APP 0x50000002, power 0; 2.22 s 0x100240fd, power 0x1, data
+0x80000073; 3.48 s power 0xf01; 11.46 s 0x100248fd (the state before). PORTSC0 0x2202a0 and
+PORTSC1 0x2a0 for all 30 s: the stick does not come back on either bus. A physical replug on the
+same bring-up (hotplug3) went to U0 at once: `DISC` is not a replug for the stick.
+
+Follow-up for the driver: `ss_flip` is a test switch. The orientation is in port 1's controller
+(STATUS bit 4: set in the flipped plug, 0x100248fd), readable once tipd has bound.
+
+proxy-replug2 (as disc1 with `NODISC=1`: no command, 90 s watch with the controller read every
+20 ms; Ed replugged the stick by hand, same way up): the controller goes through the same states
+as after `DISC`: 11.21 s detach (0x50000002, power 0), 15.97 s attached (0x100240fd, power 0x1),
+17.27 s power 0xf01, 25.20 s 0x100248fd. The stick did not come back on either bus in 90 s. In
+hotplug3 (same replug, no SPMI traffic to the controller) it went to U0 at once. With the
+controller woken and read over SPMI, a real replug fails like `DISC`.
+
+proxy-discq1 (`disc`, then SPMI sleep for the controller and a 60 s watch without reading it,
+`DISC_QUIET=1`): every command 0; PORTSC0 0x2202a0, PORTSC1 0x2a0 for 60 s, no reconnection.
+
+proxy-disca1 (`disc` with the controller's events read and cleared every 50 ms, `DISC_ACK=1`,
+as tipd's interrupt handler: INT_EVENT1 0x14, 8 bytes, written back to INT_CLEAR1 0x18):
+INT_EVENT1 stayed 0 (no event latched; the interrupt mask is iBoot's); controller states as
+disc1; no reconnection in 60 s.
+
+Where it stands (~17:20):
+- The host SuperSpeed bring-up is right: a physical replug with no SPMI traffic to the controller
+  trains to U0 at once (hotplug3, flipped lane setting).
+- The USB 2.0 reset trick stopped working at ~13:00 (t1 passed, t2 3.5 min later failed); not
+  explained.
+- `DISC` reattaches the controller (same state sequence as a physical replug) but the stick does
+  not come back on the proxy; in Linux it comes back erratically (USB 2.0 in o1, a failed SS
+  attempt in q1/r1, nothing in n1/p1).
+- A physical replug while the controller is woken and read over SPMI does not bring the stick
+  back either (replug2). Not tested: the controller's system power state (register 0x20; tipd
+  sends `SSPS` 0 at probe when it is not S0, the proxy runs never did).
+
+proxy-discs1 (`DISC_SSPS=1`: system power state read first, `SSPS` 0, then `disc`): POWER_STATE
+(0x20) was 0 (S0) before; `SSPS` 0 returned 0; controller states as disc1; no reconnection in 60 s.
+
+proxy-gaid1 (`DISC_GAID=1`: `Gaid`, the controller's firmware reset, written to CMD1 instead of
+`DISC`): the controller restarts (MODE BOOT at 0.06 s, APP at 0.31 s) with POWER_STATE 7, STATUS
+0x10000000 (no plug), power 0, and stays there for 60 s (it falls asleep between reads); the stick
+gets no power. iBoot sets the power state at boot; nothing set it here.
+
+## The USB 2.0 reset trick works again after a controller firmware reset (2026-10-28 ~17:45, `log/proxy-gaid2.log`)
+
+proxy-gaid2 ran right after gaid1 (port 1's controller reset by `Gaid`, the stick unpowered for
+60 s, then the harness `reboot`, so iBoot set the controller up again: before the run it read APP,
+POWER_STATE 0, 0x100248fd, power 0xf01 as always). The reference (flipped, `U2RESET`) trained:
+PORTSC0 0x206f1 with SS 0x2a0 -> SS 0x2e0 (Polling) -> SS 0x21603 (U0, speed 5) -> PORTSC0
+0x2202a0 (the stick left USB 2.0), the sequence of runs 52/53. First SuperSpeed by the USB 2.0
+reset since ~13:00 (0 of 20 proxy runs before). The run then stopped at `SSPS` sent while the
+controller was still restarting (`command not acknowledged`); the Mac was rebooted with
+`mac_ctl.py`.
+
+proxy-postgaid1 (the plain reference after an ordinary reboot, following gaid2's U0): fails
+again (PORTSC0 0x220e03, SS 0x2a0). gaid2's difference: the stick had been without power for
+over 60 s (gaid1) and was powered up again by iBoot.
+
+proxy-gaid3 (`Gaid`, then `SSPS` 0 with retries): `SSPS` 0 returned 0 right after the restart;
+the controller attached at 0.27 s (0x100240fd, power 0x1), power 0xf01 at 1.73 s, 0x100248fd at
+9.53 s, the same sequence as after `DISC`; the stick did not come back in 60 s.
+
+proxy-gaid4 (`DISC_GAID=nossps`: `Gaid` only): the controller stays in power state 7 with no plug
+for 60 s (the stick unpowered), then `reboot` (iBoot sets the controller up and powers the stick).
+The first kernel boot after it (fresh1) did not start: `chainload.py` timed out on the proxy that
+was still coming up (`UartTimeout`); nothing touched port 1 (PORTSC1 0x280, GCTL 0x30c12004 on the
+resident proxy afterwards). fresh1 was then booted again.
+
+fresh1 (kernel boot right after gaid4's reboot: `ss_flip=1`, `ss_replug_s=0`, tipd bound to hpm1):
+`usb 3-1: speed 480`; the hub's USB 2.0 resets at 2.27 s / 2.40 s, SS port in RxDetect throughout.
+
+proxy-gaid5 (`DISC_GAID=sleep`: `Gaid`, `SSPS` 0, then the controller sent to sleep at once and
+not read): no reconnection in 60 s.
+
+## Where it stands (2026-10-28 ~18:10)
+
+- SuperSpeed on port 1 trains when the stick is plugged in fresh with the SS side up and nothing
+  has talked to port 1's controller over SPMI (hotplug3: U0 at once, flipped lane setting).
+- No automatic way to get that fresh connection has worked:
+  - USB 2.0 reset (`U2RESET`, the hub's port reset under Linux): 3 of 3 in the morning, then 1 of
+    about 20 proxy runs (gaid2, after the stick had been unpowered for 60 s) and 0 kernel boots
+    since 13:00;
+  - the controller's `DISC` (debug mode), `Gaid` + `SSPS` 0, with or without the controller put
+    back to sleep or its events cleared: the controller detaches and attaches again, the stick
+    never comes back on the proxy; in Linux it comes back erratically and has not trained;
+  - a physical replug while the controller is woken and read over SPMI: the stick did not come
+    back either (replug2).
+- The plug orientation must match: since ~15:20 the stick is flipped (`ss_flip=1` in the kernel,
+  `SWAP=1` in the harness; the controller's STATUS bit 4 gives it).
+
+Kernel tree (linux-aurora, uncommitted): port 1 without the flip; `ss_flip`, `ss_susphy_clear`,
+`ss_replug_s` (now default 0: the simulated disconnect made the stick vanish in n1/p1); hpm1 in
+the devicetree with tipd bound (tipd wakes and polls the controller); `sn201202x_simulate_disconnect()`
+in tipd. Harness: `WATCH_SECS`, step `disc` (`NODISC`, `DISC_WATCH`, `DISC_QUIET`, `DISC_ACK`,
+`DISC_SSPS`, `DISC_GAID`=1|nossps|sleep).
+
+Open: what iBoot (or macOS) does with port 1's controller that makes a new attach usable, and why
+the USB 2.0 reset stopped making the stick retry SuperSpeed at ~13:00.
+
+## The USB 2.0 reset trains again on the proxy (2026-10-28 ~18:40)
+
+macOS AppleHPM (kernelcache mac17j, `com.apple.driver.AppleHPM` 3.4.4, extracted with `ipsw`,
+symbols kept): on a new attach the Type10 port class (port 1's) runs `forceUSB23On` (sets
+fWaitingForUSB, creates the USB3 port object, `setPinConfiguration`), waits for its USB stack
+(`driverStatusInterrupt` -> `turnOnVbus`, or `tUSBTimeout` "Waiting for USB Timedout After 10
+seconds"). `turnOnVbus` = `forcePortEvaluation`: read and clear INT_EVENT1 (0x14), add plug/status
+events, `processInterruptEvents`. `overrideHPMMode` and `setPinConfiguration` set properties
+("Forced Status Reg", "Forced Data Status Reg", pin configuration). No controller command found in
+this path so far; the per-connection work is in macOS's USB and PHY drivers.
+
+| Run | Setting | Result |
+|---|---|---|
+| hotplug4 | reference flipped, `U2RESET`, 120 s watch for a replug (nobody replugged) | USB 2.0 reset: high speed (0x220e03), SS in RxDetect |
+| hotplug5 | the same, next run | USB 2.0 reset: SS Polling, U0 (0x21603, speed 5), stick left USB 2.0; still U0 at the end of the 150 s watch |
+
+Since the 180° turn the reference with the flipped setting and `U2RESET` has trained in 2 runs
+(gaid2, hotplug5) of about 15. Both followed a stretch without kernel boots (each kernel boot reads
+2.5 GiB from the stick at USB 2.0 speed). Open question: does the stick's temperature decide
+whether it retries SuperSpeed on a USB 2.0 reset?
+
+Kernel batch flip (`ss_flip=1`, `ss_replug_s=0`, right after hotplug5; tipd bound to hpm1):
+
+| Boot | Result |
+|---|---|
+| flip1 | `usb 3-1: speed 480`; SS port in RxDetect through the hub's USB 2.0 resets |
+| flip2 | `usb 3-1: speed 480`; the SS port reached SS.Inactive (0x2c0) at 4.79 s, hub warm reset at 6.41 s |
+| flip3 | `usb 3-1: speed 480` (report saved as `net-wpr1.txt`: the next batch was started too early and both ran at once) |
+| flip4 | not booted (chainload clash with that batch) |
+
+Kernel and proxy differ here: at the end of step 16 the kernel's SS port is still in a warm
+reset (0x2b0), which completes at about 2.1-2.2 s, just before the hub's USB 2.0 reset; the
+proxy reaches step 17 with it finished (about 1 ms per register access), and the xHCI reset
+leaves a clean port (base PORTSC1 0x2a0). New in the driver: after step 16 it waits up to
+500 ms for that warm reset to finish (logged as "warm reset after step 16 done").
+
+wpr batch (driver waits up to 500 ms after step 16 for the SS port's warm reset): the wait times
+out every time ("done 0 after 504000 us"); the warm reset completes about 140 ms after the
+step 17 xHCI reset. wpr1 is flip3's report, wpr2 never booted (both batches ran at once).
+
+| Boot | Result |
+|---|---|
+| wpr3 | `usb 3-1: speed 480`; SS.Inactive (0xa4002c0) at 6.92 s, the stick back on USB 2.0 at 7.06 s |
+| wpr4 | `usb 3-1: speed 480`; SS port in RxDetect |
+
+The driver's `phy_calibrate` also runs on a root hub resume (wpr3: second "after xHCI reset"
+line at 7.06 s); harmless.
+
+proxy-pr1 (reference with PORTSC1 printed around the step 17 xHCI reset): before HCRST
+0x2802a0 (the warm reset already done: WRC, PRC set, PR 0), after HCRST 0x2a0. In the kernel the
+same warm reset is still running 500 ms after step 16 (0x2b0) and finishes only after the
+controller runs. The SS training failures in the kernel (flip2, wpr3: Polling then SS.Inactive)
+come with this difference.
+
+Where the warm reset finishes (proxy-pr3/pr4, harness stage prints with PORTSC1 and time; kernel
+trace1, SS PORTSC after each step):
+- Proxy: 0x280 (SS.Disabled) through `xhcirst`..`tunx`; 0x2b0 (RxDetect, PR) 7 ms after u3bist
+  sets host mode; still 0x2b0 after the firmware (1.38 s), after the PHY reset release (1.48 s)
+  and after the first BIST toggle (1.50 s); 0x2802a0 (done) by "after BIST" (2.51 s). In between:
+  power-down override 3, USB_EN toggle, and a 1 s poll for PhyStatus rising that times out (the
+  proxy misses the pulse).
+- Kernel: 0x280 through step 9, 0x2b0 from step 10 to the end (steps 6-9 take microseconds); its
+  step 13 sees the PhyStatus pulse ("rise 1") and goes on within milliseconds; the warm reset then
+  never completes before step 17.
+Driver change: in step 13, after the rise/fall, wait up to 1 s for the warm reset (PR clear)
+before OV2 is cleared ("warm reset in step 13 done"); the 500 ms wait after step 16 is removed.
+
+wr131 (step 13 wait, `ss_flip=1`): "warm reset in step 13 done 1 after 544000 us"; SS PORTSC
+trace 280 x10, 2b0 x3, 2802a0 x4; after the xHCI reset 0x206e1 / 0x2a0 (clean, as the proxy).
+The hub's USB 2.0 resets: `usb 3-1: speed 480`, SS port in RxDetect. The kernel now reaches the
+USB 2.0 reset in the proxy's state; what is left is the stick's answer to that reset, which on the
+proxy trains in about 2 of 17 runs this afternoon.
+
+## Repeated USB 2.0 resets (2026-10-28 ~19:40)
+
+proxy-u2r10 (reference flipped, `U2RESETS=10`: further USB 2.0 resets 2 s apart until the SS port
+is in U0): resets 1-4 leave the stick at high speed (PORTSC0 0x220e03); on the 5th the SS port goes
+to U0 (0x21603, speed 5) and the stick leaves USB 2.0 (0x2202a0).
+
+Driver change: step 18 repeated (`ss_u2resets`, default 10, 0 = off): from 3 s after the step 17
+xHCI reset, while the SS port has no connection, the driver writes PR to the USB 2.0 PORTSC every
+2 s (PP, indicators and wake enables kept, change bits not cleared) and logs each reset.
+
+u2r1 (`ss_flip=1`, `ss_u2resets` 10): extra resets at 5.86, 7.87, 9.89, 11.90 s; each one costs
+the hub's high-speed device (disconnect, re-enumeration). After the 4th the stick left USB 2.0
+(PORTSC1 0x2202a0 at 11.96 s) but the SS port stayed in RxDetect with the usb4 root hub suspended
+(0xa0002a0, WCE/WOE); no device on either bus afterwards.
+
+u2ra1 (as u2r1, `usbcore.autosuspend=-1`): extra resets at 7.87-15.94 s; after the 5th the stick
+left USB 2.0 (0x2202a0 at 15.99 s); the SS port stayed 0x2a0 (RxDetect, no wake bits): the host
+does not see the stick's SS attempt in Linux. On the proxy the same 5th reset trained (u2r10).
+
+notipd1 (as u2ra1, `initcall_blacklist=sn201202x_driver_init`: tipd not started, port 1's
+controller untouched by Linux): the same: after the 5th extra reset (15.68 s) the stick left
+USB 2.0, the SS port stayed in RxDetect. tipd is not the cause. The stick goes for SS on about the
+5th USB 2.0 reset on the proxy and in Linux; only the host side differs. In Linux "clk: Disabling
+unused clocks" runs at 2.93 s, after the SS bring-up (2.6 s).
+
+clk1 (as u2ra1, `clk_ignore_unused`): inconclusive. The extra resets knocked the high-speed stick
+off during the read test, so the report went out early and its kernel log stops at 9.94 s (after
+the 3rd extra reset). Test change: `init-net` now waits up to 40 s for `4-1` (the stick on port 1's
+SS bus) and then up to 15 s for `/dev/sda` before the tests; `boot/initramfs-net.cpio.gz` repacked.
+
+clkb1 (as clk1, new init-net): 10 extra resets (7.87-26.02 s); the stick stayed at high speed
+after every one (PORTSC1 0x200e03), never left USB 2.0; "no connection after 10 extra USB 2.0
+resets". Says nothing about the clocks (the stick made no SS attempt).
+
+Test without Linux's USB stack on port 1 (as the advisor suggested): driver parameter
+`ss_standalone` runs, 1 s after probe, steps 1-16, then the harness's step 17 (xHCI reset, glue,
+host mode, R/S, port power on both ports, mask 0x4e00ffe9 | PP), then up to 10 USB 2.0 resets
+2 s apart, logging every PORTSC change, stopping at U0. Port 1's `generic-xhci` node disabled in
+a copy of the DTB (`fdtput ... /soc/usb@2aa280000 status disabled`). `init-net` also prints
+`/sys/kernel/debug/clk/clk_summary` now.
+
+alone1 (`ss_standalone=1`, port 1's xHCI node disabled, tipd not started): the sequence ran
+(warm reset done in step 13 after 548 ms, clean 0x2a0 after the xHCI reset, R/S, port power);
+10 USB 2.0 resets (8 s apart: the 1 ms sleeps ran long): the stick stayed at high speed after
+each (0x220e03), no SS attempt at all. The stick's retry on a USB 2.0 reset cannot be relied on.
+
+AppleHPM commands (4CC constants built with mov/movk in the kext, per function): `USBd` in
+`AppleHPMInterface::usbDataConnect(uint, bool)` (also `usbDataDetect`, `usbDataMonitor`), `SSPS`
+in `setPowerStateHPM`, `SCfg` in `disablePort`, `SSAM` in `reconfigureSSAM`, `UFPf` in
+`forceUSBDeviceMode`, `USBw` in `configureUSBRemoteWakeup`, `VBSi` in `ignoreVbusLoss`, `HChk`,
+`VDMs`. `usbDataConnect(.., true)`: `execute4Cc(8 (CMD1), "USBd", data 1, 1 byte)`, then the ADT
+platform functions `function-orientation` and `function-usb_dconnect` (not in the J714c ADT; the
+driver logs "No orientation function" and goes on); with false only the platform functions. So
+on J714c macOS connects a port's USB data with `USBd` 1.
+
+proxy-usbd1 (`disc`, then `USBd` 1 at 4 s, after the reattach): `USBd` -> `!CMD`. proxy-usbd2
+(the same inside `LOCK` "417J" / `DBMa` 1 ... `DBMa` 0 / `LOCK` 0000): LOCK 0, DBMa 0, `USBd`
+`!CMD`, DBMa 0 0, LOCK 0 0. No reconnection in either.
+
+`AppleHPMARM::set4ccLock(u8)`: if the SMC object at this+0x108 is there, SMC write of key `D1Vn`
+(0x4431566e), 1 byte = the argument (`vtable+0x898` of the SMC object: key, size 1, &value);
+`get4ccLockStatus` reads the same key. macOS gates the controller's restricted 4CC commands with
+the SMC key `D1Vn`; `USBd` is presumably one of them.
+
+SMC keys (read over the proxy with m1n1's SMC client, the session quiesced afterwards as m1n1's
+own `smc_shutdown` does): `D1Vn` ui8 (attributes 0xd0) = 0, `D2Vn` ui8 = 0, `D0Vn` absent. Writing
+them from this session was blocked by the permission check; Ed wrote `D1Vn`=1, `D2Vn`=1 himself
+(`scratchpad/smc_d1vn.py`); both read back 2.
+
+proxy-usbd3 (right after that write, no reboot): the first USB 2.0 reset trained (SS Polling, U0
+0x21603 speed 5, stick off USB 2.0). Then `disc`: the controller detached and reattached as
+before; `USBd` 1 at 4 s: `!CMD` again; no reconnection.
+
+After the reboot the keys read 0 again; the plain reference failed (proxy-smcref1). With the keys
+written to 1 again by `tools/smc_keys.sh 1` (read back 2; allowed by Ed's permission rule for that
+one script), the plain reference failed too (proxy-smcref2: PORTSC0 0x220e03, SS 0x2a0). The
+usbd3 success was not the keys; `D1Vn`/`D2Vn` at 0 or 2 do not unlock `USBd`.
+
+## Where it stands (2026-10-28 ~22:00)
+
+- Host side: the kernel reaches the USB 2.0 reset in the proxy's exact state (warm reset finished
+  in step 13, clean SS port after the step 17 xHCI reset). A fresh plug-in with the SS side up
+  trains at once (hotplug3, flipped lane setting).
+- The stick goes for SuperSpeed on a USB 2.0 reset only sometimes: on the proxy about 1 run in 5
+  this afternoon, sometimes on the first reset, sometimes on the 5th, sometimes never in 10; in
+  Linux the host side has not caught any of those attempts (u2r1, u2ra1, notipd1).
+- macOS connects a port's USB data with the controller command `USBd` 1 (`usbDataConnect`); this
+  controller rejects it (`!CMD`) in normal and debug mode, with the SMC keys `D1Vn`/`D2Vn` at 0 or
+  2. What else macOS does first (the other half of `set4ccLock`, or a different unlock) is not
+  found yet.
+- Driver defaults now: port 1 without the USB 2.0 flip, step 13 waits for the warm reset;
+  `ss_flip` (must be 1 while the stick is flipped), `ss_u2resets`, `ss_replug_s`,
+  `ss_standalone`, `ss_susphy_clear` all default off. hpm1 stays in the devicetree (tipd binds).
+- Test changes: harness `disc` step and options, `WATCH_SECS`, `U2RESETS`, stage prints with
+  PORTSC; `init-net` waits up to 40 s for the stick on SS and prints the clock summary;
+  `tools/smc_keys.sh` reads or writes `D1Vn`/`D2Vn`.
