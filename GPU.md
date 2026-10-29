@@ -282,3 +282,61 @@ Remaining (increment 2 — the chip-variant ABI refactor; needs care, no t8140 b
     only fields after it are anchored, so its exact position is unconfirmed.
   - bundle::VIEWS[0..1] (0x2740/0x3380) lie inside HwData and were not moved
     for g17c; init works, the recovery-view code reads them host-side.
+- gpu14 (hal_generation 300, WDT 178, sampled 145 s after handoff): firmware
+  still up at ~2 min of uptime, no crash. The Mac has no GL/Vulkan test tool
+  (no vulkaninfo, kmscube, eglinfo, glmark2). Its Mesa (mesa-aurora
+  7f0206e79f9, 2026-10-28) has no ASAHI_M5_BRINGUP switch, so the M5 HAL300
+  path needs a newer Mesa build.
+- Mesa (omacom/mesa integration/aurora, from aurora-silicon/mesa): the M5
+  HAL300 path exists (AGX3C compiler, HAL300 records, Honeykrisp submit),
+  behind ASAHI_M5_BRINGUP=1, admitted only for G17G/0x8142 and G17S/0x6050
+  (agx_params_m5_bringup_supported). G17C has the same ISA encoding (AGX3C),
+  command stream (HAL300) and descriptor generation (10) as G17S; only that
+  gate and agx_chip_g17_m5() leave it out. A basic compute dispatch needs no
+  M5 kernel feature bits (COMPUTE_RESOURCES only with scratch/TPS).
+- aurora-silicon/linux has t6050/* platform branches (usb, pcie, nvme, dcp,
+  smc, ...) but no GPU branch.
+- Mesa cross-build (2026-10-29): forks/mesa-aurora (omacom/mesa
+  integration/aurora 672657e) + G17C admitted in the ASAHI_M5_BRINGUP gate
+  (exact: G17C, chip 0x6050, 4 clusters; agx_chip_g17_m5 includes G17C; the
+  three AGX3C encoding switches and the shader-binary version switch cover
+  G17C). Built on Omarchy with clang --target=aarch64-unknown-linux-gnu
+  against a sysroot copied from the Mac (glibc 2.43, GCC 16.1.1 libstdc++);
+  native mesa_clc/asahi_clc/vtn_bindgen2 from a separate host build. Runs from
+  ~/mesa-m5 on the Mac via VK_ICD_FILENAMES; the system Mesa is untouched.
+  Test: ~/mesa-m5/vkfill (one compute dispatch, i*3+7 into 4096 words).
+- gpu15b: Mesa opens "Apple M5 Max (G17C B1)", compiles the shader, records
+  the command buffer; vkQueueSubmit fails: kernel ENOENT.
+- gpu16..18 (asahi.debug_flags=0x3600 + temporary submit traces): parse and
+  validation pass; ENOENT from ensure_compute -> install_job_context_aliases:
+  the seven G17P "native render context" views (user VA 0x1000000000..) are
+  not bound. Mesa says they are a HAL200 construct (agx_chip_has_native_
+  render_context = G17P only). FIX: G17C user VMs have no context views
+  (Vm::without_context_views; install_job_context_aliases skips none).
+- gpu19/20: the submit is accepted and the compute job reaches the firmware;
+  it never completes: job timeout (ETIMEDOUT), "GPU event service failed:
+  Error(110)", device lost. No firmware crash, no firmware log output (with
+  FwLogCh/EventCh/DeviceControlCh/FwCtlCh tracing). Next: the g17c compute
+  queue/job structures (queue descriptor, work ring entry, compute command,
+  kick), mapped against the firmware like the init structures.
+- Workflow wf_3756af2b (10 agents, claude-opus-4-8): g17c job structures vs
+  G17P. Byte-for-byte unchanged (confirmed): WorkSlot (0x18; GFX consumes all
+  work rings, channel = priority*3 + engine, a data_master mismatch is
+  skipped silently), QueueRecord/PointerBlock/item ring, QueueConfig/
+  KickAnnounce/KickPredecessor (tags unchanged; dispatch covers tags 0..0x12),
+  KickEntry (stride 0x200, 256 slots; descriptor_va bit 0 is a firmware
+  flag). ComputeDescriptor: unchanged through current_id@0xf68; g17c also
+  touches +0xfac/+0xff9/+0xffd/+0x101d (G17P padding) on its retire
+  sub-path; +0xff9 is firmware-written (1 on start).
+- gpu21/22 (timeout dumps): the compute job is descriptor slot 1 (tag 3).
+  The firmware drained all 4 item-ring commands (QueueRecord+0x1c = 4,
+  PointerBlock done = 4) but never marked the kick entry (header 0x4, no bit
+  1) and never started the descriptor (+0xff9 = 0). Kick entry 1:
+  0x10001000_00000004, descriptor 0xfffffc2189524000, queue
+  0xfffffc20c083c000, +0x20 dependency_control 1 / 0xffff0802.
+- gpu23 (scratch dump at timeout): the firmware wrote only slots 20 (AFR,
+  per-element +0x4=0x10101/+0x10=1/+0x118=0x10, 0x10000 stride; the ADT has
+  16 FAB_AFR_AMCC units), 23/24 (DVFM, +0x4000 = 1 per element) and 46/58
+  (throttle-counter masks). No writes to the power/clock scratch blocks.
+  Open: why the KickAnnounce does not launch the kick entry (a dependency
+  that never resolves, or a wait on a stubbed register).

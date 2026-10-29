@@ -1,0 +1,10 @@
+bash: line 1: cd: /home/ed/mesa-m5: No such file or directory
+timeout: failed to run command './vkfill': No such file or directory
+exit 0
+== kernel
+[    3.510632] omarchy-m5 kernel: asahi 2302600000.gpu: Probing...
+[    3.510988] omarchy-m5 kernel: asahi 2302600000.gpu: GPU ID registers: 0xb041100 0xb0a00 0x11040a 0x40404 0x1320311 0x400c1809
+[    3.511040] omarchy-m5 kernel: asahi 2302600000.gpu: Core masks: [
+[    3.511393] omarchy-m5 kernel: asahi 2302600000.gpu: RTKit: Initializing (protocol version 12)
+[    3.511442] omarchy-m5 kernel: asahi 2302600000.gpu: RTKit: Initializing (protocol version 12)
+[    3.516862] omarchy-m5 kernel: [drm] Initialized asahi 0.0.0 for 2302600000.gpu on minor 1

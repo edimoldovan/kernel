@@ -1,0 +1,95 @@
+== vkfill
+exit 1
+Experimental M5 HAL300 integration enabled; general rendering is unqualified
+Experimental M5 HAL300 integration enabled; general rendering is unqualified
+ok   vkCreateInstance(&ici, NULL, &inst)
+device: Apple M5 Max (G17C B1) (driver 109060195)
+ok   vkCreateDevice(pd, &dci, NULL, &dev)
+ok   vkCreateBuffer(dev, &bci, NULL, &buf)
+ok   vkAllocateMemory(dev, &mai, NULL, &mem)
+ok   vkBindBufferMemory(dev, buf, mem, 0)
+ok   vkMapMemory(dev, mem, 0, N * 4, 0, (void **)&p)
+ok   vkCreateShaderModule(dev, &smci, NULL, &sm)
+ok   vkCreateDescriptorSetLayout(dev, &dslci, NULL, &dsl)
+ok   vkCreatePipelineLayout(dev, &plci, NULL, &pl)
+ok   vkCreateComputePipelines(dev, VK_NULL_HANDLE, 1, &cpci, NULL, &pipe)
+ok   vkCreateDescriptorPool(dev, &dpci, NULL, &dp)
+ok   vkAllocateDescriptorSets(dev, &dsai, &ds)
+ok   vkCreateCommandPool(dev, &cpi, NULL, &cp)
+ok   vkAllocateCommandBuffers(dev, &cbai, &cb)
+ok   vkBeginCommandBuffer(cb, &cbbi)
+ok   vkEndCommandBuffer(cb)
+ok   vkCreateFence(dev, &fci, NULL, &f)
+ok   vkQueueSubmit(q, 1, &si, f)
+FAIL vkWaitForFences(dev, 1, &f, VK_TRUE, 5000000000ull) = -4
+== kernel
+[    8.114703] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_mmap_offset handle=0x3
+[    8.114755] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_create size=0x4000
+[    8.114806] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_create size=0x4000 handle=0x4
+[    8.114861] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22 VM 1]: IOCTL: vm_bind
+[    8.114917] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22 VM 1]: IOCTL: vm_bind
+[    8.114972] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_mmap_offset handle=0x4
+[    8.115027] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_create size=0x4000
+[    8.115081] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_create size=0x4000 handle=0x5
+[    8.115135] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22 VM 1]: IOCTL: vm_bind
+[    8.115191] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_mmap_offset handle=0x5
+[    8.115246] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: get_params
+[    8.115300] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_create size=0x10000
+[    8.115354] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_create size=0x10000 handle=0x6
+[    8.115409] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22 VM 1]: IOCTL: vm_bind
+[    8.115462] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_mmap_offset handle=0x6
+[    8.115516] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22 VM 1]: IOCTL: vm_bind
+[    8.115568] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_create size=0x40000
+[    8.115625] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_create size=0x40000 handle=0x7
+[    8.115680] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22 VM 1]: IOCTL: vm_bind
+[    8.115732] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_mmap_offset handle=0x7
+[    8.115784] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22 VM 1]: IOCTL: vm_bind
+[    8.115837] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_create size=0x40000
+[    8.115892] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_create size=0x40000 handle=0x8
+[    8.115946] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22 VM 1]: IOCTL: vm_bind
+[    8.115999] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_mmap_offset handle=0x8
+[    8.118557] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_create size=0x4000
+[    8.118609] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_create size=0x4000 handle=0x9
+[    8.118661] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22 VM 1]: IOCTL: vm_bind
+[    8.118712] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_mmap_offset handle=0x9
+[    8.118767] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_create size=0x4000
+[    8.118821] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_create size=0x4000 handle=0xa
+[    8.118874] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22 VM 1]: IOCTL: vm_bind
+[    8.118926] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_mmap_offset handle=0xa
+[    8.118978] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_create size=0x4000
+[    8.119030] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_create size=0x4000 handle=0xb
+[    8.119082] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22 VM 1]: IOCTL: vm_bind
+[    8.119132] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_mmap_offset handle=0xb
+[    8.119186] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_create size=0x40000
+[    8.119237] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_create size=0x40000 handle=0xc
+[    8.119290] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22 VM 1]: IOCTL: vm_bind
+[    8.119342] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_create size=0x4000
+[    8.119394] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_create size=0x4000 handle=0xd
+[    8.119447] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22 VM 1]: IOCTL: vm_bind
+[    8.119499] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22 VM 1]: IOCTL: vm_bind
+[    8.119552] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_mmap_offset handle=0xd
+[    8.119604] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_create size=0x100000
+[    8.119658] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_create size=0x100000 handle=0xe
+[    8.119710] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22 VM 1]: IOCTL: vm_bind
+[    8.119762] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_mmap_offset handle=0xe
+[    8.119815] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_create size=0x4000
+[    8.119867] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_create size=0x4000 handle=0xf
+[    8.119920] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22 VM 1]: IOCTL: vm_bind
+[    8.119972] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_mmap_offset handle=0xf
+[    8.120031] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_create size=0x20000
+[    8.120083] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_create size=0x20000 handle=0x10
+[    8.120136] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22 VM 1]: IOCTL: vm_bind
+[    8.120187] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_mmap_offset handle=0x10
+[    8.120240] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_create size=0x20000
+[    8.120292] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_create size=0x20000 handle=0x11
+[    8.120344] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22 VM 1]: IOCTL: vm_bind
+[    8.120396] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22]: IOCTL: gem_mmap_offset handle=0x11
+[    8.120448] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22 VM 1]: Creating queue prio=1 flags=0x0
+[    8.120500] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22 Queue 1]: IOCTL: submit (submission ID: 2)
+[    8.120552] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22 Queue 1]: IOCTL: submit(2): Parsing syncs
+[    8.120602] omarchy-m5 kernel: asahi 2302600000.gpu: [File 22 Queue 1]: IOCTL: submit(2): Parsing commands
+[   10.145911] omarchy-m5 kernel: asahi: GPU work of a client failed (Error(110), reported at g17/runtime.rs:803); the client sees a lost device
+[   10.146070] omarchy-m5 kernel: asahi: [File 22]: Closing...
+[   10.147748] omarchy-m5 kernel: asahi: [File 21]: Closing...
+[   12.163218] omarchy-m5 kernel: asahi 2302600000.gpu: GPU event service failed: Error(110)
+[   12.163477] omarchy-m5 kernel: asahi 2302600000.gpu: GPU runtime stopped, device lost

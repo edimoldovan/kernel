@@ -1,0 +1,19 @@
+== tools
+vulkaninfo=- vkcube=- kmscube=- eglinfo=- glxinfo=- glmark2=- glmark2-es2-drm=- wflinfo=- es2gears=- 
+== mesa
+mesa-aurora 1:26.3.0_devel.20261028.231099.7f0206e79f9-1
+vulkan-aurora 1:26.3.0_devel.20261028.231099.7f0206e79f9-1
+mesa-aurora 1:26.3.0_devel.20261028.231099.7f0206e79f9-1
+/usr/lib/dri/asahi_dri.so /usr/lib/libgallium-26.3.0-devel.so /usr/lib/libvulkan_asahi.so
+/usr/lib/dri/asahi_dri.so M5_BRINGUP=0 G17C_msg=0
+/usr/lib/libgallium-26.3.0-devel.so M5_BRINGUP=0 G17C_msg=0
+/usr/lib/libvulkan_asahi.so M5_BRINGUP=0 G17C_msg=0
+asahi_icd.aarch64.json
+sample at 145s
+[    4.351807] omarchy-m5 kernel: asahi 2302600000.gpu: Probing...
+[    4.351858] omarchy-m5 kernel: asahi 2302600000.gpu: GPU ID registers: 0xb041100 0xb0a00 0x11040a 0x40404 0x1320311 0x400c1809
+[    4.351908] omarchy-m5 kernel: asahi 2302600000.gpu: Core masks: [
+[    4.361506] omarchy-m5 kernel: asahi 2302600000.gpu: RTKit: Initializing (protocol version 12)
+[    4.361555] omarchy-m5 kernel: asahi 2302600000.gpu: RTKit: Initializing (protocol version 12)
+[    4.362242] omarchy-m5 kernel: [drm] Initialized asahi 0.0.0 for 2302600000.gpu on minor 1
+ 09:41:46 up 1 min,  1 user,  load average: 0.31, 0.19, 0.08
