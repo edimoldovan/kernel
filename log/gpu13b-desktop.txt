@@ -1,0 +1,52 @@
+/dev/dri:
+total 0
+drwxr-xr-x  2 root root        100 Oct 29 09:26 by-path
+crw-rw----+ 1 root video  226,   0 Oct 29 09:26 card0
+crw-rw----+ 1 root video  226,   1 Oct 29 09:26 card1
+crw-rw-rw-  1 root render 226, 128 Oct 29 09:26 renderD128
+
+/dev/dri/by-path:
+total 0
+lrwxrwxrwx 1 root root  8 Oct 29 09:26 platform-11fd31e6880.framebuffer-card -> ../card0
+lrwxrwxrwx 1 root root  8 Oct 29 09:26 platform-2302600000.gpu-card -> ../card1
+lrwxrwxrwx 1 root root 13 Oct 29 09:26 platform-2302600000.gpu-render -> ../renderD128
+---
+l: simple-framebuffer 11fd31e6880.framebuffer: [drm] fb0: simpledrmdrmfb frame buffer device
+l: asahi 2302600000.gpu: Probing...
+l: asahi 2302600000.gpu: GPU ID registers: 0xb041100 0xb0a00 0x11040a 0x40404 0x1320311 0x400c1809
+l: asahi 2302600000.gpu: Core masks: [
+l: asahi 2302600000.gpu: RTKit: Initializing (protocol version 12)
+l: asahi 2302600000.gpu: RTKit: Initializing (protocol version 12)
+l: [drm] Initialized asahi 0.0.0 for 2302600000.gpu on minor 1
+md[1]: Load Kernel Module drm skipped, unmet condition check ConditionKernelModuleLoaded=!drm
+---
+omarchy-m5 sddm-helper-start-wayland[397]: "Apple G17C uses the HAL300 command stream, which this driver does not implement (variant 0x43, 4 clusters)\n"
+omarchy-m5 sddm-helper-start-wayland[397]: "Apple G17C uses the HAL300 command stream, which this driver does not implement (variant 0x43, 4 clusters)\n"
+omarchy-m5 sddm-helper-start-wayland[397]: "MESA: error: ZINK: vkEnumeratePhysicalDevices failed (VK_ERROR_INITIALIZATION_FAILED)\n"
+omarchy-m5 sddm-helper-start-wayland[397]: "MESA: error: ZINK: failed to choose pdev\n"
+omarchy-m5 sddm-helper-start-wayland[397]: "Apple G17C uses the HAL300 command stream, which this driver does not implement (variant 0x43, 4 clusters)\n"
+omarchy-m5 sddm-helper-start-wayland[397]: "Apple G17C uses the HAL300 command stream, which this driver does not implement (variant 0x43, 4 clusters)\n"
+omarchy-m5 sddm-helper-start-wayland[397]: "Apple G17C uses the HAL300 command stream, which this driver does not implement (variant 0x43, 4 clusters)\n"
+omarchy-m5 sddm-helper-start-wayland[397]: "Apple G17C uses the HAL300 command stream, which this driver does not implement (variant 0x43, 4 clusters)\n"
+omarchy-m5 sddm-helper-start-wayland[397]: "MESA: error: ZINK: vkEnumeratePhysicalDevices failed (VK_ERROR_INITIALIZATION_FAILED)\n"
+omarchy-m5 sddm-helper-start-wayland[397]: "MESA: error: ZINK: failed to choose pdev\n"
+omarchy-m5 sddm-helper-start-wayland[397]: "Apple G17C uses the HAL300 command stream, which this driver does not implement (variant 0x43, 4 clusters)\n"
+omarchy-m5 sddm-helper-start-wayland[397]: "Apple G17C uses the HAL300 command stream, which this driver does not implement (variant 0x43, 4 clusters)\n"
+omarchy-m5 sddm-helper-start-wayland[397]: "Apple G17C uses the HAL300 command stream, which this driver does not implement (variant 0x43, 4 clusters)\n"
+omarchy-m5 sddm-helper-start-wayland[397]: "MESA-EGL: warning: egl: failed to create dri2 screen\n"
+omarchy-m5 sddm-helper-start-wayland[397]: "Apple G17C uses the HAL300 command stream, which this driver does not implement (variant 0x43, 4 clusters)\n"
+omarchy-m5 sddm-helper-start-wayland[397]: "MESA-EGL: warning: egl: failed to create dri2 screen\n"
+omarchy-m5 sddm-helper-start-wayland[397]: "Apple G17C uses the HAL300 command stream, which this driver does not implement (variant 0x43, 4 clusters)\n"
+omarchy-m5 sddm-helper-start-wayland[397]: "MESA-EGL: warning: egl: failed to create dri2 screen\n"
+omarchy-m5 sddm-helper-start-wayland[397]: "Apple G17C uses the HAL300 command stream, which this driver does not implement (variant 0x43, 4 clusters)\n"
+omarchy-m5 sddm-helper-start-wayland[397]: "MESA-EGL: warning: egl: failed to create dri2 screen\n"
+omarchy-m5 sddm-helper-start-wayland[397]: "Apple G17C uses the HAL300 command stream, which this driver does not implement (variant 0x43, 4 clusters)\nMESA-EGL: warning: egl: failed to create dri2 screen\nApple G1
+omarchy-m5 sddm-greeter-qt6[408]: Failed to create wl_display (Connection refused)
+omarchy-m5 sddm-greeter-qt6[408]: This application failed to start because no Qt platform plugin could be initialized. Reinstalling the application may fix this problem.
+                                  Available platform plugins are: eglfs, linuxfb, minimal, minimalegl, offscreen, vkkhrdisplay, vnc, wayland-brcm, wayland-egl, wayland, xcb.
+---
+c5 1000 ed - 513 user    - no -
+c6 1000 ed - 518 manager - no -
+● omarchy-provision-hardware.service loaded failed failed Omarchy first-boot hardware setup deferred from the image build
+● speakersafetyd.service             loaded failed failed Speaker Protection Daemon
+● ufw.service                        loaded failed failed CLI Netfilter Manager

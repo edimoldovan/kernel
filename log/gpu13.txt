@@ -1,0 +1,6 @@
+Oct 29 09:22:41 omarchy-m5 kernel: asahi 2302600000.gpu: Probing...
+Oct 29 09:22:41 omarchy-m5 kernel: asahi 2302600000.gpu: GPU ID registers: 0xb041100 0xb0a00 0x11040a 0x40404 0x1320311 0x400c1809
+Oct 29 09:22:41 omarchy-m5 kernel: asahi 2302600000.gpu: Core masks: [
+Oct 29 09:22:41 omarchy-m5 kernel: asahi 2302600000.gpu: RTKit: Initializing (protocol version 12)
+Oct 29 09:22:41 omarchy-m5 kernel: asahi 2302600000.gpu: RTKit: Initializing (protocol version 12)
+Oct 29 09:22:41 omarchy-m5 kernel: [drm] Initialized asahi 0.0.0 for 2302600000.gpu on minor 1

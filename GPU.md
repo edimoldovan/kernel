@@ -218,3 +218,67 @@ Remaining (increment 2 — the chip-variant ABI refactor; needs care, no t8140 b
 - Register map: replace the t8140 placeholder windows with the real T6050 map
   (GPU-t6050-dt-config.md: 10 sgx-control windows + MCC) and grow on faults. The
   aperture `va` per window still needs deriving; fault-loop supplies the slots.
+
+## Increment 2 fault loop (2026-10-29)
+
+- gpu5 (real crash log): the g17c firmware asks for its crash-log buffers by
+  PHYSICAL address (iova 0x10002864000 / 0x10002920000 = the GFX / GFX1
+  __DATA_SHARED_RO segments) and writes the log there, not into the host's
+  buffer (hence the a5a5a5a5). FIX: Config.crash_log_phys (t6050 true, t8140
+  false); shmem_map memremaps the requested address. RESULT: full RTKit crash
+  dump (`log/gpu5-crashlog.txt`): SError (ESR 0xbe000000) at fabric address
+  FAR 0x480d40010 = t8140's slot-31 window phys + 0x10, nothing there on T6050.
+  So the first blocker after the version gate is the register map. Also: the
+  primary copies root+0xb8/+0xc0 to globals 0x10b788/0x1087b0 and never loads
+  them, so Root growth is not the crash.
+- gpu6: T6050 register map = the 10 sgx-control windows from the kext table at
+  their T6050 slots/phys (SGX 0x23_0000_0000 + offset), reserved slots
+  {2,5,6,7,8,18,19,20,21,24}; the slots t8140 uses outside that group
+  (0,3,9,10,12,14,17,22) are TRAPS: va = aperture + 0x100_0000 + (slot << 20),
+  phys 0 = left unmapped, so the firmware's first access faults with a FAR that
+  names the slot and register offset.
+- gpu6 (fault on trap 17 at +0x21038): the 10 sgx-control windows are right
+  (no SError); slot 17 = sgx base, as on t8140.
+- gpu7 (slots 17/22 mapped): secondary assert "AGFAfrPerfStateInit: When AFR
+  pstate is controlled through PRC, async pstate change is not supported"
+  (HwData+0x1058 != 0); primary NULL at StatusB+0xe720.
+- gpu8: StatusB g17c init: +0xe720 = fwctl page (the firmware raises +0xe71c,
+  then reads the word there, wants 0). Primary no longer crashes.
+- gpu9: secondary NULL via MainConfig+0x481 = the PowerConfig pointer (G17P
+  +0x471, moved +0x10 on g17c). FIX: init_secondary_g17c.
+- gpu10..12: the g17c register map. KEY FINDINGS:
+  - GFX1 data 0xfffffc000007bf88 holds the slot table: 54 x {slot, 0,
+    name_ptr, 0x200000}, names in __TEXT (e.g. 46 ThrtlStatCntrsRegisters,
+    24 DVFMMgpuRegisters, 20 AFRRegisters, 0 GPCAICSWInt). The macOS kext has
+    the matching description list (kernelcache ~0x1565d5), with "(unused)" on
+    1, 2, 3, 4, 5, 6, 7, 14, 44, 52.
+  - Slots go to 59: the g17c HwData register map has 60 slots (G17P 53), so
+    everything after it moves +0x118 (chip_id 0xfa8, perf_a 0x10dc; the AFR
+    word 0x1058 is G17P's unset 0xf40; 0x10d4/0x10d8 = G17P's required 4/6);
+    the tail (0x2544 on) is +0x128, i.e. another 0x10 later. HwData is now
+    HwData<SLOTS, GAP>, g17c = HwData<60, 0x10>.
+  - GFX1 copies an entry only if phys != 0, so unmapped "trap" slots read as
+    NULL: traps removed. Unlocated blocks are host-RAM scratch windows (phys
+    0xdead_0000_0000 marker, 1 MiB, 4 elements, 2 MiB apart) so firmware
+    writes land in RAM. Multi-element blocks (DVFMMgpu: 4 per-cluster
+    elements at element_size stride) need RegisterWindow.elements.
+  - Known T6050 windows: 0 = AIC SW-int page 0x2_8041_4000 (ADT
+    meta-sw-interrupt), 17 = sgx (0x21500), 22 = sgx+0x100_0000 (t8140
+    analogy), 53 = sgx+0x2_3d00 (0x200), sgx-control 31..48 (kext table).
+  - Scratch (address still to find): 9 10 11 12 13 15 16 18 19 20 23 24 25
+    26 27 29 30 32 35 43 45 46 47 49 54 55 56 57 58 59.
+- gpu13: **FIRMWARE INIT COMPLETE.** "[drm] Initialized asahi 0.0.0 for
+  2302600000.gpu on minor 1"; no coprocessor crash; card1 + renderD128.
+  Userspace: the rootfs Mesa refuses it ("Apple G17C uses the HAL300 command
+  stream, which this driver does not implement (variant 0x43, 4 clusters)"),
+  SDDM's wayland greeter fails EGL, the screen stays on the console
+  (`log/gpu13b-desktop.txt`). Next: Mesa G17C/HAL300 support, and the real
+  addresses of the scratch slots (DVFS/clocks/throttle do nothing yet).
+- Open (not verified on hardware):
+  - "No crash" in gpu13 means none in the ~60 s sampled after handoff; a
+    longer run (WDT=0) would show whether the firmware survives its first
+    idle/power-down (the +0xe71c/+0xe720 handshake).
+  - The extra 0x10 of the g17c HwData tail is placed at the end of unk_23dc;
+    only fields after it are anchored, so its exact position is unconfirmed.
+  - bundle::VIEWS[0..1] (0x2740/0x3380) lie inside HwData and were not moved
+    for g17c; init works, the recovery-view code reads them host-side.

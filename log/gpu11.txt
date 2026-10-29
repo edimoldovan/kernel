@@ -1,0 +1,55 @@
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: Probing...
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: GPU ID registers: 0xb041100 0xb0a00 0x11040a 0x40404 0x1320311 0x400c1809
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: Core masks: [
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: RTKit: Initializing (protocol version 12)
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: RTKit: Initializing (protocol version 12)
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: RTKit: co-processor has crashed
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: RTKit: Version: 
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: RTKit: Crash time: 1835900686
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: RTKit: Exception dump:
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu:   == Exception taken from EL1t ==
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu:   PSR    = 0x60000244
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu:   PC     = 0xfffffc000002cf84
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu:   ESR    = 0x96000047
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu:   FAR    = 0xfffffc2183824000
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu:   SP     = 0xfffffc000007bb10
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: 
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu:   x00-x03 = 0000000000000000 0000000000000005 0000000000000001 00000000000000c0
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu:   x04-x07 = 000000000000000f 000000000000000f 000000000000000f 000000000000000f
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu:   x08-x11 = fffffc0000102818 0000000000020000 fffffc2183800000 fffffc2183804000
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu:   x12-x15 = 0000000000024000 0000000000044000 00000000001f000f 0000000000030003
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu:   x16-x19 = 0000000000000284 000000000000000f 0000011ffff6c000 0000000000000001
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu:   x20-x23 = fffffc20c078d240 fffffc0000102000 fffffc20c078f564 0000000000000001
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu:   x24-x27 = fffffc0000100000 fffffc0000102000 fffffc20c079f510 fffffc20c079e500
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu:   x28-x31 = 0000000000000000 fffffc000007bc20 3aeb00000002cf60
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: 
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: RTKit: Unknown crashlog section: 43637374
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: RTKit: Unknown crashlog section: 43617343
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: RTKit: Mailbox history (type = 0, index = 0)
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: RTKit:  #000@6d5ed3f8: 0000000000000000 00100000000c000c
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: RTKit:  #001@6d5f727d: 0000000000000000 00200000000c000c
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: RTKit:  #002@6d5f7398: 0000000000000000 0080000000000003
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: RTKit:  #003@6d5fc3d1: 0000000000000000 0050000100000002
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: RTKit:  #004@6d5fc3f5: 0000000000000000 0080000000000001
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: RTKit:  #005@6d5fc434: 0000000000000000 0088000100000003
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: RTKit:  #006@6d613b35: 0000000000000000 0088000100000000
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: RTKit:  #007@6d613be0: 0000000000000001 0010810002920000
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: RTKit:  #008@6d613d7c: 0000000000000000 0070000000000020
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: RTKit:  #009@6d621a19: 0000000000000001 0010810002920000
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: RTKit:  #010@6d621a71: 0000000000000000 00b0000000000020
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: RTKit:  #011@6d621b44: 0000000000000000 00b0000000000020
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: RTKit:  #012@6d6d7f85: 0000000000000000 0050002000000002
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: RTKit:  #013@6d6d7fa9: 0000000000000000 0050002100000002
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: RTKit:  #014@6d6d7fb5: 0000000000000020 00810c20c0820000
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: RTKit:  #015@6d6d9528: 0000000000000020 0009000000000000
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: RTKit:  #016@6d6d96f1: 0000000000000021 0089000000000000
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: RTKit:  #017@efefefef: 0000000000000000 4372746b00000000
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: RTKit: Unknown crashlog section: 4372746b
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: RTKit: Unknown crashlog section: 43636470
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: RTKit: Unknown crashlog section: 43706374
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: RTKit: Unknown crashlog section: 43737461
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: RTKit: Mailbox history (type = 2, index = 1)
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: RTKit:  #000@6d6d9809: 0000000000000023 0000100000000000
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: RTKit:  #001@00000303: 0000000000000000 434c484500000000
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: GPU firmware (Secondary) crashed, device lost
+Oct 29 09:15:13 omarchy-m5 kernel: asahi 2302600000.gpu: probe with driver asahi failed with error -5

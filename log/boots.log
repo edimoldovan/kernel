@@ -285,3 +285,14 @@
 00:26:24 gpu4: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped
 00:30:09 gpuAB: handoff ok, proxy back after 182s (offset 11, net 171s) -> unmapped
 00:33:54 gpuAB2: handoff ok, proxy back after 176s (offset 11, net 165s) -> unmapped
+08:31:25 gpu5: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped
+08:35:12 gpu6: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped
+08:39:34 gpu7: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped
+08:49:19 gpu8: handoff ok, proxy back after 177s (offset 11, net 166s) -> unmapped
+08:53:14 gpu9: handoff ok, proxy back after 117s (offset 11, net 106s) -> unmapped
+08:59:42 gpu9b: handoff ok, proxy back after 147s (offset 11, net 136s) -> unmapped
+09:13:37 gpu10: handoff ok, proxy back after 147s (offset 11, net 136s) -> unmapped
+09:17:14 gpu11: handoff ok, proxy back after 147s (offset 11, net 136s) -> unmapped
+09:21:06 gpu12: handoff ok, proxy back after 147s (offset 11, net 136s) -> unmapped
+09:24:42 gpu13: handoff ok, proxy back after 147s (offset 11, net 136s) -> unmapped
+09:28:09 gpu13b: handoff ok, proxy back after 147s (offset 11, net 136s) -> unmapped
