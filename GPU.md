@@ -340,3 +340,109 @@ Remaining (increment 2 — the chip-variant ABI refactor; needs care, no t8140 b
   (throttle-counter masks). No writes to the power/clock scratch blocks.
   Open: why the KickAnnounce does not launch the kick entry (a dependency
   that never resolves, or a wait on a stubbed register).
+- Kick launch path (GFX, static): KickAnnounce (0x12b84) only records qid
+  and count (into [0x1096c8]+0x103a8 / +0x21018) and bumps 0xb7c70; it does
+  not launch. QueueConfig install (0x12924 -> 0x12db4) fills the per-QID
+  table 0xb94b8 + qid*0x28: +0x00 installed=1, +0x08 = QueueConfig+0x10
+  (kick-ring base), +0x10 = QueueConfig+0x08, +0x18 = QueueConfig+0x04,
+  +0x1c = (4 - QueueConfig+0x1e)*3 - 2, +0x20 = QueueConfig+0x22 (engine,
+  selects ready bitmap 0xba8c0 + engine*16). The scheduler (0x108d4.., 128
+  QIDs) keeps per-QID state at 0xbb930 + qid*0x58 (+0x40 next slot, +0x48
+  remaining) and launches kick entries ring_base + (slot & 0xff)*0x200 via
+  0xfc48, up to the host timestamp in MainConfig+0x274 (view 4) per QID
+  {u32 at +0, u64 at +8}.
+- k33 (built, not booted): on compute timeout, dumps those firmware globals
+  for the job's QID from the GFX __DATA segment (phys 0x100027a4000, VA
+  0xfffffc0000050000), to see whether the QID is installed and where its
+  cursor stands.
+- gpu24..30 (firmware-side readouts at the compute timeout; traces only):
+  - The job's QID (4) is installed (per-QID table: kick ring
+    0xfffffc2189500000, engine 2, priority 2) and set in the compute ready
+    bitmap; its scheduler record shows the kick announced (+0x10 = 1,
+    +0x18 = 1). Slot numbering matches (next slot = +0x00 + 1 = 1).
+  - Firmware event trace (status A word 0 = trace mask, copied to fw global
+    0x1092a4; records drained from the trace ring): 0x40 queue install
+    (qid 4, engine 2, prio 2), 0x41 kick announce (qid 4, ts 1, count 1),
+    0x57 KickPredecessor (qid 4, prev 0, 0xfe), then 0x46 "GPU active"
+    mask set 0x80/0x40/0x2.
+  - On the 0 -> active transition the firmware calls
+    agfKSMKickQueuesSchedulingPause (0x234fc): request bit 0 of
+    sgx+0x211c8, poll bit 0 of sgx+0x211d0 ("ERROR: PIO poll ... timeout
+    ..., continue wait"). Readback: sgx+0x211c8 = 5 (pause requested),
+    sgx+0x211d0 = 4 (never acknowledged). The firmware stays in that wait;
+    the kick is never launched and later host events time out.
+  - GPU power domains at the timeout (PMGR target/actual): gpx, gfx,
+    pms_gfx_c1ppt, soc_dpe_gfx on; afr target f / actual 4; cs, aic_gfx,
+    b2b_ctrl_gfx, fppt_gfx off. Forcing cs (gpu28) and all four (gpu30) on
+    with apple,always-on did not change the stall.
+  - Open: what the KSM needs to acknowledge a pause. Candidates are the
+    blocks still backed by host RAM (AFR 20, DVFM 23/24, KSMFE 35, PMC 16,
+    PMGR misc 54/55, DpwrMXU 56, ...): their real addresses come from the
+    macOS kext's runtime ADT lookup, not from any static table found so far.
+- Workflow wf_a0538809 (9 agents, claude-opus-4-8): the macOS AGXG17X
+  register map for this machine. The kext keeps one 0x438-byte record per
+  firmware slot (object+0x760 + slot*0x438; per element phys[], size,
+  type word). Addresses come from (a) its static sgx table (kernelcache
+  0x153040), (b) per-block filler functions with literal offsets
+  (regBase(die) + offset, or absolute literals), (c) chip-variant gates.
+  Mapped on T6050: 0 (0x2_8041_4000), 3 MCache (4 x 0x24000 from
+  0x22_2010_4000, 0x200_0000 apart), 9 (0x2_8425_0000), 11 (0x2_8425_8000),
+  12 ANE0 (0x5_0965_c000), 15 AON PTD (0x2_8cdc_0000, 0x24000), 17, 18 AFR
+  clkgen (sgx+0xeb4000), 20 AFR (4 x 0x40000 from sgx+0x3000000, 0x200000
+  apart), 22 (sgx+0x1000000), 23 AFR DVFM (sgx+0xf00000, 0x10000), 24 GPU
+  DVFM (4 x 0x10000 from sgx+0xec0000), the sgx-control group, 44 MTR (2 x
+  0x8000 at sgx+0xe08000), 46/58 throttle counters (sgx+0xe33800 /
+  sgx+0xe73800), 52 AFR MTR (sgx+0xe48000), 53. Address but type 0: 4, 10,
+  14. Empty on T6050 (including KSMFE 35, PMC 16, PMGR misc 54/55, DpwrMXU
+  56, GFXCLKGEN 45, ANE1 13 = Ultra-only, D2DNI 59 = Ultra-only). The
+  earlier RAM-backed stand-ins gave the firmware ~20 blocks macOS leaves
+  absent.
+- k40 (built, not booted yet): hw/t6050.rs uses exactly that map
+  (RegisterWindow.phys_stride for non-contiguous elements, type-0 windows,
+  reserved = slots macOS names with type 2 but no window; RAM stand-ins
+  removed).
+- gpu31 (k40, macOS register map): init still completes; same stall (KSM
+  pause requested, never acknowledged). halWriteKSMFEReg/halReadKSMFEReg are
+  panic stubs on this HAL300 build, so macOS does not program KSMFE either.
+- gpu32/33 + pmgrcs (cs, aic_gfx, b2b_ctrl_gfx, fppt_gfx forced
+  apple,always-on; dump also on event-service failure): aic_gfx and
+  b2b_ctrl_gfx come on, fppt_gfx goes to auto (actual 4), but CS refuses:
+  "PS cs: Failed to reach power state 0xf (requested 0xf00000f, now:
+  0xf000300)" - the target write does not stick. t6050_noauto changes
+  nothing (AFR is already in auto mode before Linux).
+- The ADT PMGR entry for CS (id2 361, group 3, offset 0x108) has
+  notify_pmp = True, parents 360 (AFR) and 359: its power transitions must
+  go through the PMP coprocessor. Linux has no T6050 PMP path yet (the PMP
+  work for CPU core start is in kernel/PMP-CORESTART.md, another session).
+  Working hypothesis: the GPU compute slice (CS) stays off, so the kick
+  scheduler cannot acknowledge the pause and no compute job runs, until CS
+  can be powered through the PMP.
+- gpu34 (render test ~/mesa-m5/vkdraw: 64x64 linear colour target, a
+  clear-only render pass, then a triangle): the graphics pipeline compiles;
+  the clear-only pass already stalls. The firmware trace shows the stuck kick
+  is again QID 4 on engine 2 (compute): Mesa's M5 path runs a precompiled
+  compute helper for the render pass first. So rendering depends on CS too.
+- PMP0 (ADT /arm-io/pmp0, ascwrap-v6): reg[0] 0x2_84e0_0000 (ASC, 0x88000),
+  reg[1] 0x2_8485_0000, reg[2] 0x2_8450_0000 (0x100000), reg[3]
+  0x2_8425_0000 = the PTD update register (ptd-update-reg-index 3) - the same
+  block macOS hands the GPU firmware as slot 9 (PushTelemetryDashboard); slot
+  11 0x2_8425_0000+0x8000 is its config space. So the GPU firmware itself
+  talks to the PMP through the PTD on macOS.
+- Proxy read of the PMP ASC CPU_CONTROL (0x2_84e0_0044) takes a SYNC
+  exception in m1n1 and wedges the resident proxy (needs a manual reset):
+  the AP cannot even read the PMP's ASC registers in this context. Whether
+  the PMP is running is still unknown.
+- PMP liveness (proxy, read-only): the PMP firmware memory (pmp0 reg[2]
+  0x2_8450_0000, 1 MiB) holds firmware (95715 nonzero words) and did not
+  change in 3 s. ps_pmp (0x2_8060_0128) = 0x0f0000ff: the PMP's own domain is
+  on. Its ASC registers still fault (SYNC) on AP access, so the AP is
+  locked out of the PMP's control and mailbox in this context. mcc PTD
+  ranges: doorbell reg[2] 0x2_8424_0000, update reg[3] 0x2_8425_0000,
+  drv2ctrl reg[15] 0x22_2200_0000, ctrl2drv reg[18] 0x22_2800_0000.
+- Conclusion for the GPU: CS (notify_pmp) can only be powered by the PMP;
+  the PMP does not act on requests from this context (GPU firmware PTD
+  ring, m1n1 or Linux), and starting or handshaking it needs registers the
+  AP cannot touch. Compute and rendering (whose Mesa M5 path starts every
+  render pass with a compute helper) are blocked on that, the same SPTM/PMP
+  wall as the secondary CPU cores. Everything before job execution works:
+  firmware init, DRM device, Mesa device/compile/submit.

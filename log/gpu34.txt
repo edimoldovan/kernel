@@ -1,0 +1,80 @@
+== vkdraw
+exit 1
+Experimental M5 HAL300 integration enabled; general rendering is unqualified
+Experimental M5 HAL300 integration enabled; general rendering is unqualified
+device: Apple M5 Max (G17C B1)
+linear colour attachment: yes
+ok   graphics pipeline created
+FAIL clear: wait = -4
+     after clear: red 0 blue 0 other 4096; corner 77777777 centre 77777777
+== kernel
+[   10.027334] omarchy-m5 kernel: asahi: g17 fw trace: qid-table 0xfffffc00000b9558 +0x20: 00000002 00000000 00000000 00000000
+[   10.027398] omarchy-m5 kernel: asahi: g17 fw trace: qid-sched 0xfffffc00000bba90 +0x00: 00000000 00000000 00000000 00000000
+[   10.027446] omarchy-m5 kernel: asahi: g17 fw trace: qid-sched 0xfffffc00000bba90 +0x10: 00000001 00000000 00000001 00000000
+[   10.027495] omarchy-m5 kernel: asahi: g17 fw trace: qid-sched 0xfffffc00000bba90 +0x20: 00000000 00000000 00000000 00000000
+[   10.027558] omarchy-m5 kernel: asahi: g17 fw trace: qid-sched 0xfffffc00000bba90 +0x30: 00000000 00000000 00000000 00000000
+[   10.027609] omarchy-m5 kernel: asahi: g17 fw trace: qid-sched 0xfffffc00000bba90 +0x40: 00000000 00000000 00000000 00000000
+[   10.027658] omarchy-m5 kernel: asahi: g17 fw trace: qid-sched 0xfffffc00000bba90 +0x50: 00000000 00000000 00000000 00000000
+[   10.027705] omarchy-m5 kernel: asahi: g17 fw trace: ready-8c0 0xfffffc00000ba8c0 +0x00: 00000000 00000000 00000000 00000000
+[   10.027754] omarchy-m5 kernel: asahi: g17 fw trace: ready-8c0 0xfffffc00000ba8c0 +0x10: 00000000 00000000 00000000 00000000
+[   10.027801] omarchy-m5 kernel: asahi: g17 fw trace: ready-8c0 0xfffffc00000ba8c0 +0x20: 00000010 00000000 00000000 00000000
+[   10.027848] omarchy-m5 kernel: asahi: g17 fw trace: ready-8c0 0xfffffc00000ba8c0 +0x30: 00000000 00000000 00000042 00000001
+[   10.027897] omarchy-m5 kernel: asahi: g17 fw trace: ready-900 0xfffffc00000ba900 +0x00: 00000000 00000000 00000000 00000000
+[   10.027944] omarchy-m5 kernel: asahi: g17 fw trace: ready-900 0xfffffc00000ba900 +0x10: 00000000 00000000 00000000 00000000
+[   10.027993] omarchy-m5 kernel: asahi: g17 fw trace: ready-910 0xfffffc00000ba990 +0x00: 00000000 00000000 00000000 00000000
+[   10.029826] omarchy-m5 kernel: asahi: g17 fw trace: ready-910 0xfffffc00000ba990 +0x10: 00000000 00000000 00000000 00000000
+[   10.029838] omarchy-m5 kernel: asahi: g17 fw trace: flags 0xfffffc0000109e1c +0x00: 00000000 00000001 00000000 00000100
+[   10.029856] omarchy-m5 kernel: asahi: g17 pmgr trace: gpx 0x2300e80000 = 0x1f0003ff
+[   10.029868] omarchy-m5 kernel: asahi: g17 pmgr trace: afr 0x2300e80100 = 0x1404034f
+[   10.029879] omarchy-m5 kernel: asahi: g17 pmgr trace: cs 0x2300e80108 = 0x0f000300
+[   10.029891] omarchy-m5 kernel: asahi: g17 pmgr trace: gfx 0x2300e80110 = 0x1f0403ff
+[   10.029901] omarchy-m5 kernel: asahi: g17 pmgr trace: aic_gfx 0x2380600108 = 0x00000200
+[   10.029912] omarchy-m5 kernel: asahi: g17 pmgr trace: pms_gfx_c1ppt 0x2380600110 = 0x000000ff
+[   10.029923] omarchy-m5 kernel: asahi: g17 pmgr trace: soc_dpe_gfx 0x2380600118 = 0x000000ff
+[   10.029943] omarchy-m5 kernel: asahi: g17 pmgr trace: b2b_ctrl_gfx 0x2380600128 = 0x00000200
+[   10.029957] omarchy-m5 kernel: asahi: g17 pmgr trace: fppt_gfx 0x2380600198 = 0x0f000200
+[   10.029968] omarchy-m5 kernel: asahi: g17 reg trace: sgx+0x010380: 00000000 00000000 00000000 00000000
+[   10.029980] omarchy-m5 kernel: asahi: g17 reg trace: sgx+0x010390: 00000000 00000000 0000003f 00000000
+[   10.029992] omarchy-m5 kernel: asahi: g17 reg trace: sgx+0x0103a0: 00000002 00000000 0000007f 00000000
+[   10.030004] omarchy-m5 kernel: asahi: g17 reg trace: sgx+0x0103b0: 00000000 00000000 00000000 00000000
+[   10.030016] omarchy-m5 kernel: asahi: g17 reg trace: sgx+0x021000: 00000000 00000000 00000000 00000000
+[   10.030027] omarchy-m5 kernel: asahi: g17 reg trace: sgx+0x021010: 00000001 00010000 00000000 00000000
+[   10.030042] omarchy-m5 kernel: asahi: g17 reg trace: sgx+0x021020: 00000000 00000000 00000000 00000080
+[   10.030055] omarchy-m5 kernel: asahi: g17 reg trace: sgx+0x021030: 00000000 00000000 00000010 00000000
+[   10.030066] omarchy-m5 kernel: asahi: g17 reg trace: sgx+0x0211c0: 00000011 00000000 00000005 00000000
+[   10.030082] omarchy-m5 kernel: asahi: g17 reg trace: sgx+0x0211d0: 00000004 00000000 00000000 00000000
+[   10.030098] omarchy-m5 kernel: asahi: g17 reg trace: sgx+0xd06030: 00000000 00000000 00000000 00000000
+[   10.030112] omarchy-m5 kernel: asahi: g17 reg trace: sgx+0xe01000: 00000000 00000000 00000000 00000000
+[   10.030123] omarchy-m5 kernel: asahi: g17 reg trace: sgx+0xe01010: 00000000 00000000 00000000 00000000
+[   10.030134] omarchy-m5 kernel: asahi: g17 reg trace: sgx+0xe01400: 00000000 00000000 00000000 00000000
+[   10.030145] omarchy-m5 kernel: asahi: g17 reg trace: sgx+0xe01410: 00000000 00000000 00000000 00000000
+[   10.030156] omarchy-m5 kernel: asahi: g17 reg trace: sgx+0xe01480: 00000000 00000000 00000000 00000000
+[   10.030168] omarchy-m5 kernel: asahi: g17 reg trace: sgx+0xe01500: 00000007 00000000 00000000 00000000
+[   10.030182] omarchy-m5 kernel: asahi: GPU work of a client failed (Error(110), reported at g17/runtime.rs:803); the client sees a lost device
+[   10.030195] omarchy-m5 kernel: asahi: [File 22]: Closing...
+[   10.030206] omarchy-m5 kernel: asahi: [File 21]: Closing...
+[   10.030218] omarchy-m5 kernel: asahi: g17 fw trace rec Primary: [5, 31e7ff2, 19, 1, 0, 5, 0, 0, 0, 0, 0, 12f, 0, 0, 0, 0, 0, 0]
+[   10.030229] omarchy-m5 kernel: asahi: g17 fw trace rec Primary: [5, 31e8073, 19, 0, 0, 0, 0, 0, 0, 1, 0, 147, 0, 0, 0, 0, 0, 0]
+[   10.030241] omarchy-m5 kernel: asahi: g17 fw trace rec Primary: [5, 31e80b1, 19, 0, 0, 0, 0, 0, 0, 0, 0, 146, 0, 0, 0, 0, 0, 0]
+[   10.030253] omarchy-m5 kernel: asahi: g17 fw trace rec Primary: [5, 31e8127, 19, 4, 0, 10001, 0, 0, 0, 0, 0, 112, 0, 0, 0, 0, 0, 0]
+[   10.030269] omarchy-m5 kernel: asahi: g17 fw trace rec Primary: [5, 31e8187, 19, 0, 0, 0, 0, 0, 0, 0, 0, 112, 0, 0, 0, 0, 0, 0]
+[   10.030283] omarchy-m5 kernel: asahi: g17 fw trace rec Primary: [5, 31e820a, 19, 1, 0, 0, 0, 0, 0, 0, 0, 112, 0, 0, 0, 0, 0, 0]
+[   10.030295] omarchy-m5 kernel: asahi: g17 fw trace rec Primary: [5, 31e82a7, 19, 2, 0, 0, 0, 0, 0, 1, 0, 112, 0, 0, 0, 0, 0, 0]
+[   10.030310] omarchy-m5 kernel: asahi: g17 fw trace rec Primary: [5, 31e840b, 19, 2, 0, 0, 0, c0870400, fffffc20, 20001dc, 0, 109, 0, 0, 0, 0, 0, 0]
+[   10.030325] omarchy-m5 kernel: asahi: g17 fw trace rec Primary: [5, 31e8462, 19, c0870400, fffffc20, c086c000, fffffc20, 0, 0, 0, 0, 10c, 0, 0, 0, 0, 0, 0]
+[   10.030337] omarchy-m5 kernel: asahi: g17 fw trace rec Primary: [5, 31e853e, 19, 4, 0, 5714000, 70, 2, 0, 2, 0, 40, 0, 0, 0, 0, 0, 0]
+[   10.030349] omarchy-m5 kernel: asahi: g17 fw trace rec Primary: [5, 31e8803, 19, 4, 0, 1, 0, 2, 0, 1, 0, 41, 0, 0, 0, 0, 0, 0]
+[   10.030364] omarchy-m5 kernel: asahi: g17 fw trace rec Primary: [5, 31e885b, 19, 4, 0, 0, 0, fe, 0, 0, 0, 57, 0, 0, 0, 0, 0, 0]
+[   10.030375] omarchy-m5 kernel: asahi: g17 fw trace rec Primary: [5, 31e8978, 19, 2, 0, 0, 0, 0, 0, 0, 0, 4000113, 0, 0, 0, 0, 0, 0]
+[   10.030386] omarchy-m5 kernel: asahi: g17 fw trace rec Primary: [5, 31e8a22, 19, 1, 0, 80, 0, 80, 0, 0, 0, 46, 0, 0, 0, 0, 0, 0]
+[   10.030398] omarchy-m5 kernel: asahi: g17 fw trace rec Primary: [5, 31e8a8e, 19, 0, 0, 80, 0, 0, 0, 0, 0, 46, 0, 0, 0, 0, 0, 0]
+[   10.030409] omarchy-m5 kernel: asahi: g17 fw trace rec Primary: [5, 31e8b1c, 19, 3, 0, 0, 0, 0, 0, 0, 0, 112, 0, 0, 0, 0, 0, 0]
+[   10.030420] omarchy-m5 kernel: asahi: g17 fw trace rec Primary: [5, 31e8b6b, 19, 1, 0, 4, 0, 0, 0, 0, 0, 130, 0, 0, 0, 0, 0, 0]
+[   10.030431] omarchy-m5 kernel: asahi: g17 fw trace rec Primary: [5, 31e8bab, 19, 1000000, 0, 1000000, 0, 0, 0, 0, 0, 12f, 0, 0, 0, 0, 0, 0]
+[   10.030444] omarchy-m5 kernel: asahi: g17 fw trace rec Primary: [5, 31e8c61, 19, 1, 0, 40, 0, 40, 0, 0, 0, 46, 0, 0, 0, 0, 0, 0]
+[   10.030455] omarchy-m5 kernel: asahi: g17 fw trace rec Primary: [5, 31e906f, 19, 1, 0, 2, 0, 42, 0, 0, 0, 46, 0, 0, 0, 0, 0, 0]
+[   10.030466] omarchy-m5 kernel: asahi: g17 fw trace rec Primary: [5, 31e923e, 19, 1000000, 0, 0, 0, 1, 0, 0, 0, 130, 0, 0, 0, 0, 0, 0]
+[   10.030478] omarchy-m5 kernel: asahi: g17 fw trace rec Primary: [5, 31e92b7, 19, 0, 0, 0, 0, 0, 0, 0, 0, 2000612, 1, 0, 0, 0, 0, 0]
+[   10.030490] omarchy-m5 kernel: asahi: g17 fw trace rec Primary: [5, 31e9327, 19, 0, 0, 0, 0, 0, 0, 0, 0, 2000612, 2, 0, 0, 0, 0, 0]
+[   12.037586] omarchy-m5 kernel: asahi 2302600000.gpu: GPU event service failed: Error(110)
+[   12.037904] omarchy-m5 kernel: asahi 2302600000.gpu: GPU runtime stopped, device lost
