@@ -446,3 +446,29 @@ Remaining (increment 2 — the chip-variant ABI refactor; needs care, no t8140 b
   render pass with a compute helper) are blocked on that, the same SPTM/PMP
   wall as the secondary CPU cores. Everything before job execution works:
   firmware init, DRM device, Mesa device/compile/submit.
+- PTD layout (2026-11-03; formulas from aurora-silicon/aura
+  proxyclient/tools/pmp_assist.py, table from this ADT /arm-io/pmp0/
+  iop-pmp0-nub ptd-range, 32-byte entries {id, offset, unk[8], name[16]}).
+  Window base = pmp0 reg[ptd-update-reg-index=3] - 0x10000 = 0x2_8424_0000;
+  read = offset*16, write = offset*8 + 0x10000. Entries: PMP-STATUS rd 0x10,
+  DVFS-STATE 0x80, SOC-DEV-PKT 0x900, SOC-DEV-PS-REQ rd 0x1e00 / wr 0x10f00,
+  SOC-DEV-PS-ACK rd 0x1e80, SOC-DEV-DVFS 0x1f00, SOC-DEV-BWR 0x2200,
+  MC-DRV-TO-CTRL 0x23c0, MC-CTRL-TO-DRV 0x2610, GFX-TO-SMC 0x27a0,
+  LTS-TO-GFX 0x2b40, PMP-TO-GFX 0x2b50, PMU-TO-GFX 0x2b60, PMS-VIRT-CNTR
+  0x3200. The GPU firmware's slots 10/9/11 are this window's read space,
+  update page and config space. aura's pmp_init.py starts the PMP from the
+  host (bootargs, ASC start, endpoint 0x20) on M1-M3; on T6050 the ASC
+  registers fault from the AP. Next read-only check: PMP-STATUS and the
+  PS-REQ/ACK words at 0x2_8424_0010 / +0x1e00 / +0x1e80.
+- 2026-11-03: a 16 KiB bulk proxy read of the PTD window (0x2_8424_0000,
+  iface.readmem) killed the proxy mid-read (USB device gone). Only the
+  first word of that page is known to read safely; any further PTD reads
+  must be single 32-bit words at the table offsets, one at a time.
+- 2026-11-03, single 32-bit proxy reads (all survived): PTD window
+  0x2_8424_0000 +0x0 (NULL), +0x10/+0x14 (PMP-STATUS, also 2 s later),
+  +0x1e00 (SOC-DEV-PS-REQ), +0x1e80 (SOC-DEV-PS-ACK), +0x2b50 (PMP-TO-GFX),
+  +0x27a0 (GFX-TO-SMC): all 0. With the PMP's firmware memory static, the
+  PMP has not been started and has never published status, so nothing
+  services PTD requests (CS power included). On M1-M3 the host starts it
+  (aura pmp_init.py: bootargs, ASC start, endpoint 0x20); here the PMP ASC
+  registers fault from the AP, so it cannot be started from this context.
