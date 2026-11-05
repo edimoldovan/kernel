@@ -72,4 +72,31 @@ names the wake interrupt (the SMC's, 59, for the lid).
 - CPU die temperature: no sensor key for it on T6050 yet.
 - Audio, Wi-Fi and Bluetooth, display brightness.
 - Power use while asleep: not measured.
-- Boot from disk: every boot goes over the proxy cable.
+- Boot from disk: ready, not registered (below). Every boot still goes over the proxy cable.
+
+## Boot from disk (ready, postponed)
+
+Postponed until the m1n1 work for Wi-Fi and the display controller is in, so stage 1 is
+registered once. Stage 1 loads the kernel from the ESP itself (`boot=`), so the secondaries start
+from the image iBoot loaded; the 15 s proxy window keeps the cable loop.
+
+- m1n1: forks/omacom-m1n1 `t6050-aurora` @ 53653157e6da, `make CHAINLOADING=1 RELEASE=0` with
+  `M1N1_VERSION_TAG=160b644c-diskboot` (0x420000), then
+  `tools/fill_stage1_config.py --esp-partuuid 6790ddc4-e993-42c2-8135-807df1548aaf --window-ms 15000`,
+  then these lines and four NUL bytes appended, padded to 64 KiB (0x430000, the largest stage 1
+  measured to boot on mBoot-20457.60.65):
+  ```
+  boot=6790ddc4-e993-42c2-8135-807df1548aaf;aurora/linux/Image.gz;aurora/linux/t6050-j714c.dtb;aurora/linux/initramfs-rw.cpio.gz
+  chosen.bootargs=console=tty0 pd_ignore_unused printk.time=1 initcall_blacklist=__asahi_init
+  chosen.asahi,show-notch=1
+  ```
+  On the Mac: `"Omarchy - Data"/Users/Shared/m1n1-diskboot.bin`, sha256 `edef93200609…`.
+- ESP (nvme0n1p3, /boot/efi): `aurora/linux/Image.gz` (6872745564…), `t6050-j714c.dtb`
+  (11abc8bfe8…), `initramfs-rw.cpio.gz` (f5d5e2312b…), from the swap build of 2026-11-05.
+  Refresh them when the kernel changes.
+- To switch on, from Omarchy's paired recovery:
+  ```
+  kmutil configure-boot -c "/Volumes/Omarchy - Data/Users/Shared/m1n1-diskboot.bin" --raw --entry-point 2048 --lowest-virtual-address 0 -v "/Volumes/Omarchy"
+  ```
+  Rollback: the same command with `m1n1-omacom-160b644c.bin`.
+
