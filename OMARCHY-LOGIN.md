@@ -35,6 +35,7 @@ Firmware, resident m1n1 and network setup: `TEST-LOOP.md`.
 | Battery and charger | battery level and state in the bar, battery icon when unplugged | 68d2fe0a8e7f, 0bc84cc4a6b2 |
 | Sensors | `sensors`: fans, temperatures, voltages, power | c5b0600d19a4 |
 | Sleep | lid close sleeps (s2idle), lid open wakes to the lock screen, network back | 17b3cc9ca3a6, 9f8535b38fcb |
+| Firewall | ufw active, SSH allowed from the LAN by its rule | 00662e9fd517 |
 
 ## Settings on the Mac
 
