@@ -26,26 +26,23 @@ Firmware, resident m1n1 and network setup: `TEST-LOOP.md`.
 | Software rendering on all cores | llvmpipe (mesa-aurora 20261031) | Omarchy package |
 | Keyboard backlight | Ctrl+F1 / Ctrl+F2 | 594f4b3a49ec |
 | Power button | opens the power menu | 4602eba4b9d2, 0fbd859e287d |
-| Lid | close locks the session | 4602eba4b9d2, 9dee12b1266c, binding below |
+| Lid | close locks the session | 4602eba4b9d2, 9dee12b1266c |
 | Clock | rtc0 sets the system time at boot | 4602eba4b9d2 |
 
 ## Settings on the Mac
 
 - `/etc/sudoers.d/ed-reboot`: `ed ALL=(root) NOPASSWD: /usr/bin/systemctl reboot`, so
   `omarchy_boot.sh` can reboot over SSH.
-- `~/.config/hypr/bindings.lua` (backup `bindings.lua.bak.*` next to it): Omarchy binds the lid
-  as `switch:on:Lid Switch`; the SMC switch is named "Apple SMC power/lid events", so the same
-  two bindings are added for that name:
-  ```
-  o.bind("switch:on:Apple SMC power/lid events", nil, "omarchy-system-lid-close", { locked = true })
-  o.bind("switch:off:Apple SMC power/lid events", nil, "omarchy-hyprland-monitor-clamshell", { locked = true })
-  ```
-  The same two lines in Omarchy's `default/hypr/bindings/utilities.lua` would cover every
-  Apple Silicon Mac.
+
+The lid bindings are Omarchy's own: `default/hypr/bindings/utilities.lua` binds both
+"Lid Switch" and the SMC's "Apple SMC power/lid events". The lock needs the panel to be eDP
+(9dee12b1266c): Omarchy treats any other connector as an external monitor and skips the lock.
 
 ## Not yet
 
 - GPU: the asahi driver stays off (`initcall_blacklist=__asahi_init`); GPU.md.
 - SMC sensors: macsmc-hwmon finds none until the board sensor nodes are added.
 - Battery, audio, Wi-Fi and Bluetooth, display brightness.
+- After opening the lid the panel stays dark until a key press, at random: Hyprland does
+  not switch it off, and panel power belongs to DCP, which is not driven yet.
 - Boot from disk: every boot goes over the proxy cable.
