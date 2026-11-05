@@ -1,23 +1,27 @@
 # J714c test loop: boot a kernel, get its log back over the network
 
-A kernel build is tested on the MacBook (J714c) by chainloading it over the resident m1n1
-proxy. The Mac's own USB-C network adapter sends the test report and the full kernel log to
-this machine (Omarchy). The camera on the Mac's screen is the fallback for a boot that dies
-before the network is up.
+A kernel build is tested on the MacBook (J714c) by booting it over the resident m1n1 proxy,
+on all 18 cores. The Mac's own USB-C network adapter sends the test report and the full kernel
+log to this machine (Omarchy). The camera on the Mac's screen is the fallback for a boot that
+dies before the network is up.
 
 ## Setup
 
 | What | Where |
 |---|---|
-| m1n1 proxy cable (resident proxy `...g7cde...`) | Mac right port (port 2) |
+| Firmware on the Omarchy volume | macOS 27.3 beta 1, `mBoot-20457.60.65.0.1` (system and OS firmware) |
+| Resident m1n1: forks/omacom-m1n1 `t6050-aurora` @ 160b644c, plain proxy (`...160b644c...`) | registered on the Omarchy volume, see "The resident m1n1" |
+| m1n1 proxy cable | Mac right port (port 2) |
 | USB-C network adapter, ASIX AX88179B (0b95:1790), cabled to the router | Mac left rear port (port 0, USB 2.0 host) |
 | USB3 stick, SanDisk Extreme Pro 1 TB (0781:55e8), plugged in directly | Mac left front port (port 1) |
 | Charger | MagSafe, left side behind the two USB-C ports |
 | Omarchy | 192.168.188.35, port 8000 open in ufw for 192.168.188.0/24 |
 | BRIO camera at the Mac's screen | /dev/video0 |
 
-On the Mac the adapter binds `cdc_ncm` as eth0 (6c:6e:07:41:d2:14) and gets 192.168.188.39
-over DHCP from the router.
+On the Mac the adapter binds `cdc_ncm` (6c:6e:07:41:d2:14) and gets 192.168.188.39 over DHCP
+from the router: eth0 in the initramfs, enu1c2 in the full Omarchy root. The left rear port
+gets power only from our m1n1's USB-PD setup; an adapter on the left front port works if it
+is plugged in before the kernel boots.
 
 ## One boot
 
@@ -34,17 +38,27 @@ over DHCP from the router.
    WDT=170 EXTRA="pd_ignore_unused printk.time=1" \
    /home/ed/dev/omarchy/kernel/tools/boot_t6050.sh TAG
    ```
-   `boot_t6050.sh` chainloads `forks/omacom-m1n1/build/m1n1.macho`, boots the kernel with
-   `tools/linux.py`, then waits for the watchdog to bring the Mac back to the proxy (about
-   3 minutes). Call it by its absolute path: it builds its log paths from `$0`.
+   `boot_t6050.sh` boots the kernel over the resident proxy with `tools/linux.py` (m1n1
+   starts the 17 secondaries), then waits for the watchdog to bring the Mac back to the
+   proxy (about 3 minutes). `M1N1_MACHO=<file>` chainloads that m1n1 first; core start after
+   a chainload is untested. Call it by its absolute path: it builds its log paths from `$0`.
+   `linux.py` ends with a `termios` traceback after the handoff; the boot is fine.
 4. About 10 s after the kernel starts, the report lands in OUT.txt.
+
+The DTB needs linux-aurora c04e453c26ac or later: older ones carry wrong MPIDRs for clusters 1
+and 2, and m1n1 stops with `FDT: DT CPU 6 MPIDR mismatch`.
+
+Full Omarchy instead of the report: `IRD=/home/ed/dev/omarchy/kernel/boot/initramfs-rw.cpio.gz`
+and `WDT=0` (the root read-write, Hyprland on llvmpipe; SSH as ed@192.168.188.39). It needs a
+kernel with SWAP, ZRAM and SECURITY_LANDLOCK (linux-aurora 13c28edbabb6): without them
+Omarchy waits 90 s for /dev/zram0 and pacman's sandbox fails.
 
 Several boots in a row: `kernel/tools/net_boots.sh TAG COUNT` (reports in
 `log/net-TAG<n>.txt`, one summary line per boot; IMG, DTB, IRD, WDT and EXTRA can be set as
 above).
 
 Rules:
-- Chainload only, over the resident proxy. Never write the Mac's EFI partition.
+- Boot over the resident proxy only. Never write the Mac's EFI partition.
 - The Mac must start from a reset. After a `t6050_phy_power_test.py` run the proxy is still
   up but CIO is on and the PHY CPU is running (the harness disarms its watchdog and does not
   reboot): a kernel booted on top of that fails. The watchdog reset at the end of each kernel
@@ -84,6 +98,25 @@ Changing what the Mac reports = edit `init-net` and repack. Changing what the ke
 - `dyndbg="file hub.c +p; file xhci-hub.c +p; func handle_port_status +p"` adds the USB hub
   and xHCI port events (every PORTSC change with its value). These are debug-level: they go
   to dmesg, not to the screen.
+
+## The resident m1n1
+
+The firmware starts the m1n1 registered on the Omarchy volume; changing it takes the Omarchy
+volume's own recovery and the owner password.
+- Build it plain: `make CHAINLOADING=0 RELEASE=0` in forks/omacom-m1n1. On mBoot-20457.60.65
+  a 0x410000 image boots; a 0x4D0000 one stops with "Custom kernel failed to boot".
+- Copy it to the Mac while macOS runs:
+  ```
+  scp build/m1n1.bin "ed@ed-mac.local:/Volumes/Omarchy - Data/Users/Shared/<name>.bin"
+  ```
+- From Omarchy's paired recovery (the "Recovery…" button on an error screen gives an unpaired
+  one, where kmutil fails):
+  ```
+  kmutil configure-boot -c "/Volumes/Omarchy - Data/Users/Shared/<name>.bin" --raw --entry-point 2048 --lowest-virtual-address 0 -v "/Volumes/Omarchy"
+  ```
+- Rollback images in that folder: `m1n1-omacom-160b644c.bin` (current), `m1n1-m5pro14.bin`
+  (7cde7d1a + rolotrealanis98's m1n1 patches 0001-0014; no USB-PD setup, so no left rear
+  port), `m1n1.bin` (7cde7d1a, 0x4D0000, does not boot on mBoot-20457.60.65).
 
 ## Fallback: the camera
 

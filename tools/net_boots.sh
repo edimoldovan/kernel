@@ -10,7 +10,7 @@ B=/tmp/opencode/aurora-build-j714c/arch/arm64/boot
 export IMG=${IMG:-$B/Image.gz} DTB=${DTB:-$B/dts/apple/t6050-j714c.dtb}
 export IRD=${IRD:-$K/boot/initramfs-net.cpio.gz} WDT=${WDT:-170} EXTRA=${EXTRA:-"pd_ignore_unused printk.time=1"}
 for i in $(seq 1 "$COUNT"); do
-  for w in $(seq 1 60); do ls /dev/serial/by-id/ | grep -q g7cde && break; sleep 2; done
+  for w in $(seq 1 60); do ls /dev/serial/by-id/ | grep -q m1n1_uartproxy && break; sleep 2; done
   R=$K/log/net-$TAG$i.txt; rm -f "$R"
   timeout 420 python3 "$T/net_recv.py" "$R" 400 > "$K/log/net-$TAG$i.recv" 2>&1 &
   r=$!
