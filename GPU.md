@@ -472,3 +472,40 @@ Remaining (increment 2 — the chip-variant ABI refactor; needs care, no t8140 b
   services PTD requests (CS power included). On M1-M3 the host starts it
   (aura pmp_init.py: bootargs, ASC start, endpoint 0x20); here the PMP ASC
   registers fault from the AP, so it cannot be started from this context.
+
+## New firmware: mBoot-20457.60.65 (2026-11-05, macOS 27.3 beta 1, logs gpu35-gpu38)
+
+The stub recreated from 27.3 beta 1 starts all 18 cores (Apple fixed the
+single-core limit for raw boot objects). The GPU is still blocked.
+
+- PMP, read-only proxy reads (single 32-bit words): PMP-STATUS +0x10/+0x14,
+  PS-REQ +0x1e00, PS-ACK +0x1e80, GFX-TO-SMC +0x27a0, PMP-TO-GFX +0x2b50 all
+  0. ps_pmp 0x2_8060_0128 = 0x0f0000ff. CS 0x23_00e8_0108 = 0x0f000300, also
+  2 s later. PMP firmware memory 0x2_8450_0000 holds a new image (56087 of
+  262144 words differ from 2026-11-03) and does not change over 2 s. The PMP
+  is still not started, so core start on this firmware does not go through it.
+- GPU firmware: a rebuild. RTKit 3514.60.8 (was 3514.41.1); GFX UUID
+  D93252D0-61ED-3F2B-87B3-A2338CC38431, GFX1 86D8E532-6917-34EB-8B95-EDED626F7754.
+  __TEXT sizes unchanged (0x50000 / 0x54000), about 70% of words differ.
+  Interface version [0x04c0, 0x8728, 0x4339, 0x0c8e] unchanged, now at
+  GFX 0x217a0 / GFX1 0x26cb0. The device-control dispatcher (GFX 0x382c,
+  table 0x6628) and its handlers are at the same offsets as before. Saved to
+  /home/ed/dev/omarchy/firmware/gpu-mboot-20457.60.65/ (not in git).
+- Crash-log buffers: iBoot loads __DATA_SHARED_RO 0x8000 higher, at
+  0x1000286c000 / 0x10002928000; both requests failed with -EINVAL until
+  linux-aurora edc3ec0480a4 moved the T6050 crash buffers to 0x286c000 /
+  0x2928000.
+- Boot: rolo's m1n1 (7cde7d1a + 14 patches) has no T6050 GPU handoff, so
+  asahi fails at MMU init with -22. Chainloading our fork over it needs
+  `--no-sepfw` (else the image covers the secondary-only CTRR range) and must
+  skip the secondary RVBAR writes (RVBAR is locked; the write SErrors and
+  wedges the proxy). With our fork (160b644c) resident, the kernel boots
+  directly with all 18 CPUs (gpu37, gpu38).
+- vkfill (gpu36-gpu38): device, pipeline and submit work; the fence times out
+  (Error 110). 0.26 s later the GFX firmware crashes: data abort (ESR
+  0x96000044) at PC 0x5304 writing to FAR 0x400000200000000. 0x5304 is the
+  handler for device-control record type 0x0e (writes u32 [rec+0xc] to the
+  address u64 [rec+4]; idx byte [rec+0x14]). The driver never sends 0x0e (it
+  sends 0x08, 0x0a, 0x14, 0x29, 0x2e). On the old firmware (gpu30-gpu34) the
+  same timeout ended with "GPU event service failed" and no firmware crash.
+  Why the firmware reads a 0x0e record is not known.
