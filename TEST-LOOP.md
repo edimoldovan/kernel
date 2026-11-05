@@ -48,7 +48,7 @@ is plugged in before the kernel boots.
 The DTB needs linux-aurora c04e453c26ac or later: older ones carry wrong MPIDRs for clusters 1
 and 2, and m1n1 stops with `FDT: DT CPU 6 MPIDR mismatch`.
 
-Full Omarchy instead of the report: `IRD=/home/ed/dev/omarchy/kernel/boot/initramfs-rw.cpio.gz`
+Full Omarchy (what works there, and the one-step boot `tools/omarchy_boot.sh`: OMARCHY-LOGIN.md) instead of the report: `IRD=/home/ed/dev/omarchy/kernel/boot/initramfs-rw.cpio.gz`
 and `WDT=0` (the root read-write, Hyprland on llvmpipe; SSH as ed@192.168.188.39). It needs a
 kernel with SWAP, ZRAM and SECURITY_LANDLOCK (linux-aurora 13c28edbabb6): without them
 Omarchy waits 90 s for /dev/zram0 and pacman's sandbox fails. Add
