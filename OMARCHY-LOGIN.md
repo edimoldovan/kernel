@@ -32,6 +32,7 @@ Firmware, resident m1n1 and network setup: `TEST-LOOP.md`.
 | Lid | close locks the session | 4602eba4b9d2, 9dee12b1266c |
 | Clock | rtc0 sets the system time at boot | 4602eba4b9d2 |
 | Full panel with the notch | 3024x1964 eDP-1, the bar's center beside the notch | `omarchy_boot.sh` (m1n1 `asahi,show-notch=1`), 9dee12b1266c |
+| Battery and charger | battery level and state in the bar, battery icon when unplugged | 68d2fe0a8e7f, 0bc84cc4a6b2 |
 | Sleep | lid close sleeps (s2idle), lid open wakes to the lock screen, network back | 17b3cc9ca3a6, 9f8535b38fcb |
 
 ## Settings on the Mac
@@ -44,6 +45,12 @@ Firmware, resident m1n1 and network setup: `TEST-LOOP.md`.
 The lid bindings are Omarchy's own: `default/hypr/bindings/utilities.lua` binds both
 "Lid Switch" and the SMC's "Apple SMC power/lid events". The lock needs the panel to be eDP
 (9dee12b1266c): Omarchy treats any other connector as an external monitor and skips the lock.
+
+## Battery
+
+The m1n1 proxy cable feeds about 2.4 W over USB-C, and the SMC counts it as a connected power
+source (`macsmc-ac` online, `input_power_limit` 2375000). The bar shows the battery icon only
+with the MagSafe and the proxy cable both out.
 
 ## Sleep tests
 
@@ -62,6 +69,6 @@ names the wake interrupt (the SMC's, 59, for the lid).
 
 - GPU: the asahi driver stays off (`initcall_blacklist=__asahi_init`); GPU.md.
 - SMC sensors: macsmc-hwmon finds none until the board sensor nodes are added.
-- Battery, audio, Wi-Fi and Bluetooth, display brightness.
+- Audio, Wi-Fi and Bluetooth, display brightness.
 - Power use while asleep: not measured.
 - Boot from disk: every boot goes over the proxy cable.
