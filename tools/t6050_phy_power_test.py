@@ -1,5 +1,5 @@
 # T6050 port 1 (left-front): Type-C PHY power-up versus the USB2 host, over the stage 1 proxy.
-# usage (from forks/omacom-m1n1, M1N1DEVICE=/dev/serial/by-id/...g7cde*-if00):
+# usage (from forks/omacom-m1n1, M1N1DEVICE=/dev/serial/by-id/...m1n1_uartproxy_*-if00):
 #   PYTHONPATH=proxyclient .venv/bin/python t6050_phy_power_test.py STEP...
 # Steps run in order: read flip flipnophy flipu3s diag pd pd:<domain> cio small big unclamp
 # apb phyrst pwrread coreread core:LO-HI cmn tunables lanes:normal|swapped pipeusb3

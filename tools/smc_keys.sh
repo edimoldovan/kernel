@@ -6,7 +6,7 @@ set -eu
 V=${1:-}
 case "$V" in ""|0|1) ;; *) echo "usage: $0 [0|1]"; exit 1 ;; esac
 cd /home/ed/dev/omarchy/forks/omacom-m1n1
-M1N1DEVICE=$(printf '%s' /dev/serial/by-id/usb-Asahi_Linux_m1n1_uartproxy_*g7cde*-if00) \
+M1N1DEVICE=$(printf '%s' /dev/serial/by-id/usb-Asahi_Linux_m1n1_uartproxy_*-if00) \
 PYTHONPATH=proxyclient SMC_VALUE="$V" .venv/bin/python - <<'PY'
 import os
 from m1n1.setup import *

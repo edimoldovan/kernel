@@ -5,7 +5,7 @@
 # and searched for the G17 interface version. With the sgx power domain on: the ID registers.
 set -eu
 cd /home/ed/dev/omarchy/forks/omacom-m1n1
-M1N1DEVICE=$(printf '%s' /dev/serial/by-id/usb-Asahi_Linux_m1n1_uartproxy_*g7cde*-if00) \
+M1N1DEVICE=$(printf '%s' /dev/serial/by-id/usb-Asahi_Linux_m1n1_uartproxy_*-if00) \
 PYTHONPATH=proxyclient .venv/bin/python - <<'PY'
 import os, re, struct
 from m1n1.setup import *
