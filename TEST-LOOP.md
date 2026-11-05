@@ -51,7 +51,11 @@ and 2, and m1n1 stops with `FDT: DT CPU 6 MPIDR mismatch`.
 Full Omarchy instead of the report: `IRD=/home/ed/dev/omarchy/kernel/boot/initramfs-rw.cpio.gz`
 and `WDT=0` (the root read-write, Hyprland on llvmpipe; SSH as ed@192.168.188.39). It needs a
 kernel with SWAP, ZRAM and SECURITY_LANDLOCK (linux-aurora 13c28edbabb6): without them
-Omarchy waits 90 s for /dev/zram0 and pacman's sandbox fails.
+Omarchy waits 90 s for /dev/zram0 and pacman's sandbox fails. Add
+`initcall_blacklist=__asahi_init` to EXTRA while the GPU does not run jobs: the resident m1n1
+hands the GPU over, the asahi driver then creates renderD128, Mesa stops on it ("Apple G17C
+uses the HAL300 command stream, which this driver does not implement") and the SDDM greeter
+never comes up. Without the driver Mesa uses llvmpipe.
 
 Several boots in a row: `kernel/tools/net_boots.sh TAG COUNT` (reports in
 `log/net-TAG<n>.txt`, one summary line per boot; IMG, DTB, IRD, WDT and EXTRA can be set as
