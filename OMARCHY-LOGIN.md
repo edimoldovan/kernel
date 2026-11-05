@@ -9,9 +9,12 @@ Hyprland. Every feature below works in that login; this is the bar for each new 
 /home/ed/dev/omarchy/kernel/tools/omarchy_boot.sh TAG
 ```
 
-It reboots the Mac over SSH if Linux is running, boots the kernel, DTB and
+It reboots the Mac over SSH if Linux is running, sets m1n1's `chosen.asahi,show-notch=1` (the
+full 3024x1964 panel instead of 3024x1890 below the notch), boots the kernel, DTB and
 `boot/initramfs-rw.cpio.gz` over the resident proxy with `initcall_blacklist=__asahi_init`, and
-waits for SSH (ed@192.168.188.39). Kernel and DTB come from
+waits for SSH (ed@192.168.188.39). Omarchy's bar keeps clear of the notch on its own: omarchy-mac's
+`/usr/share/omarchy-platform/display-cutouts.json` describes the 3024x1964 eDP panel (top 64
+rows), which needs the panel to be eDP (9dee12b1266c). Kernel and DTB come from
 `/tmp/opencode/aurora-build-j714c-swap` (linux-aurora `t6050-j714c`, `O=` that directory,
 `make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- Image.gz apple/t6050-j714c.dtb`).
 Firmware, resident m1n1 and network setup: `TEST-LOOP.md`.
@@ -28,6 +31,7 @@ Firmware, resident m1n1 and network setup: `TEST-LOOP.md`.
 | Power button | opens the power menu | 4602eba4b9d2, 0fbd859e287d |
 | Lid | close locks the session | 4602eba4b9d2, 9dee12b1266c |
 | Clock | rtc0 sets the system time at boot | 4602eba4b9d2 |
+| Full panel with the notch | 3024x1964 eDP-1, the bar's center beside the notch | `omarchy_boot.sh` (m1n1 `asahi,show-notch=1`), 9dee12b1266c |
 | Sleep | lid close sleeps (s2idle), lid open wakes to the lock screen, network back | 17b3cc9ca3a6, 9f8535b38fcb |
 
 ## Settings on the Mac

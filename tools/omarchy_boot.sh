@@ -14,6 +14,10 @@ proxy() { ls /dev/serial/by-id/usb-Asahi_Linux_m1n1_uartproxy_*-if00 2>/dev/null
 D=; for i in $(seq 1 90); do D=$(proxy); [ -n "$D" ] && break; sleep 2; done
 [ -n "$D" ] || { echo "$TAG: no proxy"; exit 1; }
 sleep 3
+# The whole panel, notch rows included: Omarchy's bar keeps clear of the notch itself
+# (omarchy-mac's display-cutouts.json describes the 3024x1964 eDP panel).
+cd $M && M1N1DEVICE=$D PYTHONPATH=$M/proxyclient timeout 60 .venv/bin/python -c \
+  'from m1n1.setup import *; p.kboot_set_chosen("asahi,show-notch", "1")' > $K/log/last-notch-$TAG.log 2>&1
 # The asahi driver stays off until the GPU runs jobs: with it, Mesa stops on renderD128 and
 # the SDDM greeter never comes up (TEST-LOOP.md).
 cd $M && M1N1DEVICE=$D PYTHONPATH=$M/proxyclient timeout 240 .venv/bin/python proxyclient/tools/linux.py \
