@@ -33,6 +33,7 @@ Firmware, resident m1n1 and network setup: `TEST-LOOP.md`.
 | Clock | rtc0 sets the system time at boot | 4602eba4b9d2 |
 | Full panel with the notch | 3024x1964 eDP-1, the bar's center beside the notch | `omarchy_boot.sh` (m1n1 `asahi,show-notch=1`), 9dee12b1266c |
 | Battery and charger | battery level and state in the bar, battery icon when unplugged | 68d2fe0a8e7f, 0bc84cc4a6b2 |
+| Sensors | `sensors`: fans, temperatures, voltages, power | c5b0600d19a4 |
 | Sleep | lid close sleeps (s2idle), lid open wakes to the lock screen, network back | 17b3cc9ca3a6, 9f8535b38fcb |
 
 ## Settings on the Mac
@@ -68,7 +69,7 @@ names the wake interrupt (the SMC's, 59, for the lid).
 ## Not yet
 
 - GPU: the asahi driver stays off (`initcall_blacklist=__asahi_init`); GPU.md.
-- SMC sensors: macsmc-hwmon finds none until the board sensor nodes are added.
+- CPU die temperature: no sensor key for it on T6050 yet.
 - Audio, Wi-Fi and Bluetooth, display brightness.
 - Power use while asleep: not measured.
 - Boot from disk: every boot goes over the proxy cable.
