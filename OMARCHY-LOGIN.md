@@ -28,21 +28,36 @@ Firmware, resident m1n1 and network setup: `TEST-LOOP.md`.
 | Power button | opens the power menu | 4602eba4b9d2, 0fbd859e287d |
 | Lid | close locks the session | 4602eba4b9d2, 9dee12b1266c |
 | Clock | rtc0 sets the system time at boot | 4602eba4b9d2 |
+| Sleep | lid close sleeps (s2idle), lid open wakes to the lock screen, network back | 17b3cc9ca3a6, 9f8535b38fcb |
 
 ## Settings on the Mac
 
 - `/etc/sudoers.d/ed-reboot`: `ed ALL=(root) NOPASSWD: /usr/bin/systemctl reboot`, so
   `omarchy_boot.sh` can reboot over SSH.
+- `/etc/sudoers.d/ed-sleeptest`: `/usr/bin/tee` on `/sys/power/state`, `pm_test`,
+  `pm_print_times` and `pm_debug_messages`, for the sleep tests below.
 
 The lid bindings are Omarchy's own: `default/hypr/bindings/utilities.lua` binds both
 "Lid Switch" and the SMC's "Apple SMC power/lid events". The lock needs the panel to be eDP
 (9dee12b1266c): Omarchy treats any other connector as an external monitor and skips the lock.
+
+## Sleep tests
+
+Drivers through suspend and resume without real sleep (5 s, then resume), over SSH:
+```
+echo 1 | sudo tee /sys/power/pm_print_times
+echo devices | sudo tee /sys/power/pm_test
+echo freeze | sudo tee /sys/power/state
+echo none | sudo tee /sys/power/pm_test
+```
+`dmesg` then shows every device's suspend and resume call. Run it detached (`nohup`): the
+network adapter suspends with the rest. Real sleep: close the lid; `/sys/power/pm_wakeup_irq`
+names the wake interrupt (the SMC's, 59, for the lid).
 
 ## Not yet
 
 - GPU: the asahi driver stays off (`initcall_blacklist=__asahi_init`); GPU.md.
 - SMC sensors: macsmc-hwmon finds none until the board sensor nodes are added.
 - Battery, audio, Wi-Fi and Bluetooth, display brightness.
-- After opening the lid the panel stays dark until a key press, at random: Hyprland does
-  not switch it off, and panel power belongs to DCP, which is not driven yet.
+- Power use while asleep: not measured.
 - Boot from disk: every boot goes over the proxy cable.
